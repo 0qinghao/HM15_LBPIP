@@ -1033,7 +1033,7 @@ Void TEncGOP::compressGOP(Int iPOCLast, Int iNumPicRcvd, TComList<TComPic *> &rc
         }
         m_pcLoopFilter->loopFilterPic(pcPic);
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////// File writing
+        // File writing
         // Set entropy coder
         m_pcEntropyCoder->setEntropyCoder(m_pcCavlcCoder, pcSlice);
 
@@ -1471,6 +1471,7 @@ Void TEncGOP::compressGOP(Int iPOCLast, Int iNumPicRcvd, TComList<TComPic *> &rc
 
                 pcSlice->setTileOffstForMultES(uiOneBitstreamPerSliceLength);
                 pcSlice->setTileLocationCount(0);
+                // 根据 RDO 结果编码 写数据流
                 m_pcSliceEncoder->encodeSlice(pcPic, pcSubstreamsOut);
 
                 {

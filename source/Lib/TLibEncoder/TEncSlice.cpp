@@ -1018,6 +1018,8 @@ Void TEncSlice::compressSlice(TComPic *&rpcPic)
         pppcRDSbacCoder->setBinCountingEnableFlag(true);
         m_pcBitCounter->resetBits();
         pppcRDSbacCoder->setBinsCoded(0);
+        // 此处 encodeCU 的目的是保持熵编码器的连续性, 即编码下一个 CTU 时必须让熵编码器处于编码好当前 CTU 的状态
+        // 根据前方的 setBitCounter(xx) setBitstream(&pcBitCounters) 可以看出, 输出对象是一个 Counters 类, 输出这一动作的结果只是计数, 并不会写文件
         m_pcCuEncoder->encodeCU(pcCU);
 
         pppcRDSbacCoder->setBinCountingEnableFlag(false);
@@ -1161,9 +1163,8 @@ Void TEncSlice::encodeSlice(TComPic *&rpcPic, TComOutputBitstream *pcSubstreams)
     UInt uiTileStartLCU = 0;
     UInt uiTileLCUX = 0;
     Bool depSliceSegmentsEnabled = pcSlice->getPPS()->getDependentSliceSegmentsEnabledFlag();
-    uiCUAddr = rpcPic->getPicSym()->getCUOrderMap(uiStartCUAddr / rpcPic->getNumPartInCU()); /* for tiles, uiStartCUAddr is NOT the real raster scan address, it is actually
-                                                                                               an encoding order index, so we need to convert the index (uiStartCUAddr)
-                                                                                               into the real raster scan address (uiCUAddr) via the CUOrderMap */
+    uiCUAddr = rpcPic->getPicSym()->getCUOrderMap(uiStartCUAddr / rpcPic->getNumPartInCU());
+    /* for tiles, uiStartCUAddr is NOT the real raster scan address, it is actually an encoding order index, so we need to convert the index (uiStartCUAddr) into the real raster scan address (uiCUAddr) via the CUOrderMap */
     uiTileStartLCU = rpcPic->getPicSym()->getTComTile(rpcPic->getPicSym()->getTileIdxMap(uiCUAddr))->getFirstCUAddr();
     if (depSliceSegmentsEnabled)
     {
@@ -1329,6 +1330,10 @@ Void TEncSlice::encodeSlice(TComPic *&rpcPic, TComOutputBitstream *pcSubstreams)
         }
         else
         {
+            // 和compressSlice一样调用了encodeCU函数，但是实现的功能已经不一样了
+            // 因为compressSlice主要是进行最优模式的选择，还有变换、量化等功能, 需要保持熵编码器的连续性
+            // 而在这里，由于前面的几个步骤都已经进行完毕，所以，这里是单纯地进行熵编码
+            // 根据前方的 setBitCounter(NULL) setBitstream(&pcSubstreams[uiSubStrm]) 可以看出, 熵编码器输出对象是一个 Stream 类, 输出这一动作的结果是写文件
             m_pcCuEncoder->encodeCU(pcCU);
         }
 #if ENC_DEC_TRACE

@@ -11,10 +11,6 @@
             "options": {
                 "cwd": "${workspaceFolder}/build/linux"
             },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
             "presentation": {
                 "focus": true
             },

@@ -146,6 +146,7 @@ Void TComPattern::initPattern(Pel *piY,
     return;
 }
 
+// 判断周围块的存在性
 Void TComPattern::initPattern(TComDataCU *pcCU, UInt uiPartDepth, UInt uiAbsPartIdx)
 {
     Int uiOffsetLeft = 0;
@@ -174,6 +175,7 @@ Void TComPattern::initPattern(TComDataCU *pcCU, UInt uiPartDepth, UInt uiAbsPart
 }
 
 // 处理参考像素数据 piAdiBuf
+// 开辟一片缓存 存储经过多种滤波类型的参考像素
 Void TComPattern::initAdiPattern(TComDataCU *pcCU, UInt uiZorderIdxInPart, UInt uiPartDepth, Int *piAdiBuf, Int iOrgBufStride, Int iOrgBufHeight, Bool &bAbove, Bool &bLeft, Bool bLMmode)
 {
     Pel *piRoiOrigin;
@@ -591,7 +593,7 @@ Int *TComPattern::getAdiCrBuf(Int iCuWidth, Int iCuHeight, Int *piAdiBuf)
  *
  * The prediction mode index is used to determine whether a smoothed reference sample buffer is returned.
  */
-// 计算参考像素的指针
+// 根据不同模式和块大小计算参考像素的指针
 Int *TComPattern::getPredictorPtr(UInt uiDirMode, UInt log2BlkSize, Int *piAdiBuf)
 {
     Int *piSrc;

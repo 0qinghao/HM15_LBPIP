@@ -654,11 +654,11 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     rpcBestCU->getCbf(0, TEXT_CHROMA_U) != 0 ||
                     rpcBestCU->getCbf(0, TEXT_CHROMA_V) != 0) // avoid very complex intra if it is unlikely
                 {
-                    // 检查各种模式的代价
+                    // 计算当前层该块的 RD
                     xCheckRDCostIntra(rpcBestCU, rpcTempCU, SIZE_2Nx2N);
                     rpcTempCU->initEstData(uiDepth, iQP, bIsLosslessMode);
                     if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth)
-                    {
+                    { // 8x8 层 CU 继续往下分 4 个 PU 计算
                         if (rpcTempCU->getWidth(0) > (1 << rpcTempCU->getSlice()->getSPS()->getQuadtreeTULog2MinSize()))
                         {
                             xCheckRDCostIntra(rpcBestCU, rpcTempCU, SIZE_NxN);
@@ -689,7 +689,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
         m_pcEntropyCoder->encodeSplitFlag(rpcBestCU, 0, uiDepth, true);
         rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
         rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
-        rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion());
+        rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion()); // 更新 BestCU 的代价
 
         // Early CU determination
         if (m_pcEncCfg->getUseEarlyCU() && rpcBestCU->isSkipped(0))
@@ -793,7 +793,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     // 递归调用 xCompressCU 实现四叉树分割编码
                     xCompressCU(pcSubBestPartCU, pcSubTempPartCU, uhNextDepth);
 #endif
-
+                    // 4个划分的最优的信息的累加，以便和为分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
                     rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth); // Keep best part data to current temporary data.
                     xCopyYuv2Tmp(pcSubBestPartCU->getTotalNumPart() * uiPartUnitIdx, uhNextDepth);
                 }
@@ -1026,6 +1026,7 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     // We need to split, so don't try these modes.
     if (!bSliceStart && (uiRPelX < pcSlice->getSPS()->getPicWidthInLumaSamples()) && (uiBPelY < pcSlice->getSPS()->getPicHeightInLumaSamples()))
     {
+        // （1）调用encodeSplitFlag对分割标志进行编码（最终调用TEncSbac::codeSplitFlag）
         m_pcEntropyCoder->encodeSplitFlag(pcCU, uiAbsPartIdx, uiDepth);
     }
     else
@@ -1047,6 +1048,7 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
             Bool bInSlice = pcCU->getSCUAddr() + uiAbsPartIdx + uiQNumParts > pcSlice->getSliceSegmentCurStartCUAddr() && pcCU->getSCUAddr() + uiAbsPartIdx < pcSlice->getSliceSegmentCurEndCUAddr();
             if (bInSlice && (uiLPelX < pcSlice->getSPS()->getPicWidthInLumaSamples()) && (uiTPelY < pcSlice->getSPS()->getPicHeightInLumaSamples()))
             {
+                // （2）如果当前CU会继续向下进行分割，那么递归调用xEncodeCU，直到到达最底层
                 xEncodeCU(pcCU, uiAbsPartIdx, uiDepth + 1);
             }
         }
@@ -1059,25 +1061,31 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     }
     if (pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
     {
+        // （3）调用encodeCUTransquantBypassFlag，对变换量化跳过标志进行编码（最终调用的是TEncSbac::codeCUTransquantBypassFlag）
         m_pcEntropyCoder->encodeCUTransquantBypassFlag(pcCU, uiAbsPartIdx);
     }
     if (!pcCU->getSlice()->isIntra())
     {
+        // （4）如果是帧间，编码skip标志（最后调用的是TEncSbac::codeSkipFlag）
         m_pcEntropyCoder->encodeSkipFlag(pcCU, uiAbsPartIdx);
     }
 
     if (pcCU->isSkipped(uiAbsPartIdx))
     {
+        // （5）如果当前的CU是帧间skip模式的，那么调用encodeMergeIndex（最后调用TEncSbac::codeMergeIndex），对merge模式选出的索引进行编码，然后结束编码，返回（因为它的MV等信息是预测出来的，而不是计算出来的，因此到此结束处理）
         m_pcEntropyCoder->encodeMergeIndex(pcCU, uiAbsPartIdx);
         finishCU(pcCU, uiAbsPartIdx, uiDepth);
         return;
     }
+    // （6）调用encodePredMode，对预测的模式(帧间还是帧内)进行编码（最后调用TEncSbac::codePredMode）
     m_pcEntropyCoder->encodePredMode(pcCU, uiAbsPartIdx);
 
+    // （7）调用encodePartSize，对分割的尺寸进行编码（最后调用TEncSbac::codePartSize）
     m_pcEntropyCoder->encodePartSize(pcCU, uiAbsPartIdx, uiDepth);
 
     if (pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
     {
+        // （8）如果是帧内预测，并且划分的方式是SIZE_2Nx2N，那么调用encodeIPCMInfo对IPCM的信息进行编码（最后调用TEncSbac::codeIPCMInfo），如果确实使用了IPCM，那么结束编码，返回
         m_pcEntropyCoder->encodeIPCMInfo(pcCU, uiAbsPartIdx);
 
         if (pcCU->getIPCMFlag(uiAbsPartIdx))
@@ -1089,10 +1097,12 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     }
 
     // prediction Info ( Intra : direction mode, Inter : Mv, reference idx )
+    // （9）调用encodePredInfo，对预测的信息(35种模式)进行编码
     m_pcEntropyCoder->encodePredInfo(pcCU, uiAbsPartIdx);
 
     // Encode Coefficients
     Bool bCodeDQP = getdQPFlag();
+    // （10）调用encodeCoeff，对残差系数进行编码（最后调用TEncSbac::codeCoeffNxN）
     m_pcEntropyCoder->encodeCoeff(pcCU, uiAbsPartIdx, uiDepth, pcCU->getWidth(uiAbsPartIdx), pcCU->getHeight(uiAbsPartIdx), bCodeDQP);
     setdQPFlag(bCodeDQP);
 

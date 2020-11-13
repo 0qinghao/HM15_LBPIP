@@ -11,15 +11,18 @@
                 "${workspaceFolder}/cfg/encoder_intra_main_LL.cfg",
                 "-c",
                 "${workspaceFolder}/cfg/per-sequence/wsl_BasketballPass.cfg"
+                // "${workspaceFolder}/cfg/per-sequence/wsl_SlideEditing.cfg"
+                // "${workspaceFolder}/cfg/per-sequence/wsl_ChinaSpeed.cfg"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
             "setupCommands": [
                 {
-                    "description": "Enable pretty-printing for gdb",
+                    "description": "为 gdb 启用整齐打印",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }

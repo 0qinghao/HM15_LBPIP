@@ -824,6 +824,7 @@ Void TEncSearch::xEncSubdivCbfQT(TComDataCU *pcCU,
     }
 }
 
+// 编码每个块的系数
 Void TEncSearch::xEncCoeffQT(TComDataCU *pcCU,
                              UInt uiTrDepth,
                              UInt uiAbsPartIdx,
@@ -883,6 +884,7 @@ Void TEncSearch::xEncCoeffQT(TComDataCU *pcCU,
     m_pcEntropyCoder->encodeCoeffNxN(pcCU, pcCoeff, uiAbsPartIdx, uiWidth, uiHeight, uiFullDepth, eTextType);
 }
 
+// 编码头部信息, 包括: 模式号/PU分割类型/PCM标志
 Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
                                  UInt uiTrDepth,
                                  UInt uiAbsPartIdx,
@@ -951,6 +953,7 @@ Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
     }
 }
 
+// 求出当前模式的所有信息进行熵编码会产生的比特数
 UInt TEncSearch::xGetIntraBitsQT(TComDataCU *pcCU,
                                  UInt uiTrDepth,
                                  UInt uiAbsPartIdx,
@@ -1371,9 +1374,9 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
 {
     UInt uiFullDepth = pcCU->getDepth(0) + uiTrDepth;
     UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> uiFullDepth] + 2;
-    // 是否按照整个模式 (不分 TU) 进行变换和量化
+    // 是否计算 按照整个模式 (不分 TU) 进行变换和量化 的结果. 64x64 层不会进行这个尝试
     Bool bCheckFull = (uiLog2TrSize <= pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize());
-    // 比较当前 PU 和允许的最小 TU 大小, 只有大小允许时才能分出 TU
+    // 是否计算 按照分 4 个 TU 进行变换和量化 的结果. 配置文件配置成只检查 64x64 分 TU
     Bool bCheckSplit = (uiLog2TrSize > pcCU->getQuadtreeTULog2MinSizeInCU(uiAbsPartIdx));
 
 #if HHI_RQT_INTRA_SPEEDUP
@@ -1572,6 +1575,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
             }
             //----- determine rate and r-d cost -----
             UInt uiSingleBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
+            // 完全不会进入这个分支
             if (m_pcEncCfg->getRDpenalty() && (uiLog2TrSize == 5) && !isIntraSlice)
             {
                 uiSingleBits = uiSingleBits * 4;
@@ -2386,13 +2390,14 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                                 Bool bLumaOnly)
 {
     UInt uiDepth = pcCU->getDepth(0);
-    // 当前 CU 的分割模式下, 子块的个数
+    // 当前 CU 的分割模式下, TU 的个数
     UInt uiNumPU = pcCU->getNumPartitions();
     UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
     UInt uiWidth = pcCU->getWidth(0) >> uiInitTrDepth;
     UInt uiHeight = pcCU->getHeight(0) >> uiInitTrDepth;
     UInt uiQNumParts = pcCU->getTotalNumPart() >> 2;
-    UInt uiWidthBit = pcCU->getIntraSizeIdx(0);
+    // 强制计算 35 个模式的 RDCost, 该参数用不上
+    // UInt uiWidthBit = pcCU->getIntraSizeIdx(0);
     UInt uiOverallDistY = 0;
     UInt uiOverallDistC = 0;
     UInt CandNum;
@@ -2408,7 +2413,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         pcCU->setQPSubParts(pcCU->getSlice()->getSliceQp(), 0, uiDepth);
     }
 
-    //===== loop over partitions =====
+    //===== PU 循环 =====
     UInt uiPartOffset = 0;
     for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
     {
@@ -2425,9 +2430,12 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         Pel *piPred = pcPredYuv->getLumaAddr(uiPU, uiWidth);
         UInt uiStride = pcPredYuv->getStride();
         UInt uiRdModeList[FAST_UDI_MAX_RDMODE_NUM];
-        Int numModesForFullRD = g_aucIntraModeNumFast[uiWidthBit];
 
-        Bool doFastSearch = (numModesForFullRD != numModesAvailable);
+        // 强制计算所有模式的 RDCost
+        // Int numModesForFullRD = g_aucIntraModeNumFast[uiWidthBit];
+        // Bool doFastSearch = (numModesForFullRD != numModesAvailable);
+        Int numModesForFullRD = numModesAvailable;
+        Bool doFastSearch = false;
         if (doFastSearch)
         {
             assert(numModesForFullRD < numModesAvailable);
@@ -2514,9 +2522,9 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             UInt uiPUDistC = 0;
             Double dPUCost = 0.0;
 #if HHI_RQT_INTRA_SPEEDUP
-            // 递归编码 intra CU, 包括变换量化等
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, true, dPUCost);
 #else
+            // 递归编码 intra CU, 包括变换量化等
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
 #endif
 
@@ -2576,9 +2584,12 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             UInt uiPUDistY = 0;
             UInt uiPUDistC = 0;
             Double dPUCost = 0.0;
+            // 用循环所有模式检测 RD 得到的最优模式 重新编码一遍 得到的 RD 肯定还是那个最优值, 为什么要再做一遍
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, false, dPUCost);
 
             // check r-d cost
+            assert(dPUCost == dBestPUCost);
+            // 不可能进入这个分支
             if (dPUCost < dBestPUCost)
             {
                 uiBestPUMode = uiOrgMode;

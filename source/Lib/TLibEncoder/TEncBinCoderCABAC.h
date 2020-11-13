@@ -47,58 +47,57 @@
 class TEncBinCABAC : public TEncBinIf
 {
 public:
-  TEncBinCABAC ();
-  virtual ~TEncBinCABAC();
-  
-  Void  init              ( TComBitIf* pcTComBitIf );
-  Void  uninit            ();
-  
-  Void  start             ();
-  Void  finish            ();
-  Void  copyState         ( TEncBinIf* pcTEncBinIf );
-  Void  flush            ();
+    TEncBinCABAC();
+    virtual ~TEncBinCABAC();
 
-  Void  resetBac          ();
-  Void  encodePCMAlignBits();
-  Void  xWritePCMCode     ( UInt uiCode, UInt uiLength );
-  
-  Void  resetBits         ();
-  UInt  getNumWrittenBits ();
-  
-  Void  encodeBin         ( UInt  binValue,  ContextModel& rcCtxModel );
-  Void  encodeBinEP       ( UInt  binValue                            );
-  Void  encodeBinsEP      ( UInt  binValues, Int numBins              );
-  Void  encodeBinTrm      ( UInt  binValue                            );
-  
-  TEncBinCABAC* getTEncBinCABAC()  { return this; }
-  
-  Void  setBinsCoded              ( UInt uiVal )  { m_uiBinsCoded = uiVal;               }
-  UInt  getBinsCoded              ()              { return m_uiBinsCoded;                }
-  Void  setBinCountingEnableFlag  ( Bool bFlag )  { m_binCountIncrement = bFlag ? 1 : 0; }
-  Bool  getBinCountingEnableFlag  ()              { return m_binCountIncrement != 0;     }
-  
+    Void init(TComBitIf *pcTComBitIf);
+    Void uninit();
+
+    Void start();
+    Void finish();
+    Void copyState(TEncBinIf *pcTEncBinIf);
+    Void flush();
+
+    Void resetBac();
+    Void encodePCMAlignBits();
+    Void xWritePCMCode(UInt uiCode, UInt uiLength);
+
+    Void resetBits();
+    UInt getNumWrittenBits();
+
+    Void encodeBin(UInt binValue, ContextModel &rcCtxModel);
+    Void encodeBinEP(UInt binValue);
+    Void encodeBinsEP(UInt binValues, Int numBins);
+    Void encodeBinTrm(UInt binValue);
+
+    TEncBinCABAC *getTEncBinCABAC() { return this; }
+
+    Void setBinsCoded(UInt uiVal) { m_uiBinsCoded = uiVal; }
+    UInt getBinsCoded() { return m_uiBinsCoded; }
+    Void setBinCountingEnableFlag(Bool bFlag) { m_binCountIncrement = bFlag ? 1 : 0; }
+    Bool getBinCountingEnableFlag() { return m_binCountIncrement != 0; }
+
 #if FAST_BIT_EST
 protected:
 #else
 private:
 #endif
-  Void testAndWriteOut();
-  Void writeOut();
-  
-  TComBitIf*          m_pcTComBitIf;
-  UInt                m_uiLow;
-  UInt                m_uiRange;
-  UInt                m_bufferedByte;
-  Int                 m_numBufferedBytes;
-  Int                 m_bitsLeft;
-  UInt                m_uiBinsCoded;
-  Int                 m_binCountIncrement;
+    Void testAndWriteOut();
+    Void writeOut();
+
+    TComBitIf *m_pcTComBitIf;
+    UInt m_uiLow;
+    UInt m_uiRange;
+    UInt m_bufferedByte;
+    Int m_numBufferedBytes;
+    Int m_bitsLeft;
+    UInt m_uiBinsCoded;
+    Int m_binCountIncrement;
 #if FAST_BIT_EST
-  UInt64 m_fracBits;
+    UInt64 m_fracBits;
 #endif
 };
 
 //! \}
 
 #endif
-

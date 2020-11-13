@@ -47,9 +47,11 @@
 #define BUGFIX_INTRAPERIOD 1
 #define SAO_ENCODE_ALLOW_USE_PREDEBLOCK 1
 
-#define SAO_SGN_FUNC 1
+// 不用 SAO, 关掉方便看代码
+#define SAO_SGN_FUNC 0
 
-#define TILE_SIZE_CHECK 1
+// 关掉, 方便看代码
+#define TILE_SIZE_CHECK 0
 
 #define FIX1172 1 ///< fix ticket #1172
 
@@ -103,7 +105,8 @@
 #define MAX_NUM_SPS 16
 #define MAX_NUM_PPS 64
 
-#define RDOQ_CHROMA_LAMBDA 1 ///< F386: weighting of chroma for RDOQ
+// RDOQ 过程不涉及, 关掉方便看代码
+#define RDOQ_CHROMA_LAMBDA 0 ///< F386: weighting of chroma for RDOQ
 
 #define MIN_SCAN_POS_CROSS 4
 
@@ -119,7 +122,9 @@
 #define LEVEL_RANGE 30    ///< G382: max coefficient level in statistics collection
 #endif
 
-#define HHI_RQT_INTRA_SPEEDUP 1     ///< tests one best mode with full rqt
+// 因为不划分 TU, 该功能是多余的, 关掉
+// 该功能是先用整个 PU 算出最佳模式, 然后用这个最佳模式试是否划分 TU 更好
+#define HHI_RQT_INTRA_SPEEDUP 0     ///< tests one best mode with full rqt
 #define HHI_RQT_INTRA_SPEEDUP_MOD 0 ///< tests two best modes with full rqt
 
 #if HHI_RQT_INTRA_SPEEDUP_MOD && !HHI_RQT_INTRA_SPEEDUP
@@ -142,8 +147,9 @@
 #define LM_CHROMA_IDX 35
 #endif
 
-#define WRITE_BACK 1     ///< Enable/disable the encoder to replace the deltaPOC and Used by current from the config file with the values derived by the refIdc parameter.
-#define AUTO_INTER_RPS 1 ///< Enable/disable the automatic generation of refIdc from the deltaPOC and Used by current from the config file.
+// 不涉及, 关掉方便看代码
+#define WRITE_BACK 0     ///< Enable/disable the encoder to replace the deltaPOC and Used by current from the config file with the values derived by the refIdc parameter.
+#define AUTO_INTER_RPS 0 ///< Enable/disable the automatic generation of refIdc from the deltaPOC and Used by current from the config file.
 #define PRINT_RPS_INFO 0 ///< Enable/disable the printing of bits used to send the RPS.                                               \
                          // using one nearest frame as reference frame, and the other frames are high quality (POC%4==0) frames (1+X) \
                          // this should be done with encoder only decision                                                            \
@@ -158,7 +164,8 @@
 #define NUM_CHROMA_MODE 5 // total number of chroma modes
 #define DM_CHROMA_IDX 36  // chroma mode index for derived from luma intra mode
 
-#define FAST_UDI_USE_MPM 1
+// 不粗筛, 强制计算所有模式的 RDCost, 该选项也就无意义了
+#define FAST_UDI_USE_MPM 0
 
 // 项目中不涉及该参数, 可以改成 1 方便看代码
 #define RDO_WITHOUT_DQP_BITS 0 ///< Disable counting dQP bits in RDO-based mode decision
