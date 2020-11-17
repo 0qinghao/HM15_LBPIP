@@ -177,7 +177,7 @@ Void TEncEntropy::encodeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDe
  * \param bRD
  * \returns Void
  */
-// 编码 CU 中的 PU 的类型
+// 编码 CU 中 PU 的类型 (当前 CU 是 2Nx2N 还是 NxN)
 Void TEncEntropy::encodePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, Bool bRD)
 {
     if (bRD)

@@ -91,7 +91,7 @@ private:
     Bool *m_skipFlag; ///< array of skip flags
     // PU 的类型 (是不是划分了 PU, 由枚举 PartSize 赋值, 0 表示 2Nx2N, 3 表示 NxN )
     Char *m_pePartSize; ///< array of partition sizes
-    // PU 的编码模式
+    // PU 的编码模式 (帧内还是帧间)
     Char *m_pePredMode;             ///< array of prediction modes
     Bool *m_CUTransquantBypass;     ///< array of cu_transquant_bypass flags
     Char *m_phQP;                   ///< array of QP values

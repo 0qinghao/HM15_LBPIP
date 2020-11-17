@@ -176,6 +176,19 @@ Void TComPattern::initPattern(TComDataCU *pcCU, UInt uiPartDepth, UInt uiAbsPart
 
 // 处理参考像素数据 piAdiBuf
 // 开辟一片缓存 存储经过多种滤波类型的参考像素
+// 针对缓存区存放参考像素的方式, 进行举例说明, 当预测一个 4x4 块时, piAdiBuf 如下所示(看作是 2 维数组, 实际上只用一维索引)
+// R R R R R R R R R
+// R X X X X X X X X
+// R X X X X X X X X
+// R X X X X X X X X
+// R X X X X X X X X
+// R X X X X X X X X
+// R X X X X X X X X
+// R X X X X X X X X
+// R X X X X X X X X
+// 如上图所示, R 位置存放的是实际的参考像素, 模拟了二维图像的像素点位置, 因此存在大量无实际意义的地址(X), 预测过程中根本用不到
+// 另外, 紧接其后存放的是经过滤波的参考像素, 存放地址的形式也还是和上图一致
+// 所以才有后文的 往右移动 (2*uiCuWidth+1)*(2*uiCuHeight+1) 个单位 再继续存放
 Void TComPattern::initAdiPattern(TComDataCU *pcCU, UInt uiZorderIdxInPart, UInt uiPartDepth, Int *piAdiBuf, Int iOrgBufStride, Int iOrgBufHeight, Bool &bAbove, Bool &bLeft, Bool bLMmode)
 {
     Pel *piRoiOrigin;
@@ -241,6 +254,7 @@ Void TComPattern::initAdiPattern(TComDataCU *pcCU, UInt uiZorderIdxInPart, UInt 
     Int *piFilterBufN = piFilterBuf + iBufSize;  // buffer for 1. filtering (sequential)
 
     Int l = 0;
+    // 所有参考像素顺时针顺序暂存在 piFilterBuf
     // left border from bottom to top
     for (i = 0; i < uiCuHeight2; i++)
     {
@@ -278,7 +292,6 @@ Void TComPattern::initAdiPattern(TComDataCU *pcCU, UInt uiZorderIdxInPart, UInt 
             {
                 piFilterBufN[i] = ((uiCuHeight2 - i) * bottomLeft + i * topLeft + uiCuHeight) >> shift;
             }
-
             for (i = 1; i < uiCuWidth2; i++)
             {
                 piFilterBufN[uiCuHeight2 + i] = ((uiCuWidth2 - i) * topLeft + i * topRight + uiCuWidth) >> shift;
@@ -599,6 +612,7 @@ Int *TComPattern::getPredictorPtr(UInt uiDirMode, UInt log2BlkSize, Int *piAdiBu
     Int *piSrc;
     assert(log2BlkSize >= 2 && log2BlkSize < 7);
     Int diff = min<Int>(abs((Int)uiDirMode - HOR_IDX), abs((Int)uiDirMode - VER_IDX));
+    // TODO: 测试滤波对无损/环状的影响 是否能省去滤波这一步操作
     // 对于 4x4 和 64x64, ucFiltIdx 始终为 0, 对于其他尺寸, 越大越需要滤波, 对于 32x32 一定滤波
     // const UChar TComPattern::m_aucIntraFilter[5] =
     //     {

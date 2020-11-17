@@ -998,7 +998,7 @@ UInt TEncSearch::xGetIntraBitsQTChroma(TComDataCU *pcCU,
     return uiBits;
 }
 
-// 按照给定的预测模式获取 CU 相应的预测值, 与实际像素求残差, 调用 transformNxN 变换编码
+// 按照给定的预测模式获取 CU 相应的预测值, 与实际像素求残差, 调用 transformNxN 变换
 Void TEncSearch::xIntraCodingLumaBlk(TComDataCU *pcCU,
                                      UInt uiTrDepth,
                                      UInt uiAbsPartIdx,
@@ -1109,7 +1109,7 @@ Void TEncSearch::xIntraCodingLumaBlk(TComDataCU *pcCU,
     m_pcTrQuant->selectLambda(TEXT_LUMA);
 #endif
 
-    // 对残差变换量化编码
+    // 对残差变换量化+编码
     m_pcTrQuant->transformNxN(pcCU, piResi, uiStride, pcCoeff,
 #if ADAPTIVE_QP_SELECTION
                               pcArlCoeff,
@@ -1553,7 +1553,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
             }
             //----- code luma block with given intra prediction mode and store Cbf-----
             dSingleCost = 0.0;
-            // 对亮度进行量化编码
+            // 对亮度进行求残差/变换/量化
             xIntraCodingLumaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY);
             if (bCheckSplit)
             {
@@ -2390,11 +2390,14 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                                 Bool bLumaOnly)
 {
     UInt uiDepth = pcCU->getDepth(0);
-    // 当前 CU 的分割模式下, TU 的个数
+    // 当前 CU 的分割模式下, PU 的个数
     UInt uiNumPU = pcCU->getNumPartitions();
-    UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
+    // 改逻辑 因为新分块模式看成不改变 CU 尺寸
+    // UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
+    UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0;
     UInt uiWidth = pcCU->getWidth(0) >> uiInitTrDepth;
     UInt uiHeight = pcCU->getHeight(0) >> uiInitTrDepth;
+    // 当前处理大小下能放下几个最小 PU
     UInt uiQNumParts = pcCU->getTotalNumPart() >> 2;
     // 强制计算 35 个模式的 RDCost, 该参数用不上
     // UInt uiWidthBit = pcCU->getIntraSizeIdx(0);

@@ -341,6 +341,7 @@ Void TEncSbac::xWriteCoefRemainExGolomb(UInt symbol, UInt &rParam)
 }
 
 // SBAC RD
+// 将熵编码器重置到该有的状态. 例如在遍历 35 个模式时, 每次试新模式的时候必须重置一次, 不然会以刚试完上一个模式的熵编码器状态来编码新的东西 (SBAC在编码时是根据上下文更新码字的)
 Void TEncSbac::load(TEncSbac *pSrc)
 {
     this->xCopyFrom(pSrc);
@@ -555,6 +556,7 @@ Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
         return;
 
     UInt uiCtx = pcCU->getCtxSplitFlag(uiAbsPartIdx, uiDepth);
+    // 取出分块标志, 准备编码计算分块标志的大小
     UInt uiCurrSplitFlag = (pcCU->getDepth(uiAbsPartIdx) > uiDepth) ? 1 : 0;
 
     assert(uiCtx < 3);
@@ -1008,6 +1010,7 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
     }
 }
 
+// 真正编码系数(残差)的过程
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
     DTRACE_CABAC_VL(g_nSymbolCounter++)
@@ -1091,6 +1094,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
     ::memset(uiSigCoeffGroupFlag, 0, sizeof(UInt) * MLS_GRP_NUM);
 
+    // 找到最后一个非零系数
     do
     {
         posLast = scan[++scanPosLast];
