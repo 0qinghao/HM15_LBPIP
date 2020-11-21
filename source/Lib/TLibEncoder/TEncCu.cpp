@@ -1393,6 +1393,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
 
     Bool bSeparateLumaChroma = true; // choose estimation mode
     UInt uiPreCalcDistC = 0;
+    // 不会进入该分支
     if (!bSeparateLumaChroma)
     {
         m_pcPredSearch->preestChromaPredMode(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth]);

@@ -374,6 +374,7 @@ enum ChromaFormat
 };
 
 /// supported partition shape
+// 分块类型枚举
 enum PartSize
 {
     SIZE_2Nx2N,  ///< symmetric motion partition,  2Nx2N
@@ -384,10 +385,14 @@ enum PartSize
     SIZE_2NxnD,  ///< asymmetric motion partition, 2Nx(3N/2) + 2Nx( N/2)
     SIZE_nLx2N,  ///< asymmetric motion partition, ( N/2)x2N + (3N/2)x2N
     SIZE_nRx2N,  ///< asymmetric motion partition, (3N/2)x2N + ( N/2)x2N
-    SIZE_L_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形
-    SIZE_L_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形
-    SIZE_L_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形
-    SIZE_L_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形
+    SIZE_B_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形 （块状)
+    SIZE_B_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形 （块状)
+    SIZE_B_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形 （块状)
+    SIZE_B_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形  (块状)
+    SIZE_L_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形 （环状)
+    SIZE_L_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形 （环状)
+    SIZE_L_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形 （环状)
+    SIZE_L_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形  (环状)
     SIZE_NONE = 31
 };
 
