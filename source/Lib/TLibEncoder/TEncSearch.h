@@ -114,6 +114,7 @@ protected:
     TComMv m_acMvPredictors[3];
 
     // RD computation
+    // 在 RDO 过程中用到的熵编码器
     TEncSbac ***m_pppcRDSbacCoder;
     TEncSbac *m_pcRDGoOnSbacCoder;
     DistParam m_cDistParam;

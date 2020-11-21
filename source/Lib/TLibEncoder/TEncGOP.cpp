@@ -1975,17 +1975,17 @@ Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, bool isField)
     }
 
     //-- all
-    printf("\n\nSUMMARY --------------------------------------------------------\n");
-    m_gcAnalyzeAll.printOut('a');
+    // printf("\n\nSUMMARY --------------------------------------------------------\n");
+    // m_gcAnalyzeAll.printOut('a');
 
     printf("\n\nI Slices--------------------------------------------------------\n");
     m_gcAnalyzeI.printOut('i');
 
-    printf("\n\nP Slices--------------------------------------------------------\n");
-    m_gcAnalyzeP.printOut('p');
+    // printf("\n\nP Slices--------------------------------------------------------\n");
+    // m_gcAnalyzeP.printOut('p');
 
-    printf("\n\nB Slices--------------------------------------------------------\n");
-    m_gcAnalyzeB.printOut('b');
+    // printf("\n\nB Slices--------------------------------------------------------\n");
+    // m_gcAnalyzeB.printOut('b');
 
 #if _SUMMARY_OUT_
     m_gcAnalyzeAll.printSummaryOut();
@@ -2008,7 +2008,7 @@ Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, bool isField)
 #endif
     }
 
-    printf("\nRVM: %.3lf\n", xCalculateRVM());
+    // printf("\nRVM: %.3lf\n", xCalculateRVM());
 }
 
 Void TEncGOP::preLoopFilterPicAll(TComPic *pcPic, UInt64 &ruiDist, UInt64 &ruiBits)

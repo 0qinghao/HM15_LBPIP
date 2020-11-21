@@ -1357,7 +1357,7 @@ Void TEncSearch::xIntraCodingChromaBlk(TComDataCU *pcCU,
     ruiDist += m_pcRdCost->getDistPart(g_bitDepthC, piReco, uiStride, piOrg, uiStride, uiWidth, uiHeight, eText);
 }
 
-// 判断 PU 是否往下划分 TU, 编码 PU
+// 递归编码 intra CU, 包括预测变换量化等. 含 TU 逻辑, 但设置为不考虑 TU
 Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
                                      UInt uiTrDepth,
                                      UInt uiAbsPartIdx,
@@ -1402,6 +1402,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
 #else
     Int maxTuSize = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize();
     Int isIntraSlice = (pcCU->getSlice()->getSliceType() == I_SLICE);
+    // 不会进入
     // if maximum RD-penalty don't check TU size 32x32
     if ((m_pcEncCfg->getRDpenalty() == 2) && !isIntraSlice)
     {
@@ -1421,6 +1422,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
     Int bestModeIdUV[2] = {0, 0};
     checkTransformSkip &= (widthTransformSkip == 4 && heightTransformSkip == 4);
     checkTransformSkip &= (!pcCU->getCUTransquantBypass(0));
+    // 不会进入
     if (m_pcEncCfg->getUseTransformSkipFast())
     {
         checkTransformSkip &= (pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN);
@@ -1428,6 +1430,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
     if (bCheckFull)
     // 按照不划分 TU 的形式整个进行变换量化
     {
+        // 不会进入
         if (checkTransformSkip == true)
         {
             //----- store original entropy coding status -----
@@ -1546,6 +1549,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
         else
         {
             pcCU->setTransformSkipSubParts(0, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
+            // 不会进入
             //----- store original entropy coding status -----
             if (bCheckSplit)
             {
@@ -1555,12 +1559,13 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
             dSingleCost = 0.0;
             // 对亮度进行求残差/变换/量化
             xIntraCodingLumaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY);
+            // 不会进入
             if (bCheckSplit)
             {
                 uiSingleCbfY = pcCU->getCbf(uiAbsPartIdx, TEXT_LUMA, uiTrDepth);
             }
-            //----- code chroma blocks with given intra prediction mode and store Cbf-----
             // 完全不会进入这个分支
+            //----- code chroma blocks with given intra prediction mode and store Cbf-----
             if (!bLumaOnly)
             {
                 pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_U, uiAbsPartIdx, uiFullDepth);
@@ -1584,6 +1589,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
         }
     }
 
+    // 不会进入
     if (bCheckSplit)
     {
         // 分割成 4 个 TU, 递归编码
@@ -2392,12 +2398,11 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
     UInt uiDepth = pcCU->getDepth(0);
     // 当前 CU 的分割模式下, PU 的个数
     UInt uiNumPU = pcCU->getNumPartitions();
-    // 改逻辑 因为新分块模式看成不改变 CU 尺寸
+    // 改逻辑 因为新的 L 形分块模式看成不改变 CU 尺寸, 正常的四分不受影响
     // UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
     UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0;
     UInt uiWidth = pcCU->getWidth(0) >> uiInitTrDepth;
     UInt uiHeight = pcCU->getHeight(0) >> uiInitTrDepth;
-    // 当前处理大小下能放下几个最小 PU
     UInt uiQNumParts = pcCU->getTotalNumPart() >> 2;
     // 强制计算 35 个模式的 RDCost, 该参数用不上
     // UInt uiWidthBit = pcCU->getIntraSizeIdx(0);
@@ -2515,6 +2520,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             // set luma prediction mode
             UInt uiOrgMode = uiRdModeList[uiMode];
 
+            // 把当前处理的块所用的预测模式填写进存储模式的成员变量, 模式存储的格式是每 4x4 大小存放一个模式信息, 如果处理的是一个 32x32 块则需填充 64 个相同的模式
             pcCU->setLumaIntraDirSubParts(uiOrgMode, uiPartOffset, uiDepth + uiInitTrDepth);
 
             // set context models
@@ -2527,7 +2533,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 #if HHI_RQT_INTRA_SPEEDUP
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, true, dPUCost);
 #else
-            // 递归编码 intra CU, 包括变换量化等
+            // 递归编码 intra CU, 包括预测变换量化等
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
 #endif
 
@@ -2561,7 +2567,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                 dSecondBestPUCost = dPUCost;
             }
 #endif
-        } // Mode loop
+        } // 尝试完所有的模式, 选出了最优的模式
 
 #if HHI_RQT_INTRA_SPEEDUP
 #if HHI_RQT_INTRA_SPEEDUP_MOD
@@ -2614,9 +2620,10 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         } // Mode loop
 #endif
 
+        // 无损下没有失真, 根本不用算
         //--- update overall distortion ---
-        uiOverallDistY += uiBestPUDistY;
-        uiOverallDistC += uiBestPUDistC;
+        // uiOverallDistY += uiBestPUDistY;
+        // uiOverallDistC += uiBestPUDistC;
 
         //--- update transform index and cbf ---
         UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
@@ -2628,11 +2635,13 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, m_puhQTTempTransformSkipFlag[1], uiQPartNum * sizeof(UChar));
         ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, m_puhQTTempTransformSkipFlag[2], uiQPartNum * sizeof(UChar));
         //--- set reconstruction for next intra prediction blocks ---
+        // 对于 8x8 块向下分割成 4 个 4x4 的情况
         if (uiPU != uiNumPU - 1)
         {
             Bool bSkipChroma = false;
             Bool bChromaSame = false;
             UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> (pcCU->getDepth(0) + uiInitTrDepth)] + 2;
+            // 不会进入
             if (!bLumaOnly && uiLog2TrSize == 2)
             {
                 assert(uiInitTrDepth > 0);
@@ -2654,6 +2663,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                     piDes[uiX] = piSrc[uiX];
                 }
             }
+            // 不会进入
             if (!bLumaOnly && !bSkipChroma)
             {
                 if (!bChromaSame)
