@@ -337,6 +337,7 @@ UInt g_sigLastScanCG32x32[64];
 const UInt g_uiMinInGroup[10] = {0, 1, 2, 3, 4, 6, 8, 12, 16, 24};
 const UInt g_uiGroupIdx[32] = {0, 1, 2, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9};
 
+// 初始化系数扫描顺序矩阵
 Void initSigLastScan(UInt *pBuffD, UInt *pBuffH, UInt *pBuffV, Int iWidth, Int iHeight)
 {
     const UInt uiNumScanPos = UInt(iWidth * iWidth);
@@ -463,6 +464,10 @@ Void initSigLastScan(UInt *pBuffD, UInt *pBuffH, UInt *pBuffV, Int iWidth, Int i
             }
         }
     }
+
+    // 强制使扫描 32x32 块时的 4x4 块顺序也做成水平
+    for (UInt t = 0; t < 64; t++)
+        g_sigLastScanCG32x32[t] = t;
 }
 
 Int g_quantTSDefault4x4[16] =

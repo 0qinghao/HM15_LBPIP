@@ -30,6 +30,21 @@
                 "focus": true
             },
             "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "构建所有 debug",
+            "command": "make",
+            "args": [
+                "debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/linux"
+            },
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
         }
     ]
 }

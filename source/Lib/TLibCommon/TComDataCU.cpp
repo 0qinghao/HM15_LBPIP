@@ -662,6 +662,7 @@ Void TComDataCU::initCU(TComPic *pcPic, UInt iCUAddr)
 *- set qp value according to input qp 
 *- set last-coded qp value according to input last-coded qp 
 */
+// 初始化 TComDataCU 类中的各种成员变量
 Void TComDataCU::initEstData(UInt uiDepth, Int qp, Bool bTransquantBypass)
 {
     m_dTotalCost = MAX_DOUBLE;
@@ -3533,70 +3534,68 @@ Void TComDataCU::compressMV()
 
 UInt TComDataCU::getCoefScanIdx(UInt uiAbsPartIdx, UInt uiWidth, Bool bIsLuma, Bool bIsIntra)
 {
-    UInt uiCTXIdx;
-    UInt uiScanIdx;
-    UInt uiDirMode;
+    // UInt uiCTXIdx;
+    // UInt uiScanIdx;
+    // UInt uiDirMode;
+    // if (!bIsIntra)
+    // {
+    //     uiScanIdx = SCAN_DIAG;
+    //     return uiScanIdx;
+    // }
+    // switch (uiWidth)
+    // {
+    // case 2:
+    //     uiCTXIdx = 6;
+    //     break;
+    // case 4:
+    //     uiCTXIdx = 5;
+    //     break;
+    // case 8:
+    //     uiCTXIdx = 4;
+    //     break;
+    // case 16:
+    //     uiCTXIdx = 3;
+    //     break;
+    // case 32:
+    //     uiCTXIdx = 2;
+    //     break;
+    // case 64:
+    //     uiCTXIdx = 1;
+    //     break;
+    // default:
+    //     uiCTXIdx = 0;
+    //     break;
+    // }
+    // if (bIsLuma)
+    // {
+    //     uiDirMode = getLumaIntraDir(uiAbsPartIdx);
+    //     uiScanIdx = SCAN_DIAG;
+    //     if (uiCTXIdx > 3 && uiCTXIdx < 6) //if multiple scans supported for transform size
+    //     {
+    //         uiScanIdx = abs((Int)uiDirMode - VER_IDX) < 5 ? SCAN_HOR : (abs((Int)uiDirMode - HOR_IDX) < 5 ? SCAN_VER : SCAN_DIAG);
+    //     }
+    // }
+    // else
+    // {
+    //     uiDirMode = getChromaIntraDir(uiAbsPartIdx);
+    //     if (uiDirMode == DM_CHROMA_IDX)
+    //     {
+    //         // get number of partitions in current CU
+    //         UInt depth = getDepth(uiAbsPartIdx);
+    //         UInt numParts = getPic()->getNumPartInCU() >> (2 * depth);
+    //         // get luma mode from upper-left corner of current CU
+    //         uiDirMode = getLumaIntraDir((uiAbsPartIdx / numParts) * numParts);
+    //     }
+    //     uiScanIdx = SCAN_DIAG;
+    //     if (uiCTXIdx > 4 && uiCTXIdx < 7) //if multiple scans supported for transform size
+    //     {
+    //         uiScanIdx = abs((Int)uiDirMode - VER_IDX) < 5 ? SCAN_HOR : (abs((Int)uiDirMode - HOR_IDX) < 5 ? SCAN_VER : SCAN_DIAG);
+    //     }
+    // }
+    // return uiScanIdx;
 
-    if (!bIsIntra)
-    {
-        uiScanIdx = SCAN_DIAG;
-        return uiScanIdx;
-    }
-
-    switch (uiWidth)
-    {
-    case 2:
-        uiCTXIdx = 6;
-        break;
-    case 4:
-        uiCTXIdx = 5;
-        break;
-    case 8:
-        uiCTXIdx = 4;
-        break;
-    case 16:
-        uiCTXIdx = 3;
-        break;
-    case 32:
-        uiCTXIdx = 2;
-        break;
-    case 64:
-        uiCTXIdx = 1;
-        break;
-    default:
-        uiCTXIdx = 0;
-        break;
-    }
-
-    if (bIsLuma)
-    {
-        uiDirMode = getLumaIntraDir(uiAbsPartIdx);
-        uiScanIdx = SCAN_DIAG;
-        if (uiCTXIdx > 3 && uiCTXIdx < 6) //if multiple scans supported for transform size
-        {
-            uiScanIdx = abs((Int)uiDirMode - VER_IDX) < 5 ? SCAN_HOR : (abs((Int)uiDirMode - HOR_IDX) < 5 ? SCAN_VER : SCAN_DIAG);
-        }
-    }
-    else
-    {
-        uiDirMode = getChromaIntraDir(uiAbsPartIdx);
-        if (uiDirMode == DM_CHROMA_IDX)
-        {
-            // get number of partitions in current CU
-            UInt depth = getDepth(uiAbsPartIdx);
-            UInt numParts = getPic()->getNumPartInCU() >> (2 * depth);
-
-            // get luma mode from upper-left corner of current CU
-            uiDirMode = getLumaIntraDir((uiAbsPartIdx / numParts) * numParts);
-        }
-        uiScanIdx = SCAN_DIAG;
-        if (uiCTXIdx > 4 && uiCTXIdx < 7) //if multiple scans supported for transform size
-        {
-            uiScanIdx = abs((Int)uiDirMode - VER_IDX) < 5 ? SCAN_HOR : (abs((Int)uiDirMode - HOR_IDX) < 5 ? SCAN_VER : SCAN_DIAG);
-        }
-    }
-
-    return uiScanIdx;
+    // 强制令所有扫描方式为水平扫描, 方便处理新分块方法. 另外发现就算不用新分块方法, 全部用水平扫描在 HEVC 无损模式下反而能得到更好的结果
+    return SCAN_HOR;
 }
 
 UInt TComDataCU::getSCUAddr()

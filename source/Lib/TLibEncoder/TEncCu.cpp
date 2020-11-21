@@ -395,6 +395,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
     Bool earlyDetectionSkipMode = false;
 
     Bool bBoundary = false;
+    // X 水平坐标 Y 垂直坐标
     UInt uiLPelX = rpcBestCU->getCUPelX();
     UInt uiRPelX = uiLPelX + rpcBestCU->getWidth(0) - 1;
     UInt uiTPelY = rpcBestCU->getCUPelY();
@@ -865,7 +866,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
             {
                 rpcBestCU->getTotalCost() = rpcTempCU->getTotalCost() + 1;
             }
-            // 比较分割前和分割后哪个好
+            // xCheckBestMode 向上回归时判断 CU 分割前后哪个好 (8与16比 16与32比)
             xCheckBestMode(rpcBestCU, rpcTempCU, uiDepth); // RD compare current larger prediction
         }                                                  // with sub partitioned prediction.
     }
@@ -1415,6 +1416,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     m_pcEntropyCoder->encodeIPCMInfo(rpcTempCU, 0, true);
 
     // Encode Coefficients
+    // 编码系数(无损时编码残差)
     Bool bCodeDQP = getdQPFlag();
     m_pcEntropyCoder->encodeCoeff(rpcTempCU, 0, uiDepth, rpcTempCU->getWidth(0), rpcTempCU->getHeight(0), bCodeDQP);
     setdQPFlag(bCodeDQP);
@@ -1426,6 +1428,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion());
 
     xCheckDQP(rpcTempCU);
+    // xCheckBestMode 向下划分时, 比较对象是 DOUBLE_MAX, RD 必定更好, 存储上层的结果. 特殊的是 4与8 的比较也在此处实现
     xCheckBestMode(rpcBestCU, rpcTempCU, uiDepth);
 }
 
