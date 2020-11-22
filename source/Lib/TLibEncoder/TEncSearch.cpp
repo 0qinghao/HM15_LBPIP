@@ -1557,7 +1557,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
             }
             //----- code luma block with given intra prediction mode and store Cbf-----
             dSingleCost = 0.0;
-            // 对亮度进行求残差/变换/量化
+            // 对亮度进行预测/求残差/变换/量化
             xIntraCodingLumaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY);
             // 不会进入
             if (bCheckSplit)
