@@ -498,7 +498,8 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                 {
                     iQP = lowestQP;
                 }
-                rpcTempCU->initEstData(uiDepth, iQP, bIsLosslessMode);
+                // 既然不可能进入 inter modes, 自然不需要这一步初始化. 前面已经做过一次
+                // rpcTempCU->initEstData(uiDepth, iQP, bIsLosslessMode);
 
                 // do inter modes, NxN, 2NxN, and Nx2N
                 if (rpcBestCU->getSlice()->getSliceType() != I_SLICE)
@@ -668,6 +669,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     }
                 }
 
+                // 不尝试 PCM
                 // test PCM
                 if (pcPic->getSlice(0)->getSPS()->getUsePCM() && rpcTempCU->getWidth(0) <= (1 << pcPic->getSlice(0)->getSPS()->getPCMLog2MaxSize()) && rpcTempCU->getWidth(0) >= (1 << pcPic->getSlice(0)->getSPS()->getPCMLog2MinSize()))
                 {

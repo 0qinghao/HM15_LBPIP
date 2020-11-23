@@ -281,14 +281,24 @@ const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
         3  //  64x64
 };
 #else  // FAST_UDI_USE_MPM
+// 强制计算 35 种模式的 RD
+// const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
+//     {
+//         3, //   2x2
+//         9, //   4x4
+//         9, //   8x8
+//         4, //  16x16   33
+//         4, //  32x32   33
+//         5  //  64x64   33
+// };
 const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
     {
-        3, //   2x2
-        9, //   4x4
-        9, //   8x8
-        4, //  16x16   33
-        4, //  32x32   33
-        5  //  64x64   33
+        35, //   2x2
+        35, //   4x4
+        35, //   8x8
+        35, //  16x16   33
+        35, //  32x32   33
+        35  //  64x64   33
 };
 #endif // FAST_UDI_USE_MPM
 

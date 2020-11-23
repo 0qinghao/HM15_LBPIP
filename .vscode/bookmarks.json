@@ -3,27 +3,27 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncCu.cpp",
 		"bookmarks": [
 			{
-				"line": 657,
+				"line": 658,
 				"column": 25,
 				"label": ""
 			},
 			{
-				"line": 661,
+				"line": 662,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 868,
+				"line": 870,
 				"column": 61,
 				"label": ""
 			},
 			{
-				"line": 1419,
+				"line": 1421,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 1431,
+				"line": 1433,
 				"column": 82,
 				"label": ""
 			}
@@ -78,12 +78,12 @@
 				"label": ""
 			},
 			{
-				"line": 2400,
+				"line": 2761,
 				"column": 44,
 				"label": ""
 			},
 			{
-				"line": 2522,
+				"line": 2881,
 				"column": 98,
 				"label": ""
 			}
@@ -148,12 +148,12 @@
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComRom.cpp",
 		"bookmarks": [
 			{
-				"line": 339,
+				"line": 349,
 				"column": 13,
 				"label": ""
 			},
 			{
-				"line": 467,
+				"line": 477,
 				"column": 29,
 				"label": ""
 			}
