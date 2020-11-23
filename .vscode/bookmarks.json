@@ -1,0 +1,192 @@
+[
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncCu.cpp",
+		"bookmarks": [
+			{
+				"line": 657,
+				"column": 25,
+				"label": ""
+			},
+			{
+				"line": 661,
+				"column": 15,
+				"label": ""
+			},
+			{
+				"line": 868,
+				"column": 61,
+				"label": ""
+			},
+			{
+				"line": 1419,
+				"column": 17,
+				"label": ""
+			},
+			{
+				"line": 1431,
+				"column": 82,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncGOP.cpp",
+		"bookmarks": [
+			{
+				"line": 968,
+				"column": 17,
+				"label": ""
+			},
+			{
+				"line": 1035,
+				"column": 8,
+				"label": ""
+			},
+			{
+				"line": 1473,
+				"column": 34,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSlice.cpp",
+		"bookmarks": [
+			{
+				"line": 1009,
+				"column": 13,
+				"label": ""
+			},
+			{
+				"line": 1020,
+				"column": 26,
+				"label": ""
+			},
+			{
+				"line": 1332,
+				"column": 26,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
+		"bookmarks": [
+			{
+				"line": 1111,
+				"column": 15,
+				"label": ""
+			},
+			{
+				"line": 2400,
+				"column": 44,
+				"label": ""
+			},
+			{
+				"line": 2522,
+				"column": 98,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComPattern.cpp",
+		"bookmarks": [
+			{
+				"line": 48,
+				"column": 17,
+				"label": ""
+			},
+			{
+				"line": 186,
+				"column": 24,
+				"label": ""
+			},
+			{
+				"line": 617,
+				"column": 21,
+				"label": ""
+			},
+			{
+				"line": 624,
+				"column": 31,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComDataCU.cpp",
+		"bookmarks": [
+			{
+				"line": 3596,
+				"column": 14,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
+		"bookmarks": [
+			{
+				"line": 558,
+				"column": 22,
+				"label": ""
+			},
+			{
+				"line": 1012,
+				"column": 15,
+				"label": ""
+			},
+			{
+				"line": 1096,
+				"column": 16,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComRom.cpp",
+		"bookmarks": [
+			{
+				"line": 339,
+				"column": 13,
+				"label": ""
+			},
+			{
+				"line": 467,
+				"column": 29,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncEntropy.cpp",
+		"bookmarks": [
+			{
+				"line": 179,
+				"column": 17,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibCommon/TypeDef.h",
+		"bookmarks": [
+			{
+				"line": 376,
+				"column": 9,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibCommon/CommonDef.h",
+		"bookmarks": [
+			{
+				"line": 116,
+				"column": 45,
+				"label": ""
+			}
+		]
+	}
+]

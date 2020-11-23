@@ -1,7 +1,7 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
-# Created by https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
-# Edit at https://www.toptal.com/developers/gitignore?templates=xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
+# Created by https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c
+# Edit at https://www.toptal.com/developers/gitignore?templates=xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c
 
 ### C ###
 # Prerequisites
@@ -437,21 +437,6 @@ Backup of *.doc*
 # Visio autosave temporary files
 *.~vsd*
 
-### VisualStudioCode ###
-.vscode/*
-!.vscode/tasks.json
-!.vscode/launch.json
-*.code-workspace
-
-### VisualStudioCode Patch ###
-# Ignore all local history of files
-.history
-.ionide
-
-### vscode ###
-!.vscode/settings.json
-!.vscode/extensions.json
-
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -844,7 +829,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# End of https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
+# End of https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
@@ -854,4 +839,3 @@ MigrationBackup/
 *.pdf
 *.mat
 HEVC_test_sequence/
-!.vscode/bookmarks.json

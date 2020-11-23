@@ -1,7 +1,7 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
-# Created by https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
-# Edit at https://www.toptal.com/developers/gitignore?templates=xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
+# Created by https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,latex,cmake,c++,c,matlab
+# Edit at https://www.toptal.com/developers/gitignore?templates=xtext,xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,latex,cmake,c++,c,matlab
 
 ### C ###
 # Prerequisites
@@ -448,10 +448,6 @@ Backup of *.doc*
 .history
 .ionide
 
-### vscode ###
-!.vscode/settings.json
-!.vscode/extensions.json
-
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -478,9 +474,43 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+### Xcode ###
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
+xcuserdata/
+
+## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
+*.xcscmblueprint
+*.xccheckout
+
+## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
+build/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+## Gcc Patch
+/*.gcno
+
+### Xcode Patch ###
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+
 ### XcodeInjection ###
 # Code Injection
-#
 # After new code Injection tools there's a generated folder /iOSInjectionProject
 # https://github.com/johnno1962/injectionforxcode
 
@@ -844,7 +874,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# End of https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
+# End of https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,latex,cmake,c++,c,matlab
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
@@ -854,4 +884,5 @@ MigrationBackup/
 *.pdf
 *.mat
 HEVC_test_sequence/
-!.vscode/bookmarks.json
+!build/linux/
+
