@@ -1,7 +1,7 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
-# Created by https://www.toptal.com/developers/gitignore/api/xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,cmake,c++,c,latex,xtext
-# Edit at https://www.toptal.com/developers/gitignore?templates=xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,cmake,c++,c,latex,xtext
+# Created by https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,latex,cmake,c++,c,matlab
+# Edit at https://www.toptal.com/developers/gitignore?templates=xtext,xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,latex,cmake,c++,c,matlab
 
 ### C ###
 # Prerequisites
@@ -383,6 +383,39 @@ TSWLatexianTemp*
 # glossaries
 *.glstex
 
+### MATLAB ###
+# Windows default autosave extension
+*.asv
+
+# OSX / *nix default autosave extension
+*.m~
+
+# Compiled MEX binaries (all platforms)
+*.mex*
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Simulink code generation folders
+slprj/
+sccprj/
+
+# Matlab code generation folders
+codegen/
+
+# Simulink autosave extension
+*.autosave
+
+# Simulink cache files
+*.slxc
+
+# Octave session info
+octave-workspace
+
 ### MicrosoftOffice ###
 *.tmp
 
@@ -406,10 +439,8 @@ Backup of *.doc*
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/extensions.json
 *.code-workspace
 
 ### VisualStudioCode Patch ###
@@ -843,7 +874,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# End of https://www.toptal.com/developers/gitignore/api/xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,cmake,c++,c,latex,xtext
+# End of https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,xcode,windows,visualstudiocode,visualstudio,microsoftoffice,latex,cmake,c++,c,matlab
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
@@ -851,3 +882,4 @@ MigrationBackup/
 *.bin
 *.srt
 *.pdf
+*.mat
