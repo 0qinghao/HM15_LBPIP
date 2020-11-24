@@ -66,7 +66,9 @@ Void TEncBinCABAC::uninit()
 
 Void TEncBinCABAC::start()
 {
+    // 下限 (二值化的时候)
     m_uiLow = 0;
+    // 范围
     m_uiRange = 510;
     m_bitsLeft = 23;
     m_numBufferedBytes = 0;
@@ -179,31 +181,48 @@ UInt TEncBinCABAC::getNumWrittenBits()
  * \param binValue   bin value
  * \param rcCtxModel context model
  */
+// cabac 熵编码的核心, 编码一个比特位
+// 1 把该比特对应的上下文模型设置为已经编码
+// 2 计算 LPS
+// 3 计算新的范围
+// 4 根据比特值和 MPS 是否相等, 来更新上下文模式
 Void TEncBinCABAC::encodeBin(UInt binValue, ContextModel &rcCtxModel)
 {
-    {
-        DTRACE_CABAC_VL(g_nSymbolCounter++)
-            DTRACE_CABAC_T("\tstate=")
-                DTRACE_CABAC_V((rcCtxModel.getState() << 1) + rcCtxModel.getMps())
-                    DTRACE_CABAC_T("\tsymbol=")
-                        DTRACE_CABAC_V(binValue)
-                            DTRACE_CABAC_T("\n")} m_uiBinsCoded += m_binCountIncrement;
+    // {
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tstate=")
+    //DTRACE_CABAC_V((rcCtxModel.getState() << 1) + rcCtxModel.getMps())
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(binValue)
+    //DTRACE_CABAC_T("\n")};
+    m_uiBinsCoded += m_binCountIncrement;
+    // 设置已经编码的标志
     rcCtxModel.setBinsCoded(1);
 
+    // LPS
     UInt uiLPS = TComCABACTables::sm_aucLPSTable[rcCtxModel.getState()][(m_uiRange >> 6) & 3];
+    // range
     m_uiRange -= uiLPS;
 
+    // 判断 binValue 是否等于 MPS
     if (binValue != rcCtxModel.getMps())
+    // binValue != MPS, 概率索引值将减小, 即 LPS 的概率增大
     {
+        // RenormE
         Int numBits = TComCABACTables::sm_aucRenormTable[uiLPS >> 3];
+        // codILow = codILow + codIRange
         m_uiLow = (m_uiLow + m_uiRange) << numBits;
+        // codIRange = codIrangeLPS
         m_uiRange = uiLPS << numBits;
+        // 更新 LPS
         rcCtxModel.updateLPS();
 
         m_bitsLeft -= numBits;
     }
+    // binValue == MPS, 概率索引值将增大, 即 LPS 的概率减小
     else
     {
+        // 更新 MPS
         rcCtxModel.updateMPS();
         if (m_uiRange >= 256)
         {
@@ -215,6 +234,7 @@ Void TEncBinCABAC::encodeBin(UInt binValue, ContextModel &rcCtxModel)
         m_bitsLeft--;
     }
 
+    // 尝试写到比特流中, 先判断缓冲区中的空闲空间是否足够, 不足的话就写到比特流中, 腾出空间
     testAndWriteOut();
 }
 
@@ -223,13 +243,16 @@ Void TEncBinCABAC::encodeBin(UInt binValue, ContextModel &rcCtxModel)
  *
  * \param binValue bin value
  */
+// 等概率编码 不是 CABAC 编码
+// 某些特殊的地方会用到
 Void TEncBinCABAC::encodeBinEP(UInt binValue)
 {
-    {
-        DTRACE_CABAC_VL(g_nSymbolCounter++)
-            DTRACE_CABAC_T("\tEPsymbol=")
-                DTRACE_CABAC_V(binValue)
-                    DTRACE_CABAC_T("\n")} m_uiBinsCoded += m_binCountIncrement;
+    // {
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tEPsymbol=")
+    //DTRACE_CABAC_V(binValue)
+    //DTRACE_CABAC_T("\n")};
+    m_uiBinsCoded += m_binCountIncrement;
     m_uiLow <<= 1;
     if (binValue)
     {
@@ -252,10 +275,10 @@ Void TEncBinCABAC::encodeBinsEP(UInt binValues, Int numBins)
 
     for (Int i = 0; i < numBins; i++)
     {
-        DTRACE_CABAC_VL(g_nSymbolCounter++)
-        DTRACE_CABAC_T("\tEPsymbol=")
-        DTRACE_CABAC_V((binValues >> (numBins - 1 - i)) & 1)
-        DTRACE_CABAC_T("\n")
+        //DTRACE_CABAC_VL(g_nSymbolCounter++)
+        //DTRACE_CABAC_T("\tEPsymbol=")
+        //DTRACE_CABAC_V((binValues >> (numBins - 1 - i)) & 1)
+        //DTRACE_CABAC_T("\n")
     }
 
     while (numBins > 8)

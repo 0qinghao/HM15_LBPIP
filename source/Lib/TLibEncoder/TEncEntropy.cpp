@@ -317,14 +317,14 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
     else
     {
         {
-            DTRACE_CABAC_VL(g_nSymbolCounter++);
-            DTRACE_CABAC_T("\tTrIdx: abspart=");
-            DTRACE_CABAC_V(uiAbsPartIdx);
-            DTRACE_CABAC_T("\tdepth=");
-            DTRACE_CABAC_V(uiDepth);
-            DTRACE_CABAC_T("\ttrdepth=");
-            DTRACE_CABAC_V(pcCU->getTransformIdx(uiAbsPartIdx));
-            DTRACE_CABAC_T("\n");
+            //DTRACE_CABAC_VL(g_nSymbolCounter++);
+            //DTRACE_CABAC_T("\tTrIdx: abspart=");
+            //DTRACE_CABAC_V(uiAbsPartIdx);
+            //DTRACE_CABAC_T("\tdepth=");
+            //DTRACE_CABAC_V(uiDepth);
+            //DTRACE_CABAC_T("\ttrdepth=");
+            //DTRACE_CABAC_V(pcCU->getTransformIdx(uiAbsPartIdx));
+            //DTRACE_CABAC_T("\n");
         }
 
         if (pcCU->getPredictionMode(uiAbsPartIdx) != MODE_INTRA && uiDepth == pcCU->getDepth(uiAbsPartIdx) && !pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_U, 0) && !pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, 0))
@@ -584,10 +584,10 @@ Void TEncEntropy::encodeCoeff(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth,
 
     if (pcCU->isIntra(uiAbsPartIdx))
     {
-        DTRACE_CABAC_VL(g_nSymbolCounter++)
-        DTRACE_CABAC_T("\tdecodeTransformIdx()\tCUDepth=")
-        DTRACE_CABAC_V(uiDepth)
-        DTRACE_CABAC_T("\n")
+        //DTRACE_CABAC_VL(g_nSymbolCounter++)
+        //DTRACE_CABAC_T("\tdecodeTransformIdx()\tCUDepth=")
+        //DTRACE_CABAC_V(uiDepth)
+        //DTRACE_CABAC_T("\n")
     }
     else
     {

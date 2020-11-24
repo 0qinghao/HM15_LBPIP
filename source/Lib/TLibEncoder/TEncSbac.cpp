@@ -50,6 +50,7 @@
 
 TEncSbac::TEncSbac()
     // new structure here
+    // TEncSbac的构造函数调用的都是ContextModel3DBuffer的构造函数
     : m_pcBitIf(NULL), m_pcSlice(NULL), m_pcBinIf(NULL), m_uiCoeffCost(0), m_numContextModels(0), m_cCUSplitFlagSCModel(1, 1, NUM_SPLIT_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSkipFlagSCModel(1, 1, NUM_SKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeFlagExtSCModel(1, 1, NUM_MERGE_FLAG_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeIdxExtSCModel(1, 1, NUM_MERGE_IDX_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPartSizeSCModel(1, 1, NUM_PART_SIZE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPredModeSCModel(1, 1, NUM_PRED_MODE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUIntraPredSCModel(1, 1, NUM_ADI_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUChromaPredSCModel(1, 1, NUM_CHROMA_PRED_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUDeltaQpSCModel(1, 1, NUM_DELTA_QP_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUInterDirSCModel(1, 1, NUM_INTER_DIR_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCURefPicSCModel(1, 1, NUM_REF_NO_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMvdSCModel(1, 1, NUM_MV_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtCbfSCModel(1, 2, NUM_QT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUTransSubdivFlagSCModel(1, 1, NUM_TRANS_SUBDIV_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtRootCbfSCModel(1, 1, NUM_QT_ROOT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigCoeffGroupSCModel(1, 2, NUM_SIG_CG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigSCModel(1, 1, NUM_SIG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastX(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastY(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCUOneSCModel(1, 1, NUM_ONE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUAbsSCModel(1, 1, NUM_ABS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cMVPIdxSCModel(1, 1, NUM_MVP_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoMergeSCModel(1, 1, NUM_SAO_MERGE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoTypeIdxSCModel(1, 1, NUM_SAO_TYPE_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cTransformSkipSCModel(1, 2, NUM_TRANSFORMSKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_CUTransquantBypassFlagSCModel(1, 1, NUM_CU_TRANSQUANT_BYPASS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels)
 {
     assert(m_numContextModels <= MAX_NUM_CTX_MOD);
@@ -73,37 +74,56 @@ Void TEncSbac::resetEntropy()
     {
         eSliceType = (SliceType)encCABACTableIdx;
     }
+    // 初始化各个模型的缓存
 
+    // split 标志的上下文
     m_cCUSplitFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SPLIT_FLAG);
-
+    // skip 标志
     m_cCUSkipFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SKIP_FLAG);
+    // merge 标志
     m_cCUMergeFlagExtSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MERGE_FLAG_EXT);
+    // merge 索引
     m_cCUMergeIdxExtSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MERGE_IDX_EXT);
+    // partsize
     m_cCUPartSizeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PART_SIZE);
+    // 模式(帧内还是帧间)
     m_cCUPredModeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_MODE);
+    // 帧内预测角度
     m_cCUIntraPredSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_INTRA_PRED_MODE);
+    // 帧内色差预测角度
     m_cCUChromaPredSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_CHROMA_PRED_MODE);
     m_cCUInterDirSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_INTER_DIR);
     m_cCUMvdSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MVD);
     m_cCURefPicSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_REF_PIC);
+    // 量化步长
     m_cCUDeltaQpSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_DQP);
+    // cbf
     m_cCUQtCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_CBF);
+    // 四叉树根的 cbf
     m_cCUQtRootCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_ROOT_CBF);
+    // 系数符号
     m_cCUSigCoeffGroupSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_CG_FLAG);
+    // 符号
     m_cCUSigSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_FLAG);
+    // 最后一个X
     m_cCuCtxLastX.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
+    // 最后一个Y
     m_cCuCtxLastY.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
     m_cCUOneSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_ONE_FLAG);
     m_cCUAbsSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_ABS_FLAG);
     m_cMVPIdxSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MVP_IDX);
+    // TU 划分标志
     m_cCUTransSubdivFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_TRANS_SUBDIV_FLAG);
     m_cSaoMergeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SAO_MERGE_FLAG);
     m_cSaoTypeIdxSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SAO_TYPE_IDX);
+    // 变换skip
     m_cTransformSkipSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_TRANSFORMSKIP_FLAG);
+    // 变换量化bypass
     m_CUTransquantBypassFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_CU_TRANSQUANT_BYPASS_FLAG);
     // new structure
     m_uiLastQp = iQp;
 
+    // 二值化的一些操作
     m_pcBinIf->start();
 
     return;
@@ -462,6 +482,7 @@ Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
  * \param uiAbsPartIdx  
  * \returns Void
  */
+// 编码预测模式(帧内还是帧间)
 Void TEncSbac::codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     // get context function is here
@@ -486,13 +507,13 @@ Void TEncSbac::codeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
     UInt uiSymbol = pcCU->isSkipped(uiAbsPartIdx) ? 1 : 0;
     UInt uiCtxSkip = pcCU->getCtxSkipFlag(uiAbsPartIdx);
     m_pcBinIf->encodeBin(uiSymbol, m_cCUSkipFlagSCModel.get(0, 0, uiCtxSkip));
-    DTRACE_CABAC_VL(g_nSymbolCounter++);
-    DTRACE_CABAC_T("\tSkipFlag");
-    DTRACE_CABAC_T("\tuiCtxSkip: ");
-    DTRACE_CABAC_V(uiCtxSkip);
-    DTRACE_CABAC_T("\tuiSymbol: ");
-    DTRACE_CABAC_V(uiSymbol);
-    DTRACE_CABAC_T("\n");
+    //DTRACE_CABAC_VL(g_nSymbolCounter++);
+    //DTRACE_CABAC_T("\tSkipFlag");
+    //DTRACE_CABAC_T("\tuiCtxSkip: ");
+    //DTRACE_CABAC_V(uiCtxSkip);
+    //DTRACE_CABAC_T("\tuiSymbol: ");
+    //DTRACE_CABAC_V(uiSymbol);
+    //DTRACE_CABAC_T("\n");
 }
 
 /** code merge flag
@@ -505,14 +526,14 @@ Void TEncSbac::codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
     const UInt uiSymbol = pcCU->getMergeFlag(uiAbsPartIdx) ? 1 : 0;
     m_pcBinIf->encodeBin(uiSymbol, *m_cCUMergeFlagExtSCModel.get(0));
 
-    DTRACE_CABAC_VL(g_nSymbolCounter++);
-    DTRACE_CABAC_T("\tMergeFlag: ");
-    DTRACE_CABAC_V(uiSymbol);
-    DTRACE_CABAC_T("\tAddress: ");
-    DTRACE_CABAC_V(pcCU->getAddr());
-    DTRACE_CABAC_T("\tuiAbsPartIdx: ");
-    DTRACE_CABAC_V(uiAbsPartIdx);
-    DTRACE_CABAC_T("\n");
+    //DTRACE_CABAC_VL(g_nSymbolCounter++);
+    //DTRACE_CABAC_T("\tMergeFlag: ");
+    //DTRACE_CABAC_V(uiSymbol);
+    //DTRACE_CABAC_T("\tAddress: ");
+    //DTRACE_CABAC_V(pcCU->getAddr());
+    //DTRACE_CABAC_T("\tuiAbsPartIdx: ");
+    //DTRACE_CABAC_V(uiAbsPartIdx);
+    //DTRACE_CABAC_T("\n");
 }
 
 /** code merge index
@@ -543,11 +564,11 @@ Void TEncSbac::codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx)
             }
         }
     }
-    DTRACE_CABAC_VL(g_nSymbolCounter++);
-    DTRACE_CABAC_T("\tparseMergeIndex()");
-    DTRACE_CABAC_T("\tuiMRGIdx= ");
-    DTRACE_CABAC_V(pcCU->getMergeIndex(uiAbsPartIdx));
-    DTRACE_CABAC_T("\n");
+    //DTRACE_CABAC_VL(g_nSymbolCounter++);
+    //DTRACE_CABAC_T("\tparseMergeIndex()");
+    //DTRACE_CABAC_T("\tuiMRGIdx= ");
+    //DTRACE_CABAC_V(pcCU->getMergeIndex(uiAbsPartIdx));
+    //DTRACE_CABAC_T("\n");
 }
 
 Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
@@ -561,21 +582,21 @@ Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
     assert(uiCtx < 3);
     m_pcBinIf->encodeBin(uiCurrSplitFlag, m_cCUSplitFlagSCModel.get(0, 0, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tSplitFlag\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tSplitFlag\n")
     return;
 }
 
 Void TEncSbac::codeTransformSubdivFlag(UInt uiSymbol, UInt uiCtx)
 {
     m_pcBinIf->encodeBin(uiSymbol, m_cCUTransSubdivFlagSCModel.get(0, 0, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseTransformSubdivFlag()")
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(uiSymbol)
-    DTRACE_CABAC_T("\tctx=")
-    DTRACE_CABAC_V(uiCtx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseTransformSubdivFlag()")
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(uiSymbol)
+    //DTRACE_CABAC_T("\tctx=")
+    //DTRACE_CABAC_V(uiCtx)
+    //DTRACE_CABAC_T("\n")
 }
 
 Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple)
@@ -793,17 +814,17 @@ Void TEncSbac::codeQtCbf(TComDataCU *pcCU, UInt uiAbsPartIdx, TextType eType, UI
     UInt uiCbf = pcCU->getCbf(uiAbsPartIdx, eType, uiTrDepth);
     UInt uiCtx = pcCU->getCtxQtCbf(eType, uiTrDepth);
     m_pcBinIf->encodeBin(uiCbf, m_cCUQtCbfSCModel.get(0, eType ? TEXT_CHROMA : eType, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseQtCbf()")
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(uiCbf)
-    DTRACE_CABAC_T("\tctx=")
-    DTRACE_CABAC_V(uiCtx)
-    DTRACE_CABAC_T("\tetype=")
-    DTRACE_CABAC_V(eType)
-    DTRACE_CABAC_T("\tuiAbsPartIdx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseQtCbf()")
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(uiCbf)
+    //DTRACE_CABAC_T("\tctx=")
+    //DTRACE_CABAC_V(uiCtx)
+    //DTRACE_CABAC_T("\tetype=")
+    //DTRACE_CABAC_V(eType)
+    //DTRACE_CABAC_T("\tuiAbsPartIdx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\n")
 }
 
 void TEncSbac::codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt width, UInt height, TextType eTType)
@@ -819,17 +840,17 @@ void TEncSbac::codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt 
 
     UInt useTransformSkip = pcCU->getTransformSkip(uiAbsPartIdx, eTType);
     m_pcBinIf->encodeBin(useTransformSkip, m_cTransformSkipSCModel.get(0, eTType ? TEXT_CHROMA : TEXT_LUMA, 0));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseTransformSkip()");
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(useTransformSkip)
-    DTRACE_CABAC_T("\tAddr=")
-    DTRACE_CABAC_V(pcCU->getAddr())
-    DTRACE_CABAC_T("\tetype=")
-    DTRACE_CABAC_V(eTType)
-    DTRACE_CABAC_T("\tuiAbsPartIdx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseTransformSkip()");
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(useTransformSkip)
+    //DTRACE_CABAC_T("\tAddr=")
+    //DTRACE_CABAC_V(pcCU->getAddr())
+    //DTRACE_CABAC_T("\tetype=")
+    //DTRACE_CABAC_V(eTType)
+    //DTRACE_CABAC_T("\tuiAbsPartIdx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\n")
 }
 
 /** Code I_PCM information.
@@ -914,15 +935,15 @@ Void TEncSbac::codeQtRootCbf(TComDataCU *pcCU, UInt uiAbsPartIdx)
     UInt uiCbf = pcCU->getQtRootCbf(uiAbsPartIdx);
     UInt uiCtx = 0;
     m_pcBinIf->encodeBin(uiCbf, m_cCUQtRootCbfSCModel.get(0, 0, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseQtRootCbf()")
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(uiCbf)
-    DTRACE_CABAC_T("\tctx=")
-    DTRACE_CABAC_V(uiCtx)
-    DTRACE_CABAC_T("\tuiAbsPartIdx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseQtRootCbf()")
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(uiCbf)
+    //DTRACE_CABAC_T("\tctx=")
+    //DTRACE_CABAC_V(uiCtx)
+    //DTRACE_CABAC_T("\tuiAbsPartIdx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\n")
 }
 
 Void TEncSbac::codeQtCbfZero(TComDataCU *pcCU, TextType eType, UInt uiTrDepth)
@@ -1013,30 +1034,30 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
 // 真正编码系数(残差)的过程
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
-    DTRACE_CABAC_V(eTType)
-    DTRACE_CABAC_T("\twidth=")
-    DTRACE_CABAC_V(uiWidth)
-    DTRACE_CABAC_T("\theight=")
-    DTRACE_CABAC_V(uiHeight)
-    DTRACE_CABAC_T("\tdepth=")
-    DTRACE_CABAC_V(uiDepth)
-    DTRACE_CABAC_T("\tabspartidx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\ttoCU-X=")
-    DTRACE_CABAC_V(pcCU->getCUPelX())
-    DTRACE_CABAC_T("\ttoCU-Y=")
-    DTRACE_CABAC_V(pcCU->getCUPelY())
-    DTRACE_CABAC_T("\tCU-addr=")
-    DTRACE_CABAC_V(pcCU->getAddr())
-    DTRACE_CABAC_T("\tinCU-X=")
-    DTRACE_CABAC_V(g_auiRasterToPelX[g_auiZscanToRaster[uiAbsPartIdx]])
-    DTRACE_CABAC_T("\tinCU-Y=")
-    DTRACE_CABAC_V(g_auiRasterToPelY[g_auiZscanToRaster[uiAbsPartIdx]])
-    DTRACE_CABAC_T("\tpredmode=")
-    DTRACE_CABAC_V(pcCU->getPredictionMode(uiAbsPartIdx))
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
+    //DTRACE_CABAC_V(eTType)
+    //DTRACE_CABAC_T("\twidth=")
+    //DTRACE_CABAC_V(uiWidth)
+    //DTRACE_CABAC_T("\theight=")
+    //DTRACE_CABAC_V(uiHeight)
+    //DTRACE_CABAC_T("\tdepth=")
+    //DTRACE_CABAC_V(uiDepth)
+    //DTRACE_CABAC_T("\tabspartidx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\ttoCU-X=")
+    //DTRACE_CABAC_V(pcCU->getCUPelX())
+    //DTRACE_CABAC_T("\ttoCU-Y=")
+    //DTRACE_CABAC_V(pcCU->getCUPelY())
+    //DTRACE_CABAC_T("\tCU-addr=")
+    //DTRACE_CABAC_V(pcCU->getAddr())
+    //DTRACE_CABAC_T("\tinCU-X=")
+    //DTRACE_CABAC_V(g_auiRasterToPelX[g_auiZscanToRaster[uiAbsPartIdx]])
+    //DTRACE_CABAC_T("\tinCU-Y=")
+    //DTRACE_CABAC_V(g_auiRasterToPelY[g_auiZscanToRaster[uiAbsPartIdx]])
+    //DTRACE_CABAC_T("\tpredmode=")
+    //DTRACE_CABAC_V(pcCU->getPredictionMode(uiAbsPartIdx))
+    //DTRACE_CABAC_T("\n")
 
     if (uiWidth > m_pcSlice->getSPS()->getMaxTrSize())
     {

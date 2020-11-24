@@ -128,17 +128,22 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
 		"bookmarks": [
 			{
-				"line": 558,
-				"column": 22,
-				"label": ""
-			},
-			{
-				"line": 1012,
+				"line": 484,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 1096,
+				"line": 579,
+				"column": 22,
+				"label": ""
+			},
+			{
+				"line": 1033,
+				"column": 15,
+				"label": ""
+			},
+			{
+				"line": 1117,
 				"column": 16,
 				"label": ""
 			}
@@ -185,6 +190,26 @@
 			{
 				"line": 116,
 				"column": 45,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibCommon/ContextTables.h",
+		"bookmarks": [
+			{
+				"line": 48,
+				"column": 11,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibCommon/ContextModel3DBuffer.cpp",
+		"bookmarks": [
+			{
+				"line": 46,
+				"column": 65,
 				"label": ""
 			}
 		]
