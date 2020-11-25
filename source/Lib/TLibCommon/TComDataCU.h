@@ -77,10 +77,11 @@ private:
     // CU description
     // -------------------------------------------------------------------------------------------------------------------
 
-    UInt m_uiCUAddr;       ///< CU address in a slice
-    UInt m_uiAbsIdxInLCU;  ///< absolute address in a CU. It's Z scan order
-    UInt m_uiCUPelX;       ///< CU position in a pixel (X)
-    UInt m_uiCUPelY;       ///< CU position in a pixel (Y)
+    UInt m_uiCUAddr;      ///< CU address in a slice
+    UInt m_uiAbsIdxInLCU; ///< absolute address in a CU. It's Z scan order
+    UInt m_uiCUPelX;      ///< CU position in a pixel (X)
+    UInt m_uiCUPelY;      ///< CU position in a pixel (Y)
+    // 当前 CU 中有多少个 4x4 块
     UInt m_uiNumPartition; ///< total number of minimum partitions in a CU
     UChar *m_puhWidth;     ///< array of widths
     UChar *m_puhHeight;    ///< array of heights

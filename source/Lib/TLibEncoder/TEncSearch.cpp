@@ -1723,364 +1723,48 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
 }
 
 // L-based 模式下编码计算 RDcost
-Void TEncSearch::xRecurIntraCodingQTnp(TComDataCU *pcCU,
-                                       UInt uiTrDepth,
-                                       UInt uiAbsPartIdx,
-                                       Bool bLumaOnly,
-                                       TComYuv *pcOrgYuv,
-                                       TComYuv *pcPredYuv,
-                                       TComYuv *pcResiYuv,
-                                       UInt &ruiDistY,
-                                       UInt &ruiDistC,
-                                       Double &dRDCost)
+Void TEncSearch::xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110)
 {
-    UInt uiFullDepth = pcCU->getDepth(0) + uiTrDepth;
-    UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> uiFullDepth] + 2;
-    // 是否计算 按照整个模式 (不分 TU) 进行变换和量化 的结果. 64x64 层不会进行这个尝试
-    Bool bCheckFull = (uiLog2TrSize <= pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize());
-    // 是否计算 按照分 4 个 TU 进行变换和量化 的结果. 配置文件配置成只检查 64x64 分 TU
-    Bool bCheckSplit = (uiLog2TrSize > pcCU->getQuadtreeTULog2MinSizeInCU(uiAbsPartIdx));
+    UInt cnt4x4perline = uiWidth >> 2;
+    UInt cnt4x4halfline = cnt4x4perline >> 1;
+    UInt uiBitsSumLT = 0;
+    UInt uiBitsSumRT = 0;
+    UInt uiBitsSumLB = 0;
+    UInt uiBitsSumRB = 0;
 
-#if HHI_RQT_INTRA_SPEEDUP
-    Int maxTuSize = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize();
-    Int isIntraSlice = (pcCU->getSlice()->getSliceType() == I_SLICE);
-    // don't check split if TU size is less or equal to max TU size
-    Bool noSplitIntraMaxTuSize = bCheckFull;
-    if (m_pcEncCfg->getRDpenalty() && !isIntraSlice)
+    for (UInt i = 0; i < cnt4x4halfline; i++)
     {
-        // in addition don't check split if TU size is less or equal to 16x16 TU size for non-intra slice
-        noSplitIntraMaxTuSize = (uiLog2TrSize <= min(maxTuSize, 4));
-
-        // if maximum RD-penalty don't check TU size 32x32
-        if (m_pcEncCfg->getRDpenalty() == 2)
+        for (UInt j = 0; j < cnt4x4halfline; j++)
         {
-            bCheckFull = (uiLog2TrSize <= min(maxTuSize, 4));
+            uiBitsSumLT += pcCU->uiBitsPer4x4[i][j];
         }
     }
-    if (bCheckFirst && noSplitIntraMaxTuSize)
+    for (UInt i = 0; i < cnt4x4halfline; i++)
     {
-        bCheckSplit = false;
-    }
-#else
-    Int maxTuSize = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize();
-    Int isIntraSlice = (pcCU->getSlice()->getSliceType() == I_SLICE);
-    // 不会进入
-    // if maximum RD-penalty don't check TU size 32x32
-    if ((m_pcEncCfg->getRDpenalty() == 2) && !isIntraSlice)
-    {
-        bCheckFull = (uiLog2TrSize <= min(maxTuSize, 4));
-    }
-#endif
-    Double dSingleCost = MAX_DOUBLE;
-    UInt uiSingleDistY = 0;
-    UInt uiSingleDistC = 0;
-    UInt uiSingleCbfY = 0;
-    UInt uiSingleCbfU = 0;
-    UInt uiSingleCbfV = 0;
-    Bool checkTransformSkip = pcCU->getSlice()->getPPS()->getUseTransformSkip();
-    UInt widthTransformSkip = pcCU->getWidth(0) >> uiTrDepth;
-    UInt heightTransformSkip = pcCU->getHeight(0) >> uiTrDepth;
-    Int bestModeId = 0;
-    Int bestModeIdUV[2] = {0, 0};
-    checkTransformSkip &= (widthTransformSkip == 4 && heightTransformSkip == 4);
-    checkTransformSkip &= (!pcCU->getCUTransquantBypass(0));
-    // 不会进入
-    if (m_pcEncCfg->getUseTransformSkipFast())
-    {
-        checkTransformSkip &= (pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN);
-    }
-    if (bCheckFull)
-    // 按照不划分 TU 的形式整个进行变换量化
-    {
-        // 不会进入
-        if (checkTransformSkip == true)
+        for (UInt j = cnt4x4halfline; j < cnt4x4perline; j++)
         {
-            //----- store original entropy coding status -----
-            m_pcRDGoOnSbacCoder->store(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_ROOT]);
-
-            UInt singleDistYTmp = 0;
-            UInt singleDistCTmp = 0;
-            UInt singleCbfYTmp = 0;
-            UInt singleCbfUTmp = 0;
-            UInt singleCbfVTmp = 0;
-            Double singleCostTmp = 0;
-            Int default0Save1Load2 = 0;
-            Int firstCheckId = 0;
-
-            UInt uiQPDiv = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + (uiTrDepth - 1)) << 1);
-            Bool bFirstQ = ((uiAbsPartIdx % uiQPDiv) == 0);
-
-            for (Int modeId = firstCheckId; modeId < 2; modeId++)
-            {
-                singleDistYTmp = 0;
-                singleDistCTmp = 0;
-                pcCU->setTransformSkipSubParts(modeId, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
-                if (modeId == firstCheckId)
-                {
-                    default0Save1Load2 = 1;
-                }
-                else
-                {
-                    default0Save1Load2 = 2;
-                }
-                //----- code luma block with given intra prediction mode and store Cbf-----
-                xIntraCodingLumaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, singleDistYTmp, default0Save1Load2);
-                singleCbfYTmp = pcCU->getCbf(uiAbsPartIdx, TEXT_LUMA, uiTrDepth);
-                //----- code chroma blocks with given intra prediction mode and store Cbf-----
-                if (!bLumaOnly)
-                {
-                    if (bFirstQ)
-                    {
-                        pcCU->setTransformSkipSubParts(modeId, TEXT_CHROMA_U, uiAbsPartIdx, uiFullDepth);
-                        pcCU->setTransformSkipSubParts(modeId, TEXT_CHROMA_V, uiAbsPartIdx, uiFullDepth);
-                    }
-                    xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, singleDistCTmp, 0, default0Save1Load2);
-                    xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, singleDistCTmp, 1, default0Save1Load2);
-                    singleCbfUTmp = pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth);
-                    singleCbfVTmp = pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
-                }
-                //----- determine rate and r-d cost -----
-                if (modeId == 1 && singleCbfYTmp == 0)
-                {
-                    //In order not to code TS flag when cbf is zero, the case for TS with cbf being zero is forbidden.
-                    singleCostTmp = MAX_DOUBLE;
-                }
-                else
-                {
-                    UInt uiSingleBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
-                    singleCostTmp = m_pcRdCost->calcRdCost(uiSingleBits, singleDistYTmp + singleDistCTmp);
-                }
-
-                if (singleCostTmp < dSingleCost)
-                {
-                    dSingleCost = singleCostTmp;
-                    uiSingleDistY = singleDistYTmp;
-                    uiSingleDistC = singleDistCTmp;
-                    uiSingleCbfY = singleCbfYTmp;
-                    uiSingleCbfU = singleCbfUTmp;
-                    uiSingleCbfV = singleCbfVTmp;
-                    bestModeId = modeId;
-                    if (bestModeId == firstCheckId)
-                    {
-                        xStoreIntraResultQT(pcCU, uiTrDepth, uiAbsPartIdx, bLumaOnly);
-                        m_pcRDGoOnSbacCoder->store(m_pppcRDSbacCoder[uiFullDepth][CI_TEMP_BEST]);
-                    }
-                }
-                if (modeId == firstCheckId)
-                {
-                    m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_ROOT]);
-                }
-            }
-
-            pcCU->setTransformSkipSubParts(bestModeId, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
-
-            if (bestModeId == firstCheckId)
-            {
-                xLoadIntraResultQT(pcCU, uiTrDepth, uiAbsPartIdx, bLumaOnly);
-                pcCU->setCbfSubParts(uiSingleCbfY << uiTrDepth, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
-                if (!bLumaOnly)
-                {
-                    if (bFirstQ)
-                    {
-                        pcCU->setCbfSubParts(uiSingleCbfU << uiTrDepth, TEXT_CHROMA_U, uiAbsPartIdx, pcCU->getDepth(0) + uiTrDepth - 1);
-                        pcCU->setCbfSubParts(uiSingleCbfV << uiTrDepth, TEXT_CHROMA_V, uiAbsPartIdx, pcCU->getDepth(0) + uiTrDepth - 1);
-                    }
-                }
-                m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiFullDepth][CI_TEMP_BEST]);
-            }
-
-            if (!bLumaOnly)
-            {
-                bestModeIdUV[0] = bestModeIdUV[1] = bestModeId;
-                if (bFirstQ && bestModeId == 1)
-                {
-                    //In order not to code TS flag when cbf is zero, the case for TS with cbf being zero is forbidden.
-                    if (uiSingleCbfU == 0)
-                    {
-                        pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_U, uiAbsPartIdx, uiFullDepth);
-                        bestModeIdUV[0] = 0;
-                    }
-                    if (uiSingleCbfV == 0)
-                    {
-                        pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_V, uiAbsPartIdx, uiFullDepth);
-                        bestModeIdUV[1] = 0;
-                    }
-                }
-            }
+            uiBitsSumRT += pcCU->uiBitsPer4x4[i][j];
         }
-        else
+    }
+    for (UInt i = cnt4x4halfline; i < cnt4x4perline; i++)
+    {
+        for (UInt j = 0; j < cnt4x4halfline; j++)
         {
-            pcCU->setTransformSkipSubParts(0, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
-            // 不会进入
-            //----- store original entropy coding status -----
-            if (bCheckSplit)
-            {
-                m_pcRDGoOnSbacCoder->store(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_ROOT]);
-            }
-            //----- code luma block with given intra prediction mode and store Cbf-----
-            dSingleCost = 0.0;
-            // 对亮度进行预测/求残差/变换/量化
-            // xIntraCodingLumaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY);
-            // 不会进入
-            if (bCheckSplit)
-            {
-                uiSingleCbfY = pcCU->getCbf(uiAbsPartIdx, TEXT_LUMA, uiTrDepth);
-            }
-            // 完全不会进入这个分支
-            //----- code chroma blocks with given intra prediction mode and store Cbf-----
-            if (!bLumaOnly)
-            {
-                pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_U, uiAbsPartIdx, uiFullDepth);
-                pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_V, uiAbsPartIdx, uiFullDepth);
-                xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistC, 0);
-                xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistC, 1);
-                if (bCheckSplit)
-                {
-                    uiSingleCbfU = pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth);
-                    uiSingleCbfV = pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
-                }
-            }
-            //----- determine rate and r-d cost -----
-            UInt uiSingleBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
-            // 完全不会进入这个分支
-            if (m_pcEncCfg->getRDpenalty() && (uiLog2TrSize == 5) && !isIntraSlice)
-            {
-                uiSingleBits = uiSingleBits * 4;
-            }
-            dSingleCost = m_pcRdCost->calcRdCost(uiSingleBits, uiSingleDistY + uiSingleDistC);
+            uiBitsSumLB += pcCU->uiBitsPer4x4[i][j];
+        }
+    }
+    for (UInt i = cnt4x4halfline; i < cnt4x4perline; i++)
+    {
+        for (UInt j = cnt4x4halfline; j < cnt4x4perline; j++)
+        {
+            uiBitsSumRB += pcCU->uiBitsPer4x4[i][j];
         }
     }
 
-    // 不会进入
-    if (bCheckSplit)
-    {
-        // 分割成 4 个 TU, 递归编码
-        //----- store full entropy coding status, load original entropy coding status -----
-        if (bCheckFull)
-        {
-            m_pcRDGoOnSbacCoder->store(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_TEST]);
-            m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_ROOT]);
-        }
-        else
-        {
-            m_pcRDGoOnSbacCoder->store(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_ROOT]);
-        }
-
-        //----- code splitted block -----
-        Double dSplitCost = 0.0;
-        UInt uiSplitDistY = 0;
-        UInt uiSplitDistC = 0;
-        UInt uiQPartsDiv = pcCU->getPic()->getNumPartInCU() >> ((uiFullDepth + 1) << 1);
-        UInt uiAbsPartIdxSub = uiAbsPartIdx;
-
-        UInt uiSplitCbfY = 0;
-        UInt uiSplitCbfU = 0;
-        UInt uiSplitCbfV = 0;
-
-        for (UInt uiPart = 0; uiPart < 4; uiPart++, uiAbsPartIdxSub += uiQPartsDiv)
-        {
-#if HHI_RQT_INTRA_SPEEDUP
-            xRecurIntraCodingQT(pcCU, uiTrDepth + 1, uiAbsPartIdxSub, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiSplitDistY, uiSplitDistC, bCheckFirst, dSplitCost);
-#else
-            xRecurIntraCodingQT(pcCU, uiTrDepth + 1, uiAbsPartIdxSub, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiSplitDistY, uiSplitDistC, dSplitCost);
-#endif
-
-            uiSplitCbfY |= pcCU->getCbf(uiAbsPartIdxSub, TEXT_LUMA, uiTrDepth + 1);
-            if (!bLumaOnly)
-            {
-                uiSplitCbfU |= pcCU->getCbf(uiAbsPartIdxSub, TEXT_CHROMA_U, uiTrDepth + 1);
-                uiSplitCbfV |= pcCU->getCbf(uiAbsPartIdxSub, TEXT_CHROMA_V, uiTrDepth + 1);
-            }
-        }
-
-        for (UInt uiOffs = 0; uiOffs < 4 * uiQPartsDiv; uiOffs++)
-        {
-            pcCU->getCbf(TEXT_LUMA)[uiAbsPartIdx + uiOffs] |= (uiSplitCbfY << uiTrDepth);
-        }
-        if (!bLumaOnly)
-        {
-            for (UInt uiOffs = 0; uiOffs < 4 * uiQPartsDiv; uiOffs++)
-            {
-                pcCU->getCbf(TEXT_CHROMA_U)[uiAbsPartIdx + uiOffs] |= (uiSplitCbfU << uiTrDepth);
-                pcCU->getCbf(TEXT_CHROMA_V)[uiAbsPartIdx + uiOffs] |= (uiSplitCbfV << uiTrDepth);
-            }
-        }
-        //----- restore context states -----
-        m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_ROOT]);
-
-        //----- determine rate and r-d cost -----
-        UInt uiSplitBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
-        dSplitCost = m_pcRdCost->calcRdCost(uiSplitBits, uiSplitDistY + uiSplitDistC);
-
-        //===== compare and set best =====
-        if (dSplitCost < dSingleCost)
-        {
-            //--- update cost ---
-            ruiDistY += uiSplitDistY;
-            ruiDistC += uiSplitDistC;
-            dRDCost += dSplitCost;
-            return;
-        }
-        //----- set entropy coding status -----
-        m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiFullDepth][CI_QT_TRAFO_TEST]);
-
-        //--- set transform index and Cbf values ---
-        pcCU->setTrIdxSubParts(uiTrDepth, uiAbsPartIdx, uiFullDepth);
-        pcCU->setCbfSubParts(uiSingleCbfY << uiTrDepth, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
-        pcCU->setTransformSkipSubParts(bestModeId, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
-        if (!bLumaOnly)
-        {
-            pcCU->setCbfSubParts(uiSingleCbfU << uiTrDepth, TEXT_CHROMA_U, uiAbsPartIdx, uiFullDepth);
-            pcCU->setCbfSubParts(uiSingleCbfV << uiTrDepth, TEXT_CHROMA_V, uiAbsPartIdx, uiFullDepth);
-            pcCU->setTransformSkipSubParts(bestModeIdUV[0], TEXT_CHROMA_U, uiAbsPartIdx, uiFullDepth);
-            pcCU->setTransformSkipSubParts(bestModeIdUV[1], TEXT_CHROMA_V, uiAbsPartIdx, uiFullDepth);
-        }
-
-        //--- set reconstruction for next intra prediction blocks ---
-        UInt uiWidth = pcCU->getWidth(0) >> uiTrDepth;
-        UInt uiHeight = pcCU->getHeight(0) >> uiTrDepth;
-        UInt uiQTLayer = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize() - uiLog2TrSize;
-        UInt uiZOrder = pcCU->getZorderIdxInCU() + uiAbsPartIdx;
-        Pel *piSrc = m_pcQTTempTComYuv[uiQTLayer].getLumaAddr(uiAbsPartIdx);
-        UInt uiSrcStride = m_pcQTTempTComYuv[uiQTLayer].getStride();
-        Pel *piDes = pcCU->getPic()->getPicYuvRec()->getLumaAddr(pcCU->getAddr(), uiZOrder);
-        UInt uiDesStride = pcCU->getPic()->getPicYuvRec()->getStride();
-        for (UInt uiY = 0; uiY < uiHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
-        {
-            for (UInt uiX = 0; uiX < uiWidth; uiX++)
-            {
-                piDes[uiX] = piSrc[uiX];
-            }
-        }
-        if (!bLumaOnly)
-        {
-            uiWidth >>= 1;
-            uiHeight >>= 1;
-            piSrc = m_pcQTTempTComYuv[uiQTLayer].getCbAddr(uiAbsPartIdx);
-            uiSrcStride = m_pcQTTempTComYuv[uiQTLayer].getCStride();
-            piDes = pcCU->getPic()->getPicYuvRec()->getCbAddr(pcCU->getAddr(), uiZOrder);
-            uiDesStride = pcCU->getPic()->getPicYuvRec()->getCStride();
-            for (UInt uiY = 0; uiY < uiHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
-            {
-                for (UInt uiX = 0; uiX < uiWidth; uiX++)
-                {
-                    piDes[uiX] = piSrc[uiX];
-                }
-            }
-            piSrc = m_pcQTTempTComYuv[uiQTLayer].getCrAddr(uiAbsPartIdx);
-            piDes = pcCU->getPic()->getPicYuvRec()->getCrAddr(pcCU->getAddr(), uiZOrder);
-            for (UInt uiY = 0; uiY < uiHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
-            {
-                for (UInt uiX = 0; uiX < uiWidth; uiX++)
-                {
-                    piDes[uiX] = piSrc[uiX];
-                }
-            }
-        }
-    }
-    ruiDistY += uiSingleDistY;
-    ruiDistC += uiSingleDistC;
-    dRDCost += dSingleCost;
+    dPUCostnp0111 = pcCU->uiBitsComm + uiBitsSumRT + uiBitsSumLB + uiBitsSumRB;
+    dPUCostnp1011 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumLB + uiBitsSumRB;
+    dPUCostnp1101 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumRB;
+    dPUCostnp1110 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
 }
 
 Void TEncSearch::xSetIntraResultQT(TComDataCU *pcCU,
@@ -2872,9 +2556,17 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 #endif
 
         UInt uiBestPUMode = 0;
+        UInt uiBestPUMode0111 = 0;
+        UInt uiBestPUMode1011 = 0;
+        UInt uiBestPUMode1101 = 0;
+        UInt uiBestPUMode1110 = 0;
         UInt uiBestPUDistY = 0;
         UInt uiBestPUDistC = 0;
         Double dBestPUCost = MAX_DOUBLE;
+        Double dBestPUCostnp0111 = MAX_DOUBLE;
+        Double dBestPUCostnp1011 = MAX_DOUBLE;
+        Double dBestPUCostnp1101 = MAX_DOUBLE;
+        Double dBestPUCostnp1110 = MAX_DOUBLE;
         for (UInt uiMode = 0; uiMode < numModesForFullRD; uiMode++)
         {
             // set luma prediction mode
@@ -2890,28 +2582,29 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             UInt uiPUDistY = 0;
             UInt uiPUDistC = 0;
             Double dPUCost = 0.0;
-            // Double dPUCostnp0111 = 0.0;
-            // Double dPUCostnp1011 = 0.0;
-            // Double dPUCostnp1101 = 0.0;
-            // Double dPUCostnp1110 = 0.0;
+            Double dPUCostnp0111 = 0.0;
+            Double dPUCostnp1011 = 0.0;
+            Double dPUCostnp1101 = 0.0;
+            Double dPUCostnp1110 = 0.0;
 #if HHI_RQT_INTRA_SPEEDUP
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, true, dPUCost);
 #else
-            // 递归编码 intra CU, 包括预测变换量化等
+            // 编码 intra CU, 包括预测变换量化等
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
             // 用 L-based 分块方法计算得到 cost
-            // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
-            // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
-            // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
+            xRecurIntraCodingQTnp(pcCU, uiWidth, dPUCostnp0111, dPUCostnp1011, dPUCostnp1101, dPUCostnp1110);
 #endif
 
             // check r-d cost
             if (dPUCost < dBestPUCost)
             {
+/* #region   */
 #if HHI_RQT_INTRA_SPEEDUP_MOD
                 uiSecondBestMode = uiBestPUMode;
                 dSecondBestPUCost = dBestPUCost;
 #endif
+
+                /* #endregion */
                 uiBestPUMode = uiOrgMode;
                 uiBestPUDistY = uiPUDistY;
                 uiBestPUDistC = uiPUDistC;
@@ -2929,6 +2622,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                 // ::memcpy(m_puhQTTempTransformSkipFlag[1], pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
                 // ::memcpy(m_puhQTTempTransformSkipFlag[2], pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
             }
+/* #region   */
 #if HHI_RQT_INTRA_SPEEDUP_MOD
             else if (dPUCost < dSecondBestPUCost)
             {
@@ -2936,8 +2630,23 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                 dSecondBestPUCost = dPUCost;
             }
 #endif
+            /* #endregion */
+            if (dPUCostnp0111 < dBestPUCostnp0111)
+            {
+                uiBestPUMode0111 = uiOrgMode;
+                dBestPUCostnp0111 = dPUCostnp0111;
+
+                // xSetIntraResultQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcRecoYuv);
+
+                // UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+                // ::memcpy(m_puhQTTempTrIdx, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+                // ::memcpy(m_puhQTTempCbf[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                // ::memcpy(m_puhQTTempCbf[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                // ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+            }
         } // 尝试完所有的模式, 选出了最优的模式
 
+/* #region   */
 #if HHI_RQT_INTRA_SPEEDUP
 #if HHI_RQT_INTRA_SPEEDUP_MOD
         for (UInt ui = 0; ui < 2; ++ui)
@@ -2988,7 +2697,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             }
         } // Mode loop
 #endif
-
+        /* #endregion */
         // 无损下没有失真, 根本不用算
         //--- update overall distortion ---
         // uiOverallDistY += uiBestPUDistY;
@@ -3003,65 +2712,66 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         // ::memcpy(pcCU->getTransformSkip(TEXT_LUMA) + uiPartOffset, m_puhQTTempTransformSkipFlag[0], uiQPartNum * sizeof(UChar));
         // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, m_puhQTTempTransformSkipFlag[1], uiQPartNum * sizeof(UChar));
         // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, m_puhQTTempTransformSkipFlag[2], uiQPartNum * sizeof(UChar));
-        //--- set reconstruction for next intra prediction blocks ---
-        // 对于 8x8 块向下分割成 4 个 4x4 的情况
-        if (uiPU != uiNumPU - 1)
-        {
-            Bool bSkipChroma = false;
-            Bool bChromaSame = false;
-            UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> (pcCU->getDepth(0) + uiInitTrDepth)] + 2;
-            // 不会进入
-            if (!bLumaOnly && uiLog2TrSize == 2)
-            {
-                assert(uiInitTrDepth > 0);
-                bSkipChroma = (uiPU != 0);
-                bChromaSame = true;
-            }
 
-            UInt uiCompWidth = pcCU->getWidth(0) >> uiInitTrDepth;
-            UInt uiCompHeight = pcCU->getHeight(0) >> uiInitTrDepth;
-            UInt uiZOrder = pcCU->getZorderIdxInCU() + uiPartOffset;
-            Pel *piDes = pcCU->getPic()->getPicYuvRec()->getLumaAddr(pcCU->getAddr(), uiZOrder);
-            UInt uiDesStride = pcCU->getPic()->getPicYuvRec()->getStride();
-            Pel *piSrc = pcRecoYuv->getLumaAddr(uiPartOffset);
-            UInt uiSrcStride = pcRecoYuv->getStride();
-            for (UInt uiY = 0; uiY < uiCompHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
-            {
-                for (UInt uiX = 0; uiX < uiCompWidth; uiX++)
-                {
-                    piDes[uiX] = piSrc[uiX];
-                }
-            }
-            // 不会进入
-            if (!bLumaOnly && !bSkipChroma)
-            {
-                if (!bChromaSame)
-                {
-                    uiCompWidth >>= 1;
-                    uiCompHeight >>= 1;
-                }
-                piDes = pcCU->getPic()->getPicYuvRec()->getCbAddr(pcCU->getAddr(), uiZOrder);
-                uiDesStride = pcCU->getPic()->getPicYuvRec()->getCStride();
-                piSrc = pcRecoYuv->getCbAddr(uiPartOffset);
-                uiSrcStride = pcRecoYuv->getCStride();
-                for (UInt uiY = 0; uiY < uiCompHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
-                {
-                    for (UInt uiX = 0; uiX < uiCompWidth; uiX++)
-                    {
-                        piDes[uiX] = piSrc[uiX];
-                    }
-                }
-                piDes = pcCU->getPic()->getPicYuvRec()->getCrAddr(pcCU->getAddr(), uiZOrder);
-                piSrc = pcRecoYuv->getCrAddr(uiPartOffset);
-                for (UInt uiY = 0; uiY < uiCompHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
-                {
-                    for (UInt uiX = 0; uiX < uiCompWidth; uiX++)
-                    {
-                        piDes[uiX] = piSrc[uiX];
-                    }
-                }
-            }
-        }
+        // 对于 8x8 块向下分割成 4 个 4x4 的情况, 需要做一下重建
+        // 无损模式下就算不做重建也没关系 注释掉方便写代码
+        //--- set reconstruction for next intra prediction blocks ---
+        // if (uiPU != uiNumPU - 1)
+        // {
+        //     Bool bSkipChroma = false;
+        //     Bool bChromaSame = false;
+        //     UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> (pcCU->getDepth(0) + uiInitTrDepth)] + 2;
+        //     // 不会进入
+        //     if (!bLumaOnly && uiLog2TrSize == 2)
+        //     {
+        //         assert(uiInitTrDepth > 0);
+        //         bSkipChroma = (uiPU != 0);
+        //         bChromaSame = true;
+        //     }
+        //     UInt uiCompWidth = pcCU->getWidth(0) >> uiInitTrDepth;
+        //     UInt uiCompHeight = pcCU->getHeight(0) >> uiInitTrDepth;
+        //     UInt uiZOrder = pcCU->getZorderIdxInCU() + uiPartOffset;
+        //     Pel *piDes = pcCU->getPic()->getPicYuvRec()->getLumaAddr(pcCU->getAddr(), uiZOrder);
+        //     UInt uiDesStride = pcCU->getPic()->getPicYuvRec()->getStride();
+        //     Pel *piSrc = pcRecoYuv->getLumaAddr(uiPartOffset);
+        //     UInt uiSrcStride = pcRecoYuv->getStride();
+        //     for (UInt uiY = 0; uiY < uiCompHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
+        //     {
+        //         for (UInt uiX = 0; uiX < uiCompWidth; uiX++)
+        //         {
+        //             piDes[uiX] = piSrc[uiX];
+        //         }
+        //     }
+        //     // 不会进入
+        //     if (!bLumaOnly && !bSkipChroma)
+        //     {
+        //         if (!bChromaSame)
+        //         {
+        //             uiCompWidth >>= 1;
+        //             uiCompHeight >>= 1;
+        //         }
+        //         piDes = pcCU->getPic()->getPicYuvRec()->getCbAddr(pcCU->getAddr(), uiZOrder);
+        //         uiDesStride = pcCU->getPic()->getPicYuvRec()->getCStride();
+        //         piSrc = pcRecoYuv->getCbAddr(uiPartOffset);
+        //         uiSrcStride = pcRecoYuv->getCStride();
+        //         for (UInt uiY = 0; uiY < uiCompHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
+        //         {
+        //             for (UInt uiX = 0; uiX < uiCompWidth; uiX++)
+        //             {
+        //                 piDes[uiX] = piSrc[uiX];
+        //             }
+        //         }
+        //         piDes = pcCU->getPic()->getPicYuvRec()->getCrAddr(pcCU->getAddr(), uiZOrder);
+        //         piSrc = pcRecoYuv->getCrAddr(uiPartOffset);
+        //         for (UInt uiY = 0; uiY < uiCompHeight; uiY++, piSrc += uiSrcStride, piDes += uiDesStride)
+        //         {
+        //             for (UInt uiX = 0; uiX < uiCompWidth; uiX++)
+        //             {
+        //                 piDes[uiX] = piSrc[uiX];
+        //             }
+        //         }
+        //     }
+        // }
 
         //=== update PU data ====
         pcCU->setLumaIntraDirSubParts(uiBestPUMode, uiPartOffset, uiDepth + uiInitTrDepth);

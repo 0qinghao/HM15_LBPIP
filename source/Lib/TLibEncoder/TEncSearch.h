@@ -279,16 +279,7 @@ protected:
                              Bool bCheckFirst,
 #endif
                              Double &dRDCost);
-    Void xRecurIntraCodingQTnp(TComDataCU *pcCU,
-                               UInt uiTrDepth,
-                               UInt uiAbsPartIdx,
-                               Bool bLumaOnly,
-                               TComYuv *pcOrgYuv,
-                               TComYuv *pcPredYuv,
-                               TComYuv *pcResiYuv,
-                               UInt &ruiDistY,
-                               UInt &ruiDistC,
-                               Double &dRDCost);
+    Void xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiwidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
 
     Void xSetIntraResultQT(TComDataCU *pcCU,
                            UInt uiTrDepth,
