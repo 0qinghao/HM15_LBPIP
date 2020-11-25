@@ -337,6 +337,7 @@ Void TEncSbac::xWriteEpExGolomb(UInt uiSymbol, UInt uiCount)
  * \param ruiGoRiceParam reference to Rice parameter
  * \returns Void
  */
+// 真正编码系数的地方
 Void TEncSbac::xWriteCoefRemainExGolomb(UInt symbol, UInt &rParam)
 {
     Int codeNumber = (Int)symbol;
@@ -582,6 +583,8 @@ Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
     assert(uiCtx < 3);
     m_pcBinIf->encodeBin(uiCurrSplitFlag, m_cCUSplitFlagSCModel.get(0, 0, uiCtx));
+    // 需要替换为新方法的分块标志
+    // m_pcBinIf->encodeBinsEP(uiCurrSplitFlag, 3);
     //DTRACE_CABAC_VL(g_nSymbolCounter++)
     //DTRACE_CABAC_T("\tSplitFlag\n")
     return;
@@ -599,6 +602,7 @@ Void TEncSbac::codeTransformSubdivFlag(UInt uiSymbol, UInt uiCtx)
     //DTRACE_CABAC_T("\n")
 }
 
+// 编码亮度预测模式(角度)
 Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple)
 {
     UInt dir[4], j;
@@ -611,6 +615,7 @@ Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMul
     {
         dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
         predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+        // 判断待编码模式信息是否在 MPM 里
         for (UInt i = 0; i < predNum[j]; i++)
         {
             if (dir[j] == preds[j][i])
@@ -618,6 +623,7 @@ Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMul
                 predIdx[j] = i;
             }
         }
+        // 编码 flag, 1 表示模式在 MPM 里
         m_pcBinIf->encodeBin((predIdx[j] != -1) ? 1 : 0, m_cCUIntraPredSCModel.get(0, 0, 0));
     }
     for (j = 0; j < partNum; j++)
@@ -654,6 +660,7 @@ Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMul
     return;
 }
 
+// 编码色差预测模式(角度)
 Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     UInt uiIntraDirChroma = pcCU->getChromaIntraDir(uiAbsPartIdx);
@@ -677,6 +684,7 @@ Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
         }
         m_pcBinIf->encodeBin(1, m_cCUChromaPredSCModel.get(0, 0, 0));
 
+        // 用 2 bit 编码预测角度
         m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 2);
     }
     return;
@@ -1068,8 +1076,10 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     UInt uiNumSig = 0;
 
     // compute number of significant coefficients
+    // 非零系数的个数
     uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
 
+    // 如果全都是 0, 返回
     if (uiNumSig == 0)
         return;
     if (pcCU->getSlice()->getPPS()->getUseTransformSkip())
@@ -1081,6 +1091,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     //----- encode significance map -----
     const UInt uiLog2BlockSize = g_aucConvertToBit[uiWidth] + 2;
     UInt uiScanIdx = pcCU->getCoefScanIdx(uiAbsPartIdx, uiWidth, eTType == TEXT_LUMA, pcCU->isIntra(uiAbsPartIdx));
+    // 4x4 块内的扫描顺序
     const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
 
     Bool beValid;
@@ -1097,13 +1108,16 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     Int scanPosLast = -1;
     Int posLast;
 
+    // 4x4 块间的扫描顺序
     const UInt *scanCG;
     {
         scanCG = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize > 3 ? uiLog2BlockSize - 2 - 1 : 0];
+        // 特别 对于尺寸为 8 的
         if (uiLog2BlockSize == 3)
         {
             scanCG = g_sigLastScan8x8[uiScanIdx];
         }
+        // 特别 对于尺寸为 32 的
         else if (uiLog2BlockSize == 5)
         {
             scanCG = g_sigLastScanCG32x32;
@@ -1115,7 +1129,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
     ::memset(uiSigCoeffGroupFlag, 0, sizeof(UInt) * MLS_GRP_NUM);
 
-    // 找到最后一个非零系数
+    // 找到最后一个非零系数, 同时提取出每个残差的正负性
     do
     {
         posLast = scan[++scanPosLast];
@@ -1135,6 +1149,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     // Code position of last coefficient
     Int posLastY = posLast >> uiLog2BlockSize;
     Int posLastX = posLast - (posLastY << uiLog2BlockSize);
+    // 对最后一个非零系数的位置进行编码
     codeLastSignificantXY(posLastX, posLastY, uiWidth, uiHeight, eTType, uiScanIdx);
 
     //===== code significance flag =====
@@ -1146,8 +1161,19 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     UInt uiGoRiceParam = 0;
     Int iScanPosSig = scanPosLast;
 
+    // 挨个 4x4 块编码
+    // 编码内容包括
+    // (熵编码)
+    // significant coeff group flag
+    // significant coeff flag
+    // greter than 1 flag
+    // greter than 2 flag
+    // (等概率旁路编码)
+    // coeff sign
+    // coeff remain
     for (Int iSubSet = iLastScanSet; iSubSet >= 0; iSubSet--)
     {
+        // UInt uiBitsPre4x4 = this->getNumberOfWrittenBits();
         Int numNonZero = 0;
         Int iSubPos = iSubSet << LOG2_SCAN_SET_SIZE;
         uiGoRiceParam = 0;
@@ -1229,6 +1255,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
             Int numC1Flag = min(numNonZero, C1FLAG_NUMBER);
             Int firstC2FlagIdx = -1;
+            // 对一个 4x4 里面的前 8(C1FLAG_NUMBER) 个非零系数编码 coeff_abs_level_greater1_flag
             for (Int idx = 0; idx < numC1Flag; idx++)
             {
                 UInt uiSymbol = absCoeff[idx] > 1;
@@ -1236,7 +1263,6 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 if (uiSymbol)
                 {
                     c1 = 0;
-
                     if (firstC2FlagIdx == -1)
                     {
                         firstC2FlagIdx = idx;
@@ -1248,9 +1274,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 }
             }
 
+            // 编码 4x4 块内第一个幅值大于 1 的系数的 coeff_abs_level_greater2_flag
             if (c1 == 0)
             {
-
                 baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUAbsSCModel.get(0, 0) + uiCtxSet : m_cCUAbsSCModel.get(0, 0) + NUM_ABS_FLAG_CTX_LUMA + uiCtxSet;
                 if (firstC2FlagIdx != -1)
                 {
@@ -1274,7 +1300,6 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 for (Int idx = 0; idx < numNonZero; idx++)
                 {
                     UInt baseLevel = (idx < C1FLAG_NUMBER) ? (2 + iFirstCoeff2) : 1;
-
                     if (absCoeff[idx] >= baseLevel)
                     {
                         xWriteCoefRemainExGolomb(absCoeff[idx] - baseLevel, uiGoRiceParam);
@@ -1290,8 +1315,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 }
             }
         }
+        // UInt uiBitsCurr4x4 = this->getNumberOfWrittenBits();
+        // UInt uiBitsPer4x4 = uiBitsCurr4x4 - uiBitsPre4x4;
     }
-
     return;
 }
 

@@ -1579,6 +1579,7 @@ Void TEncSearch::xRecurIntraCodingQT(TComDataCU *pcCU,
                 }
             }
             //----- determine rate and r-d cost -----
+            // 计算编码当前块需要的 bits
             UInt uiSingleBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
             // 完全不会进入这个分支
             if (m_pcEncCfg->getRDpenalty() && (uiLog2TrSize == 5) && !isIntraSlice)
@@ -2773,14 +2774,14 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 
     // 不可能进入
     //===== set QP and clear Cbf =====
-    // if (pcCU->getSlice()->getPPS()->getUseDQP() == true)
-    // {
-    //     pcCU->setQPSubParts(pcCU->getQP(0), 0, uiDepth);
-    // }
-    // else
-    // {
-    pcCU->setQPSubParts(pcCU->getSlice()->getSliceQp(), 0, uiDepth);
-    // }
+    if (pcCU->getSlice()->getPPS()->getUseDQP() == true)
+    {
+        pcCU->setQPSubParts(pcCU->getQP(0), 0, uiDepth);
+    }
+    else
+    {
+        pcCU->setQPSubParts(pcCU->getSlice()->getSliceQp(), 0, uiDepth);
+    }
 
     //===== PU 循环 =====
     UInt uiPartOffset = 0;
@@ -2898,7 +2899,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 #else
             // 递归编码 intra CU, 包括预测变换量化等
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
-            // 用 L-based 分块方法编码 CU, 得到 cost.
+            // 用 L-based 分块方法计算得到 cost.
             // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
             // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
             // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);

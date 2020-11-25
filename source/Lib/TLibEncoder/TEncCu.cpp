@@ -1420,6 +1420,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
 
     // Encode Coefficients
     // 编码系数(无损时编码残差)
+    // 此处重新编码是因为前面编码是为了计算 RD 代价 (不特殊设置的话 RD 代价并不是编码体积, 直接拿体积做 RD 只发生在特殊的无损模式下)
     Bool bCodeDQP = getdQPFlag();
     m_pcEntropyCoder->encodeCoeff(rpcTempCU, 0, uiDepth, rpcTempCU->getWidth(0), rpcTempCU->getHeight(0), bCodeDQP);
     setdQPFlag(bCodeDQP);
