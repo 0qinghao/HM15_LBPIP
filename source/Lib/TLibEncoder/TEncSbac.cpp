@@ -1161,19 +1161,22 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     UInt uiGoRiceParam = 0;
     Int iScanPosSig = scanPosLast;
 
+    // 记录编码具体的 4x4 系数块之前所用的 bits
+    pcCU->uiBitsComm = this->getNumberOfWrittenBits();
+
     // 挨个 4x4 块编码
     // 编码内容包括
     // (熵编码)
     // significant coeff group flag
     // significant coeff flag
-    // greter than 1 flag
-    // greter than 2 flag
+    // greater than 1 flag
+    // greater than 2 flag
     // (等概率旁路编码)
     // coeff sign
     // coeff remain
     for (Int iSubSet = iLastScanSet; iSubSet >= 0; iSubSet--)
     {
-        // UInt uiBitsPre4x4 = this->getNumberOfWrittenBits();
+        UInt uiBitsPre = this->getNumberOfWrittenBits();
         Int numNonZero = 0;
         Int iSubPos = iSubSet << LOG2_SCAN_SET_SIZE;
         uiGoRiceParam = 0;
@@ -1192,6 +1195,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             iScanPosSig--;
         }
 
+        // 如果这个标志为 0, 表示这个 4x4 块里面全是 0
         // encode significant_coeffgroup_flag
         Int iCGBlkPos = scanCG[iSubSet];
         Int iCGPosY = iCGBlkPos / uiNumBlkSide;
@@ -1315,8 +1319,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 }
             }
         }
-        // UInt uiBitsCurr4x4 = this->getNumberOfWrittenBits();
-        // UInt uiBitsPer4x4 = uiBitsCurr4x4 - uiBitsPre4x4;
+        // 记录每个 4x4 块所需的 bits
+        UInt uiBitsCurr = this->getNumberOfWrittenBits();
+        pcCU->uiBitsPer4x4[iCGPosY][iCGPosX] = this->getNumberOfWrittenBits() - uiBitsPre;
     }
     return;
 }

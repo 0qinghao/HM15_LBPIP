@@ -63,6 +63,8 @@
 class TComDataCU
 {
 private:
+    // 增加
+
     // -------------------------------------------------------------------------------------------------------------------
     // class pointers
     // -------------------------------------------------------------------------------------------------------------------
@@ -92,10 +94,12 @@ private:
     // PU 的类型 (是不是划分了 PU, 由枚举 PartSize 赋值, 0 表示 2Nx2N, 3 表示 NxN )
     Char *m_pePartSize; ///< array of partition sizes
     // PU 的编码模式 (帧内还是帧间)
-    Char *m_pePredMode;             ///< array of prediction modes
-    Bool *m_CUTransquantBypass;     ///< array of cu_transquant_bypass flags
-    Char *m_phQP;                   ///< array of QP values
-    UChar *m_puhTrIdx;              ///< array of transform indices
+    Char *m_pePredMode;         ///< array of prediction modes
+    Bool *m_CUTransquantBypass; ///< array of cu_transquant_bypass flags
+    Char *m_phQP;               ///< array of QP values
+    // 变换索引
+    UChar *m_puhTrIdx; ///< array of transform indices
+    // 变换跳过标志
     UChar *m_puhTransformSkip[3];   ///< array of transform skipping flags
     UChar *m_puhCbf[3];             ///< array of coded block flags (CBF)
     TComCUMvField m_acCUMvField[2]; ///< array of motion vectors
@@ -181,6 +185,12 @@ protected:
     Void xDeriveCenterIdx(UInt uiPartIdx, UInt &ruiPartIdxCenter);
 
 public:
+    // 增加
+    // codeCoeffNxN 中记录公共部分 bits
+    UInt uiBitsComm;
+    // codeCoeffNxN 中记录每个 4x4 块所需的 bits, 最大 CU 是 32x32 所以实际上只用上 8x8 大小
+    UInt uiBitsPer4x4[16][16];
+
     TComDataCU();
     virtual ~TComDataCU();
 

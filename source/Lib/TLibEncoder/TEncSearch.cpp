@@ -2899,7 +2899,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 #else
             // 递归编码 intra CU, 包括预测变换量化等
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
-            // 用 L-based 分块方法计算得到 cost.
+            // 用 L-based 分块方法计算得到 cost
             // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
             // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
             // xRecurIntraCodingQTnp(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCostnp0111);
@@ -2924,9 +2924,10 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                 ::memcpy(m_puhQTTempCbf[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
                 ::memcpy(m_puhQTTempCbf[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
                 ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                ::memcpy(m_puhQTTempTransformSkipFlag[0], pcCU->getTransformSkip(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                ::memcpy(m_puhQTTempTransformSkipFlag[1], pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                ::memcpy(m_puhQTTempTransformSkipFlag[2], pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                // 项目中不涉及 TransformSkip
+                // ::memcpy(m_puhQTTempTransformSkipFlag[0], pcCU->getTransformSkip(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                // ::memcpy(m_puhQTTempTransformSkipFlag[1], pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                // ::memcpy(m_puhQTTempTransformSkipFlag[2], pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
             }
 #if HHI_RQT_INTRA_SPEEDUP_MOD
             else if (dPUCost < dSecondBestPUCost)
@@ -2999,9 +3000,9 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         ::memcpy(pcCU->getCbf(TEXT_LUMA) + uiPartOffset, m_puhQTTempCbf[0], uiQPartNum * sizeof(UChar));
         ::memcpy(pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, m_puhQTTempCbf[1], uiQPartNum * sizeof(UChar));
         ::memcpy(pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, m_puhQTTempCbf[2], uiQPartNum * sizeof(UChar));
-        ::memcpy(pcCU->getTransformSkip(TEXT_LUMA) + uiPartOffset, m_puhQTTempTransformSkipFlag[0], uiQPartNum * sizeof(UChar));
-        ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, m_puhQTTempTransformSkipFlag[1], uiQPartNum * sizeof(UChar));
-        ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, m_puhQTTempTransformSkipFlag[2], uiQPartNum * sizeof(UChar));
+        // ::memcpy(pcCU->getTransformSkip(TEXT_LUMA) + uiPartOffset, m_puhQTTempTransformSkipFlag[0], uiQPartNum * sizeof(UChar));
+        // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, m_puhQTTempTransformSkipFlag[1], uiQPartNum * sizeof(UChar));
+        // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, m_puhQTTempTransformSkipFlag[2], uiQPartNum * sizeof(UChar));
         //--- set reconstruction for next intra prediction blocks ---
         // 对于 8x8 块向下分割成 4 个 4x4 的情况
         if (uiPU != uiNumPU - 1)
