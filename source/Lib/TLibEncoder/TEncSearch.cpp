@@ -2801,9 +2801,10 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
     //===== reset context models =====
     m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiDepth][CI_CURR_BEST]);
 
+    // 无损时失真是 0, 可以跳过不算 (初始化的时候已经把这个成员变量设为 0 了)
     //===== set distortion (rate and r-d costs are determined later) =====
-    ruiDistC = uiOverallDistC;
-    pcCU->getTotalDistortion() = uiOverallDistY + uiOverallDistC;
+    // ruiDistC = uiOverallDistC;
+    // pcCU->getTotalDistortion() = uiOverallDistY + uiOverallDistC;
 }
 
 Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
