@@ -76,7 +76,7 @@ private:
     Int *m_pcQTTempArlCoeffCb;
     Int *m_pcQTTempArlCoeffCr;
 #endif
-    // 变换层数的暂存
+    // 变换层数的暂存 在处理 8x8 细分到 4x4 时为 1, 其他时候为 0
     UChar *m_puhQTTempTrIdx;
     // RDO 时 cbf 的暂存
     UChar *m_puhQTTempCbf[3];
@@ -286,6 +286,13 @@ protected:
                            UInt uiAbsPartIdx,
                            Bool bLumaOnly,
                            TComYuv *pcRecoYuv);
+    Void xSetIntraResultQTnp(TComDataCU *pcCU,
+                             UInt uiTrDepth,
+                             UInt mask);
+    //  TComYuv *pcRecoYuv0111,
+    //  TComYuv *pcRecoYuv1011,
+    //  TComYuv *pcRecoYuv1101,
+    //  TComYuv *pcRecoYuv1110);
 
     Void xRecurIntraChromaCodingQT(TComDataCU *pcCU,
                                    UInt uiTrDepth,

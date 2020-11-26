@@ -167,8 +167,20 @@ Void TComDataCU::create(UInt uiNumPartition, UInt uiWidth, UInt uiHeight, Bool b
         memset(m_apiMVPIdx[1], -1, uiNumPartition * sizeof(Char));
 
         m_pcTrCoeffY = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffY0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffY1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffY1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffY1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
         m_pcTrCoeffCb = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCb0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCb1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCb1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCb1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
         m_pcTrCoeffCr = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCr0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCr1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCr1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCr1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
         memset(m_pcTrCoeffY, 0, uiWidth * uiHeight * sizeof(TCoeff));
         memset(m_pcTrCoeffCb, 0, uiWidth * uiHeight / 4 * sizeof(TCoeff));
         memset(m_pcTrCoeffCr, 0, uiWidth * uiHeight / 4 * sizeof(TCoeff));
@@ -346,15 +358,75 @@ Void TComDataCU::destroy()
             xFree(m_pcTrCoeffY);
             m_pcTrCoeffY = NULL;
         }
+        if (m_pcTrCoeffY0111)
+        {
+            xFree(m_pcTrCoeffY0111);
+            m_pcTrCoeffY0111 = NULL;
+        }
+        if (m_pcTrCoeffY1011)
+        {
+            xFree(m_pcTrCoeffY1011);
+            m_pcTrCoeffY1011 = NULL;
+        }
+        if (m_pcTrCoeffY1101)
+        {
+            xFree(m_pcTrCoeffY1101);
+            m_pcTrCoeffY1101 = NULL;
+        }
+        if (m_pcTrCoeffY1110)
+        {
+            xFree(m_pcTrCoeffY1110);
+            m_pcTrCoeffY1110 = NULL;
+        }
         if (m_pcTrCoeffCb)
         {
             xFree(m_pcTrCoeffCb);
             m_pcTrCoeffCb = NULL;
         }
+        if (m_pcTrCoeffCb0111)
+        {
+            xFree(m_pcTrCoeffCb0111);
+            m_pcTrCoeffCb0111 = NULL;
+        }
+        if (m_pcTrCoeffCb1011)
+        {
+            xFree(m_pcTrCoeffCb1011);
+            m_pcTrCoeffCb1011 = NULL;
+        }
+        if (m_pcTrCoeffCb1101)
+        {
+            xFree(m_pcTrCoeffCb1101);
+            m_pcTrCoeffCb1101 = NULL;
+        }
+        if (m_pcTrCoeffCb1110)
+        {
+            xFree(m_pcTrCoeffCb1110);
+            m_pcTrCoeffCb1110 = NULL;
+        }
         if (m_pcTrCoeffCr)
         {
             xFree(m_pcTrCoeffCr);
             m_pcTrCoeffCr = NULL;
+        }
+        if (m_pcTrCoeffCr0111)
+        {
+            xFree(m_pcTrCoeffCr0111);
+            m_pcTrCoeffCr0111 = NULL;
+        }
+        if (m_pcTrCoeffCr1011)
+        {
+            xFree(m_pcTrCoeffCr1011);
+            m_pcTrCoeffCr1011 = NULL;
+        }
+        if (m_pcTrCoeffCr1101)
+        {
+            xFree(m_pcTrCoeffCr1101);
+            m_pcTrCoeffCr1101 = NULL;
+        }
+        if (m_pcTrCoeffCr1110)
+        {
+            xFree(m_pcTrCoeffCr1110);
+            m_pcTrCoeffCr1110 = NULL;
         }
 #if ADAPTIVE_QP_SELECTION
         if (!m_ArlCoeffIsAliasedAllocation)
@@ -1022,6 +1094,7 @@ Void TComDataCU::copyInterPredInfoFrom(TComDataCU *pcCU, UInt uiAbsPartIdx, RefP
 
 // Copy small CU to bigger CU.
 // One of quarter parts overwritten by predicted sub part.
+// 累加 4 个划分的代价
 Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth)
 {
     assert(uiPartUnitIdx < 4);

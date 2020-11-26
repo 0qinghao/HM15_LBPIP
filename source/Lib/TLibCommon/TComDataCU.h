@@ -98,10 +98,11 @@ private:
     Char *m_pePredMode;         ///< array of prediction modes
     Bool *m_CUTransquantBypass; ///< array of cu_transquant_bypass flags
     Char *m_phQP;               ///< array of QP values
-    // 变换索引
+    // 变换层数 在处理 8x8 细分到 4x4 时为 1, 其他时候为 0
     UChar *m_puhTrIdx; ///< array of transform indices
     // 变换跳过标志
-    UChar *m_puhTransformSkip[3];   ///< array of transform skipping flags
+    UChar *m_puhTransformSkip[3]; ///< array of transform skipping flags
+    // coding block flag 待处理的块如果全为 0 则 cbf 标志为 0, 否则 1
     UChar *m_puhCbf[3];             ///< array of coded block flags (CBF)
     TComCUMvField m_acCUMvField[2]; ///< array of motion vectors
     // 量化后的系数
@@ -191,6 +192,19 @@ public:
     UInt uiBitsComm;
     // codeCoeffNxN 中记录每个 4x4 块所需的 bits, 最大 CU 是 32x32 所以实际上只用上 8x8 大小
     UInt uiBitsPer4x4[16][16];
+    // 新分块方法的系数
+    TCoeff *m_pcTrCoeffY0111;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffY1011;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffY1101;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffY1110;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffCb0111; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCb1011; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCb1101; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCb1110; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCr0111; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCr1011; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCr1101; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCr1110; ///< transformed coefficient buffer (Cr)
 
     TComDataCU();
     virtual ~TComDataCU();

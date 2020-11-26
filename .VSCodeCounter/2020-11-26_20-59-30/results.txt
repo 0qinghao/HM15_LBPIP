@@ -1,0 +1,75 @@
+Date : 2020-11-26 20:59:30
+Directory : /mnt/f/NewCodec_HM15.0
+Total : 45 files,  3440 codes, 125 comments, 523 blanks, all 4088 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| LaTeX    |          1 |      1,701 |         90 |        212 |      2,003 |
+| TXT      |         43 |      1,650 |          0 |        293 |      1,943 |
+| TeX      |          1 |         89 |         35 |         18 |        142 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                   | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                      |         45 |      3,440 |        125 |        523 |      4,088 |
+| cfg                                                                    |         41 |      1,460 |          0 |        276 |      1,736 |
+| cfg/misc                                                               |          2 |        227 |          0 |         44 |        271 |
+| cfg/per-sequence                                                       |         30 |        360 |          0 |         60 |        420 |
+| doc                                                                    |          3 |      1,812 |        125 |        238 |      2,175 |
++------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                               | language | code       | comment    | blank      | total      |
++------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_intra_main.cfg                      | TXT      |         85 |          0 |         18 |        103 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_intra_main10.cfg                    | TXT      |         85 |          0 |         19 |        104 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_intra_main_LL.cfg                   | TXT      |        107 |          0 |         19 |        126 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_lowdelay_P_main.cfg                 | TXT      |         98 |          0 |         19 |        117 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_lowdelay_P_main10.cfg               | TXT      |         98 |          0 |         19 |        117 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_lowdelay_main.cfg                   | TXT      |         98 |          0 |         19 |        117 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_lowdelay_main10.cfg                 | TXT      |         98 |          0 |         19 |        117 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_randomaccess_main.cfg               | TXT      |        102 |          0 |         20 |        122 |
+| /mnt/f/NewCodec_HM15.0/cfg/encoder_randomaccess_main10.cfg             | TXT      |        102 |          0 |         20 |        122 |
+| /mnt/f/NewCodec_HM15.0/cfg/misc/encoder_randomaccess_field_coding.cfg  | TXT      |        125 |          0 |         24 |        149 |
+| /mnt/f/NewCodec_HM15.0/cfg/misc/encoder_randomaccess_main_4tids.cfg    | TXT      |        102 |          0 |         20 |        122 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BQMall.cfg                     | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BQSquare.cfg                   | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BQTerrace.cfg                  | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BasketballDrill.cfg            | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BasketballDrillText.cfg        | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BasketballDrive.cfg            | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BasketballPass.cfg             | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/BlowingBubbles.cfg             | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/Cactus.cfg                     | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/ChinaSpeed.cfg                 | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/FourPeople.cfg                 | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/Johnny.cfg                     | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/Kimono.cfg                     | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/KristenAndSara.cfg             | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/NebutaFestival_10bit.cfg       | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/ParkScene.cfg                  | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/PartyScene.cfg                 | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/PeopleOnStreet.cfg             | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/RaceHorses.cfg                 | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/RaceHorsesC.cfg                | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/SlideEditing.cfg               | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/SlideShow.cfg                  | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/SteamLocomotiveTrain_10bit.cfg | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/Traffic.cfg                    | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/Vidyo1.cfg                     | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/Vidyo3.cfg                     | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/Vidyo4.cfg                     | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/wsl_BasketballPass.cfg         | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/wsl_ChinaSpeed.cfg             | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/cfg/per-sequence/wsl_SlideEditing.cfg           | TXT      |         12 |          0 |          2 |         14 |
+| /mnt/f/NewCodec_HM15.0/doc/README_software-manual.txt                  | TXT      |         22 |          0 |          8 |         30 |
+| /mnt/f/NewCodec_HM15.0/doc/jctvcdoc.cls                                | TeX      |         89 |         35 |         18 |        142 |
+| /mnt/f/NewCodec_HM15.0/doc/software-manual.tex                         | LaTeX    |      1,701 |         90 |        212 |      2,003 |
+| /mnt/f/NewCodec_HM15.0/流程记录.txt                                        | TXT      |        168 |          0 |          9 |        177 |
+| Total                                                                  |          |      3,440 |        125 |        523 |      4,088 |
++------------------------------------------------------------------------+----------+------------+------------+------------+------------+

@@ -1289,6 +1289,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 }
             }
 
+            // 符号位隐藏技术, 不会进入
             if (beValid && signHidden)
             {
                 m_pcBinIf->encodeBinsEP((coeffSigns >> 1), numNonZero - 1);
