@@ -499,7 +499,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     iQP = lowestQP;
                 }
                 // 既然不可能进入 inter modes, 自然不需要这一步初始化. 前面已经做过一次
-                // rpcTempCU->initEstData(uiDepth, iQP, bIsLosslessMode);
+                rpcTempCU->initEstData(uiDepth, iQP, bIsLosslessMode);
 
                 // do inter modes, NxN, 2NxN, and Nx2N
                 if (rpcBestCU->getSlice()->getSliceType() != I_SLICE)
@@ -1081,6 +1081,7 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
         return;
     }
     // （6）调用encodePredMode，对预测的模式(帧间还是帧内)进行编码（最后调用TEncSbac::codePredMode）
+    // 实际上不会编码任何东西 直接 return 出来了
     m_pcEntropyCoder->encodePredMode(pcCU, uiAbsPartIdx);
 
     // （7）调用encodePartSize，对分割的尺寸进行编码（最后调用TEncSbac::codePartSize）
@@ -1390,6 +1391,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
 
     rpcTempCU->setSkipFlagSubParts(false, 0, uiDepth);
 
+    // TODO: 注意这里只设置了正常分块模式的 partsize, 要注意对后面有没有影响
     rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
     rpcTempCU->setPredModeSubParts(MODE_INTRA, 0, uiDepth);
 

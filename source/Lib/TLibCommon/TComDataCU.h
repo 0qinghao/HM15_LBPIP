@@ -193,18 +193,22 @@ public:
     // codeCoeffNxN 中记录每个 4x4 块所需的 bits, 最大 CU 是 32x32 所以实际上只用上 8x8 大小
     UInt uiBitsPer4x4[16][16];
     // 新分块方法的系数
-    TCoeff *m_pcTrCoeffY0111;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffY1011;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffY1101;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffY1110;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffCb0111; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCb1011; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCb1101; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCb1110; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCr0111; ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCr1011; ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCr1101; ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCr1110; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffYnp0111;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1011;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1101;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1110;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffCbnp0111; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1011; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1101; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1110; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCrnp0111; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1011; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1101; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1110; ///< transformed coefficient buffer (Cr)
+    UChar *m_puhCbfnp0111[3];    ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1011[3];    ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1101[3];    ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1110[3];    ///< array of coded block flags (CBF)
 
     TComDataCU();
     virtual ~TComDataCU();

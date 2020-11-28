@@ -78,6 +78,18 @@ TComDataCU::TComDataCU()
     m_puhCbf[0] = NULL;
     m_puhCbf[1] = NULL;
     m_puhCbf[2] = NULL;
+    m_puhCbfnp0111[0] = NULL;
+    m_puhCbfnp0111[1] = NULL;
+    m_puhCbfnp0111[2] = NULL;
+    m_puhCbfnp1011[0] = NULL;
+    m_puhCbfnp1011[1] = NULL;
+    m_puhCbfnp1011[2] = NULL;
+    m_puhCbfnp1101[0] = NULL;
+    m_puhCbfnp1101[1] = NULL;
+    m_puhCbfnp1101[2] = NULL;
+    m_puhCbfnp1110[0] = NULL;
+    m_puhCbfnp1110[1] = NULL;
+    m_puhCbfnp1110[2] = NULL;
     m_pcTrCoeffY = NULL;
     m_pcTrCoeffCb = NULL;
     m_pcTrCoeffCr = NULL;
@@ -158,6 +170,18 @@ Void TComDataCU::create(UInt uiNumPartition, UInt uiWidth, UInt uiHeight, Bool b
         m_puhCbf[0] = (UChar *)xMalloc(UChar, uiNumPartition);
         m_puhCbf[1] = (UChar *)xMalloc(UChar, uiNumPartition);
         m_puhCbf[2] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp0111[0] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp0111[1] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp0111[2] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1011[0] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1011[1] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1011[2] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1101[0] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1101[1] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1101[2] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1110[0] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1110[1] = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhCbfnp1110[2] = (UChar *)xMalloc(UChar, uiNumPartition);
 
         m_apiMVPIdx[0] = new Char[uiNumPartition];
         m_apiMVPIdx[1] = new Char[uiNumPartition];
@@ -167,20 +191,20 @@ Void TComDataCU::create(UInt uiNumPartition, UInt uiWidth, UInt uiHeight, Bool b
         memset(m_apiMVPIdx[1], -1, uiNumPartition * sizeof(Char));
 
         m_pcTrCoeffY = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
-        m_pcTrCoeffY0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
-        m_pcTrCoeffY1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
-        m_pcTrCoeffY1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
-        m_pcTrCoeffY1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffYnp0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffYnp1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffYnp1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
+        m_pcTrCoeffYnp1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight);
         m_pcTrCoeffCb = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCb0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCb1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCb1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCb1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCbnp0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCbnp1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCbnp1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCbnp1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
         m_pcTrCoeffCr = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCr0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCr1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCr1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
-        m_pcTrCoeffCr1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCrnp0111 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCrnp1011 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCrnp1101 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
+        m_pcTrCoeffCrnp1110 = (TCoeff *)xMalloc(TCoeff, uiWidth * uiHeight / 4);
         memset(m_pcTrCoeffY, 0, uiWidth * uiHeight * sizeof(TCoeff));
         memset(m_pcTrCoeffCb, 0, uiWidth * uiHeight / 4 * sizeof(TCoeff));
         memset(m_pcTrCoeffCr, 0, uiWidth * uiHeight / 4 * sizeof(TCoeff));
@@ -308,6 +332,66 @@ Void TComDataCU::destroy()
             xFree(m_puhCbf[2]);
             m_puhCbf[2] = NULL;
         }
+        if (m_puhCbfnp0111[0])
+        {
+            xFree(m_puhCbfnp0111[0]);
+            m_puhCbfnp0111[0] = NULL;
+        }
+        if (m_puhCbfnp0111[1])
+        {
+            xFree(m_puhCbfnp0111[1]);
+            m_puhCbfnp0111[1] = NULL;
+        }
+        if (m_puhCbfnp0111[2])
+        {
+            xFree(m_puhCbfnp0111[2]);
+            m_puhCbfnp0111[2] = NULL;
+        }
+        if (m_puhCbfnp1011[0])
+        {
+            xFree(m_puhCbfnp1011[0]);
+            m_puhCbfnp1011[0] = NULL;
+        }
+        if (m_puhCbfnp1011[1])
+        {
+            xFree(m_puhCbfnp1011[1]);
+            m_puhCbfnp1011[1] = NULL;
+        }
+        if (m_puhCbfnp1011[2])
+        {
+            xFree(m_puhCbfnp1011[2]);
+            m_puhCbfnp1011[2] = NULL;
+        }
+        if (m_puhCbfnp1101[0])
+        {
+            xFree(m_puhCbfnp1101[0]);
+            m_puhCbfnp1101[0] = NULL;
+        }
+        if (m_puhCbfnp1101[1])
+        {
+            xFree(m_puhCbfnp1101[1]);
+            m_puhCbfnp1101[1] = NULL;
+        }
+        if (m_puhCbfnp1101[2])
+        {
+            xFree(m_puhCbfnp1101[2]);
+            m_puhCbfnp1101[2] = NULL;
+        }
+        if (m_puhCbfnp1110[0])
+        {
+            xFree(m_puhCbfnp1110[0]);
+            m_puhCbfnp1110[0] = NULL;
+        }
+        if (m_puhCbfnp1110[1])
+        {
+            xFree(m_puhCbfnp1110[1]);
+            m_puhCbfnp1110[1] = NULL;
+        }
+        if (m_puhCbfnp1110[2])
+        {
+            xFree(m_puhCbfnp1110[2]);
+            m_puhCbfnp1110[2] = NULL;
+        }
         if (m_puhInterDir)
         {
             xFree(m_puhInterDir);
@@ -358,75 +442,75 @@ Void TComDataCU::destroy()
             xFree(m_pcTrCoeffY);
             m_pcTrCoeffY = NULL;
         }
-        if (m_pcTrCoeffY0111)
+        if (m_pcTrCoeffYnp0111)
         {
-            xFree(m_pcTrCoeffY0111);
-            m_pcTrCoeffY0111 = NULL;
+            xFree(m_pcTrCoeffYnp0111);
+            m_pcTrCoeffYnp0111 = NULL;
         }
-        if (m_pcTrCoeffY1011)
+        if (m_pcTrCoeffYnp1011)
         {
-            xFree(m_pcTrCoeffY1011);
-            m_pcTrCoeffY1011 = NULL;
+            xFree(m_pcTrCoeffYnp1011);
+            m_pcTrCoeffYnp1011 = NULL;
         }
-        if (m_pcTrCoeffY1101)
+        if (m_pcTrCoeffYnp1101)
         {
-            xFree(m_pcTrCoeffY1101);
-            m_pcTrCoeffY1101 = NULL;
+            xFree(m_pcTrCoeffYnp1101);
+            m_pcTrCoeffYnp1101 = NULL;
         }
-        if (m_pcTrCoeffY1110)
+        if (m_pcTrCoeffYnp1110)
         {
-            xFree(m_pcTrCoeffY1110);
-            m_pcTrCoeffY1110 = NULL;
+            xFree(m_pcTrCoeffYnp1110);
+            m_pcTrCoeffYnp1110 = NULL;
         }
         if (m_pcTrCoeffCb)
         {
             xFree(m_pcTrCoeffCb);
             m_pcTrCoeffCb = NULL;
         }
-        if (m_pcTrCoeffCb0111)
+        if (m_pcTrCoeffCbnp0111)
         {
-            xFree(m_pcTrCoeffCb0111);
-            m_pcTrCoeffCb0111 = NULL;
+            xFree(m_pcTrCoeffCbnp0111);
+            m_pcTrCoeffCbnp0111 = NULL;
         }
-        if (m_pcTrCoeffCb1011)
+        if (m_pcTrCoeffCbnp1011)
         {
-            xFree(m_pcTrCoeffCb1011);
-            m_pcTrCoeffCb1011 = NULL;
+            xFree(m_pcTrCoeffCbnp1011);
+            m_pcTrCoeffCbnp1011 = NULL;
         }
-        if (m_pcTrCoeffCb1101)
+        if (m_pcTrCoeffCbnp1101)
         {
-            xFree(m_pcTrCoeffCb1101);
-            m_pcTrCoeffCb1101 = NULL;
+            xFree(m_pcTrCoeffCbnp1101);
+            m_pcTrCoeffCbnp1101 = NULL;
         }
-        if (m_pcTrCoeffCb1110)
+        if (m_pcTrCoeffCbnp1110)
         {
-            xFree(m_pcTrCoeffCb1110);
-            m_pcTrCoeffCb1110 = NULL;
+            xFree(m_pcTrCoeffCbnp1110);
+            m_pcTrCoeffCbnp1110 = NULL;
         }
         if (m_pcTrCoeffCr)
         {
             xFree(m_pcTrCoeffCr);
             m_pcTrCoeffCr = NULL;
         }
-        if (m_pcTrCoeffCr0111)
+        if (m_pcTrCoeffCrnp0111)
         {
-            xFree(m_pcTrCoeffCr0111);
-            m_pcTrCoeffCr0111 = NULL;
+            xFree(m_pcTrCoeffCrnp0111);
+            m_pcTrCoeffCrnp0111 = NULL;
         }
-        if (m_pcTrCoeffCr1011)
+        if (m_pcTrCoeffCrnp1011)
         {
-            xFree(m_pcTrCoeffCr1011);
-            m_pcTrCoeffCr1011 = NULL;
+            xFree(m_pcTrCoeffCrnp1011);
+            m_pcTrCoeffCrnp1011 = NULL;
         }
-        if (m_pcTrCoeffCr1101)
+        if (m_pcTrCoeffCrnp1101)
         {
-            xFree(m_pcTrCoeffCr1101);
-            m_pcTrCoeffCr1101 = NULL;
+            xFree(m_pcTrCoeffCrnp1101);
+            m_pcTrCoeffCrnp1101 = NULL;
         }
-        if (m_pcTrCoeffCr1110)
+        if (m_pcTrCoeffCrnp1110)
         {
-            xFree(m_pcTrCoeffCr1110);
-            m_pcTrCoeffCr1110 = NULL;
+            xFree(m_pcTrCoeffCrnp1110);
+            m_pcTrCoeffCrnp1110 = NULL;
         }
 #if ADAPTIVE_QP_SELECTION
         if (!m_ArlCoeffIsAliasedAllocation)
@@ -601,6 +685,7 @@ Void TComDataCU::initCU(TComPic *pcPic, UInt iCUAddr)
         m_puhLumaIntraDir[ui] = pcFrom->m_puhLumaIntraDir[ui];
         m_puhChromaIntraDir[ui] = pcFrom->m_puhChromaIntraDir[ui];
         m_puhInterDir[ui] = pcFrom->m_puhInterDir[ui];
+        // TODO: 项目中不会运行进入这部分 也就没有考虑新分块方法的 cbf 处理了, 注意会不会有影响
         m_puhCbf[0][ui] = pcFrom->m_puhCbf[0][ui];
         m_puhCbf[1][ui] = pcFrom->m_puhCbf[1][ui];
         m_puhCbf[2][ui] = pcFrom->m_puhCbf[2][ui];
@@ -637,6 +722,18 @@ Void TComDataCU::initCU(TComPic *pcPic, UInt iCUAddr)
         memset(m_puhCbf[0] + firstElement, 0, numElements * sizeof(*m_puhCbf[0]));
         memset(m_puhCbf[1] + firstElement, 0, numElements * sizeof(*m_puhCbf[1]));
         memset(m_puhCbf[2] + firstElement, 0, numElements * sizeof(*m_puhCbf[2]));
+        memset(m_puhCbfnp0111[0] + firstElement, 0, numElements * sizeof(*m_puhCbf[0]));
+        memset(m_puhCbfnp0111[1] + firstElement, 0, numElements * sizeof(*m_puhCbf[1]));
+        memset(m_puhCbfnp0111[2] + firstElement, 0, numElements * sizeof(*m_puhCbf[2]));
+        memset(m_puhCbfnp1011[0] + firstElement, 0, numElements * sizeof(*m_puhCbf[0]));
+        memset(m_puhCbfnp1011[1] + firstElement, 0, numElements * sizeof(*m_puhCbf[1]));
+        memset(m_puhCbfnp1011[2] + firstElement, 0, numElements * sizeof(*m_puhCbf[2]));
+        memset(m_puhCbfnp1101[0] + firstElement, 0, numElements * sizeof(*m_puhCbf[0]));
+        memset(m_puhCbfnp1101[1] + firstElement, 0, numElements * sizeof(*m_puhCbf[1]));
+        memset(m_puhCbfnp1101[2] + firstElement, 0, numElements * sizeof(*m_puhCbf[2]));
+        memset(m_puhCbfnp1110[0] + firstElement, 0, numElements * sizeof(*m_puhCbf[0]));
+        memset(m_puhCbfnp1110[1] + firstElement, 0, numElements * sizeof(*m_puhCbf[1]));
+        memset(m_puhCbfnp1110[2] + firstElement, 0, numElements * sizeof(*m_puhCbf[2]));
         memset(m_pbIPCMFlag + firstElement, false, numElements * sizeof(*m_pbIPCMFlag));
     }
 
@@ -774,6 +871,18 @@ Void TComDataCU::initEstData(UInt uiDepth, Int qp, Bool bTransquantBypass)
             m_puhCbf[0][ui] = 0;
             m_puhCbf[1][ui] = 0;
             m_puhCbf[2][ui] = 0;
+            m_puhCbfnp0111[0][ui] = 0;
+            m_puhCbfnp0111[1][ui] = 0;
+            m_puhCbfnp0111[2][ui] = 0;
+            m_puhCbfnp1011[0][ui] = 0;
+            m_puhCbfnp1011[1][ui] = 0;
+            m_puhCbfnp1011[2][ui] = 0;
+            m_puhCbfnp1101[0][ui] = 0;
+            m_puhCbfnp1101[1][ui] = 0;
+            m_puhCbfnp1101[2][ui] = 0;
+            m_puhCbfnp1110[0][ui] = 0;
+            m_puhCbfnp1110[1][ui] = 0;
+            m_puhCbfnp1110[2][ui] = 0;
         }
     }
 
@@ -840,6 +949,18 @@ Void TComDataCU::initSubCU(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth, I
     memset(m_puhCbf[0], 0, iSizeInUchar);
     memset(m_puhCbf[1], 0, iSizeInUchar);
     memset(m_puhCbf[2], 0, iSizeInUchar);
+    memset(m_puhCbfnp0111[0], 0, iSizeInUchar);
+    memset(m_puhCbfnp0111[1], 0, iSizeInUchar);
+    memset(m_puhCbfnp0111[2], 0, iSizeInUchar);
+    memset(m_puhCbfnp1011[0], 0, iSizeInUchar);
+    memset(m_puhCbfnp1011[1], 0, iSizeInUchar);
+    memset(m_puhCbfnp1011[2], 0, iSizeInUchar);
+    memset(m_puhCbfnp1101[0], 0, iSizeInUchar);
+    memset(m_puhCbfnp1101[1], 0, iSizeInUchar);
+    memset(m_puhCbfnp1101[2], 0, iSizeInUchar);
+    memset(m_puhCbfnp1110[0], 0, iSizeInUchar);
+    memset(m_puhCbfnp1110[1], 0, iSizeInUchar);
+    memset(m_puhCbfnp1110[2], 0, iSizeInUchar);
     memset(m_puhDepth, uiDepth, iSizeInUchar);
 
     UChar uhWidth = g_uiMaxCUWidth >> uiDepth;
@@ -884,6 +1005,7 @@ Void TComDataCU::initSubCU(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth, I
             m_puhLumaIntraDir[ui] = pcCU->m_puhLumaIntraDir[uiPartOffset + ui];
             m_puhChromaIntraDir[ui] = pcCU->m_puhChromaIntraDir[uiPartOffset + ui];
             m_puhInterDir[ui] = pcCU->m_puhInterDir[uiPartOffset + ui];
+            // TODO: 项目中不会运行到这, 也就没有处理新分块方法对应的 cbf 存储空间
             m_puhCbf[0][ui] = pcCU->m_puhCbf[0][uiPartOffset + ui];
             m_puhCbf[1][ui] = pcCU->m_puhCbf[1][uiPartOffset + ui];
             m_puhCbf[2][ui] = pcCU->m_puhCbf[2][uiPartOffset + ui];
@@ -999,6 +1121,7 @@ Void TComDataCU::copySubCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     m_puhTransformSkip[1] = pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPart;
     m_puhTransformSkip[2] = pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPart;
 
+    // TODO: 项目运行中没有到达这里, 也就没有处理新分块方法对应的 cbf 标志
     m_puhCbf[0] = pcCU->getCbf(TEXT_LUMA) + uiPart;
     m_puhCbf[1] = pcCU->getCbf(TEXT_CHROMA_U) + uiPart;
     m_puhCbf[2] = pcCU->getCbf(TEXT_CHROMA_V) + uiPart;
@@ -1125,6 +1248,7 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     memcpy(m_puhTransformSkip[1] + uiOffset, pcCU->getTransformSkip(TEXT_CHROMA_U), iSizeInUchar);
     memcpy(m_puhTransformSkip[2] + uiOffset, pcCU->getTransformSkip(TEXT_CHROMA_V), iSizeInUchar);
 
+    // TODO: 这个函数是传统分块方法专用的 不考虑再处理新方法增加的成员变量
     memcpy(m_puhCbf[0] + uiOffset, pcCU->getCbf(TEXT_LUMA), iSizeInUchar);
     memcpy(m_puhCbf[1] + uiOffset, pcCU->getCbf(TEXT_CHROMA_U), iSizeInUchar);
     memcpy(m_puhCbf[2] + uiOffset, pcCU->getCbf(TEXT_CHROMA_V), iSizeInUchar);
@@ -1281,6 +1405,10 @@ Void TComDataCU::copyToPic(UChar uhDepth, UInt uiPartIdx, UInt uiPartDepth)
     memcpy(rpcCU->getCbf(TEXT_LUMA) + uiPartOffset, m_puhCbf[0], iSizeInUchar);
     memcpy(rpcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, m_puhCbf[1], iSizeInUchar);
     memcpy(rpcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, m_puhCbf[2], iSizeInUchar);
+    // 位置记录
+    // memcpy(rpcCU->m_puhCbfnp0111 + uiPartOffset, m_puhCbf[0], iSizeInUchar);
+    // memcpy(rpcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, m_puhCbf[1], iSizeInUchar);
+    // memcpy(rpcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, m_puhCbf[2], iSizeInUchar);
 
     memcpy(rpcCU->getDepth() + uiPartOffset, m_puhDepth, iSizeInUchar);
     memcpy(rpcCU->getWidth() + uiPartOffset, m_puhWidth, iSizeInUchar);

@@ -80,6 +80,11 @@ private:
     UChar *m_puhQTTempTrIdx;
     // RDO 时 cbf 的暂存
     UChar *m_puhQTTempCbf[3];
+    // 增加
+    UChar *m_puhQTTempCbfnp0111[3];
+    UChar *m_puhQTTempCbfnp1011[3];
+    UChar *m_puhQTTempCbfnp1101[3];
+    UChar *m_puhQTTempCbfnp1110[3];
 
     // RDO 时重建视频的暂存缓冲区
     TComYuv *m_pcQTTempTComYuv;

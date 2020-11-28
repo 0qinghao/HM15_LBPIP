@@ -94,6 +94,10 @@ TEncSearch::TEncSearch()
 #endif
     m_puhQTTempTrIdx = NULL;
     m_puhQTTempCbf[0] = m_puhQTTempCbf[1] = m_puhQTTempCbf[2] = NULL;
+    m_puhQTTempCbfnp0111[0] = m_puhQTTempCbfnp0111[1] = m_puhQTTempCbfnp0111[2] = NULL;
+    m_puhQTTempCbfnp1011[0] = m_puhQTTempCbfnp1011[1] = m_puhQTTempCbfnp1011[2] = NULL;
+    m_puhQTTempCbfnp1101[0] = m_puhQTTempCbfnp1101[1] = m_puhQTTempCbfnp1101[2] = NULL;
+    m_puhQTTempCbfnp1110[0] = m_puhQTTempCbfnp1110[1] = m_puhQTTempCbfnp1110[2] = NULL;
     m_pcQTTempTComYuv = NULL;
     m_pcEncCfg = NULL;
     m_pcEntropyCoder = NULL;
@@ -155,6 +159,18 @@ TEncSearch::~TEncSearch()
     delete[] m_puhQTTempCbf[0];
     delete[] m_puhQTTempCbf[1];
     delete[] m_puhQTTempCbf[2];
+    delete[] m_puhQTTempCbfnp0111[0];
+    delete[] m_puhQTTempCbfnp0111[1];
+    delete[] m_puhQTTempCbfnp0111[2];
+    delete[] m_puhQTTempCbfnp1011[0];
+    delete[] m_puhQTTempCbfnp1011[1];
+    delete[] m_puhQTTempCbfnp1011[2];
+    delete[] m_puhQTTempCbfnp1101[0];
+    delete[] m_puhQTTempCbfnp1101[1];
+    delete[] m_puhQTTempCbfnp1101[2];
+    delete[] m_puhQTTempCbfnp1110[0];
+    delete[] m_puhQTTempCbfnp1110[1];
+    delete[] m_puhQTTempCbfnp1110[2];
     delete[] m_pcQTTempTComYuv;
     delete[] m_pSharedPredTransformSkip[0];
     delete[] m_pSharedPredTransformSkip[1];
@@ -248,6 +264,18 @@ void TEncSearch::init(TEncCfg *pcEncCfg,
     m_puhQTTempCbf[0] = new UChar[uiNumPartitions];
     m_puhQTTempCbf[1] = new UChar[uiNumPartitions];
     m_puhQTTempCbf[2] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp0111[0] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp0111[1] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp0111[2] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1011[0] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1011[1] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1011[2] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1101[0] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1101[1] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1101[2] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1110[0] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1110[1] = new UChar[uiNumPartitions];
+    m_puhQTTempCbfnp1110[2] = new UChar[uiNumPartitions];
     m_pcQTTempTComYuv = new TComYuv[uiNumLayersToAllocate];
     for (UInt ui = 0; ui < uiNumLayersToAllocate; ++ui)
     {
@@ -1872,16 +1900,16 @@ Void TEncSearch::xSetIntraResultQTnp(TComDataCU *pcCU,
     switch (mask)
     {
     case 0b0111:
-        pcCoeffDstY = pcCU->m_pcTrCoeffY0111;
+        pcCoeffDstY = pcCU->m_pcTrCoeffYnp0111;
         break;
     case 0b1011:
-        pcCoeffDstY = pcCU->m_pcTrCoeffY1011;
+        pcCoeffDstY = pcCU->m_pcTrCoeffYnp1011;
         break;
     case 0b1101:
-        pcCoeffDstY = pcCU->m_pcTrCoeffY1101;
+        pcCoeffDstY = pcCU->m_pcTrCoeffYnp1101;
         break;
     case 0b1110:
-        pcCoeffDstY = pcCU->m_pcTrCoeffY1110;
+        pcCoeffDstY = pcCU->m_pcTrCoeffYnp1110;
         break;
     default:
         assert(0);
@@ -2497,11 +2525,11 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                                 Bool bLumaOnly)
 {
     UInt uiDepth = pcCU->getDepth(0);
-    // 当前 CU 的分割模式下, PU 的个数
+    // 当前 CU 的分割模式下, PU 的个数. 只有在处理细分的 4x4 块时才为 4, 注意在处理 8x8 块的时候仍然为 1.
     UInt uiNumPU = pcCU->getNumPartitions();
     // 改逻辑 因为新的 L 形分块模式看成不改变 CU 尺寸, 正常的四分不受影响
-    // UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
-    UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0;
+    UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
+    // UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0;
     UInt uiWidth = pcCU->getWidth(0) >> uiInitTrDepth;
     UInt uiHeight = pcCU->getHeight(0) >> uiInitTrDepth;
     UInt uiQNumParts = pcCU->getTotalNumPart() >> 2;
@@ -2604,17 +2632,19 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             }
         }
 
+        /* #region  macro */
         //===== check modes (using r-d costs) =====
 #if HHI_RQT_INTRA_SPEEDUP_MOD
         UInt uiSecondBestMode = MAX_UINT;
         Double dSecondBestPUCost = MAX_DOUBLE;
 #endif
 
+        /* #endregion */
         UInt uiBestPUMode = 0;
-        UInt uiBestPUMode0111 = 0;
-        UInt uiBestPUMode1011 = 0;
-        UInt uiBestPUMode1101 = 0;
-        UInt uiBestPUMode1110 = 0;
+        UInt uiBestPUModenp0111 = 0;
+        UInt uiBestPUModenp1011 = 0;
+        UInt uiBestPUModenp1101 = 0;
+        UInt uiBestPUModenp1110 = 0;
         UInt uiBestPUDistY = 0;
         UInt uiBestPUDistC = 0;
         Double dBestPUCost = MAX_DOUBLE;
@@ -2693,18 +2723,62 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             /* #endregion */
             if (uiWidth != 4)
             {
+                // uiPartOffset 表示细分到 4x4 时的第几个, 在这里肯定为 0
                 if (dPUCostnp0111 < dBestPUCostnp0111)
                 {
-                    uiBestPUMode0111 = uiOrgMode;
+                    uiBestPUModenp0111 = uiOrgMode;
                     dBestPUCostnp0111 = dPUCostnp0111;
 
                     xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b0111);
 
                     UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+                    // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
                     // ::memcpy(m_puhQTTempTrIdx0111, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    // ::memcpy(m_puhQTTempCbf0111[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    // ::memcpy(m_puhQTTempCbf0111[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    // ::memcpy(m_puhQTTempCbf0111[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp0111[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp0111[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp0111[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                }
+                if (dPUCostnp1011 < dBestPUCostnp1011)
+                {
+                    uiBestPUModenp1011 = uiOrgMode;
+                    dBestPUCostnp1011 = dPUCostnp1011;
+
+                    xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b1011);
+
+                    UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+                    // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
+                    // ::memcpy(m_puhQTTempTrIdx1011, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1011[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1011[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1011[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                }
+                if (dPUCostnp1101 < dBestPUCostnp1101)
+                {
+                    uiBestPUModenp1101 = uiOrgMode;
+                    dBestPUCostnp1101 = dPUCostnp1101;
+
+                    xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b1101);
+
+                    UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+                    // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
+                    // ::memcpy(m_puhQTTempTrIdx1101, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1101[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1101[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1101[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                }
+                if (dPUCostnp1110 < dBestPUCostnp1110)
+                {
+                    uiBestPUModenp1110 = uiOrgMode;
+                    dBestPUCostnp1110 = dPUCostnp1110;
+
+                    xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b1110);
+
+                    UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+                    // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
+                    // ::memcpy(m_puhQTTempTrIdx1110, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1110[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1110[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp1110[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
                 }
             }
         } // 尝试完所有的模式, 选出了最优的模式
@@ -2720,6 +2794,20 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             if (uiOrgMode == MAX_UINT)
             {
                 break;
+                if (dPUCostnp0111 < dBestPUCostnp0111)
+                {
+                    uiBestPUModenp0111 = uiOrgMode;
+                    dBestPUCostnp0111 = dPUCostnp0111;
+
+                    xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b0111);
+
+                    UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+                    // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
+                    // ::memcpy(m_puhQTTempTrIdx0111, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp0111[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp0111[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                    ::memcpy(m_puhQTTempCbfnp0111[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                }
             }
 #else
             UInt uiOrgMode = uiBestPUMode;
@@ -2776,7 +2864,18 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U) + uiPartOffset, m_puhQTTempTransformSkipFlag[1], uiQPartNum * sizeof(UChar));
         // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPartOffset, m_puhQTTempTransformSkipFlag[2], uiQPartNum * sizeof(UChar));
 
-        /* #region  无损下可以不再次重建. 在 RDO 过程中已经做过重建, 运行到这里保存的是尝试了最后一种模式后的重建状况, 不一定是最佳 RD 时的重建状态, 但无损模式下任何模式重建结果都一样, 所以这里的再次重建可以跳过 */
+        if (uiWidth != 4)
+        {
+            //--- update transform index and cbf ---
+            // UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+            // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
+            // ::memcpy(pcCU->getTransformIdx() + uiPartOffset, m_puhQTTempTrIdx, uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbf(TEXT_LUMA) + uiPartOffset, m_puhQTTempCbf[0], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, m_puhQTTempCbf[1], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, m_puhQTTempCbf[2], uiQPartNum * sizeof(UChar));
+        }
+
+        /* #region  无损下可以不再次重建. 在 RDO 过程中已经做过重建, 运行到这里保存的是尝试了最后一种模式后的重建状况, 不一定是最佳 RD 时的重建状态, 但无损模式下任何模式重建结果都一样, 所以这里的使用敲定的最佳模式再次重建可以跳过 */
         // 对于 8x8 块向下分割成 4 个 4x4 的情况, 需要做一下重建
         //--- set reconstruction for next intra prediction blocks ---
         // if (uiPU != uiNumPU - 1)

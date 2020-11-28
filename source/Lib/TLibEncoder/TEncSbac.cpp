@@ -410,6 +410,7 @@ Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
         return;
     }
 
+    // 不可能进入
     switch (eSize)
     {
     case SIZE_2Nx2N:

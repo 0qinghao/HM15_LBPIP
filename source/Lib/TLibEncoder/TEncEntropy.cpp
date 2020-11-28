@@ -98,6 +98,7 @@ Void TEncEntropy::encodeVPS(TComVPS *pcVPS)
     return;
 }
 
+// 项目中实际上不会编码任何东西 直接 return 出来了
 Void TEncEntropy::encodeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD)
 {
     if (pcCU->getSlice()->isIntra())
@@ -146,6 +147,7 @@ Void TEncEntropy::encodeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD
  * \returns Void
  */
 // 编码所采用的编码模式 (帧内还是帧间)
+// 项目中实际不会编码任何东西 直接 return 出来了
 Void TEncEntropy::encodePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD)
 {
     if (bRD)
@@ -177,7 +179,7 @@ Void TEncEntropy::encodeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDe
  * \param bRD
  * \returns Void
  */
-// 编码 CU 中 PU 的类型 (当前 CU 是 2Nx2N 还是 NxN)
+// 编码 CU 中 PU 的类型 (当前 CU 是 2Nx2N 还是 NxN) (不是向下分割的标志, 是指 8x8 PU 有没有细分到 4 个 4x4)
 Void TEncEntropy::encodePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, Bool bRD)
 {
     if (bRD)
@@ -193,6 +195,7 @@ Void TEncEntropy::encodePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDep
  * \param bRD flag indicating estimation or encoding
  * \returns Void
  */
+// 实际上肯定不会编码 IPCM Info 都是直接 return
 Void TEncEntropy::encodeIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD)
 {
     if (!pcCU->getSlice()->getSPS()->getUsePCM() || pcCU->getWidth(uiAbsPartIdx) > (1 << pcCU->getSlice()->getSPS()->getPCMLog2MaxSize()) || pcCU->getWidth(uiAbsPartIdx) < (1 << pcCU->getSlice()->getSPS()->getPCMLog2MinSize()))

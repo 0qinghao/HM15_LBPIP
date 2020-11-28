@@ -3,11 +3,6 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncCu.cpp",
 		"bookmarks": [
 			{
-				"line": 259,
-				"column": 16,
-				"label": ""
-			},
-			{
 				"line": 658,
 				"column": 25,
 				"label": ""
@@ -28,7 +23,7 @@
 				"label": ""
 			},
 			{
-				"line": 1434,
+				"line": 1433,
 				"column": 82,
 				"label": ""
 			}
@@ -75,6 +70,26 @@
 		]
 	},
 	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
+		"bookmarks": [
+			{
+				"line": 1151,
+				"column": 15,
+				"label": ""
+			},
+			{
+				"line": 2845,
+				"column": 44,
+				"label": ""
+			},
+			{
+				"line": 2976,
+				"column": 98,
+				"label": ""
+			}
+		]
+	},
+	{
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComPattern.cpp",
 		"bookmarks": [
 			{
@@ -103,12 +118,7 @@
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComDataCU.cpp",
 		"bookmarks": [
 			{
-				"line": 1096,
-				"column": 14,
-				"label": ""
-			},
-			{
-				"line": 3669,
+				"line": 3724,
 				"column": 14,
 				"label": ""
 			}
@@ -123,48 +133,18 @@
 				"label": ""
 			},
 			{
-				"line": 580,
-				"column": 24,
+				"line": 579,
+				"column": 22,
 				"label": ""
 			},
 			{
-				"line": 604,
-				"column": 0,
-				"label": ""
-			},
-			{
-				"line": 662,
-				"column": 0,
-				"label": ""
-			},
-			{
-				"line": 1041,
+				"line": 1033,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 1131,
-				"column": 19,
-				"label": ""
-			},
-			{
-				"line": 1163,
-				"column": 13,
-				"label": ""
-			},
-			{
-				"line": 1166,
-				"column": 19,
-				"label": ""
-			},
-			{
-				"line": 1197,
-				"column": 37,
-				"label": ""
-			},
-			{
-				"line": 1322,
-				"column": 14,
+				"line": 1117,
+				"column": 16,
 				"label": ""
 			}
 		]
@@ -230,21 +210,6 @@
 			{
 				"line": 46,
 				"column": 65,
-				"label": ""
-			}
-		]
-	},
-	{
-		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
-		"bookmarks": [
-			{
-				"line": 1830,
-				"column": 15,
-				"label": ""
-			},
-			{
-				"line": 2648,
-				"column": 29,
 				"label": ""
 			}
 		]
