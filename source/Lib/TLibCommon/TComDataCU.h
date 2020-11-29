@@ -193,22 +193,26 @@ public:
     // codeCoeffNxN 中记录每个 4x4 块所需的 bits, 最大 CU 是 32x32 所以实际上只用上 8x8 大小
     UInt uiBitsPer4x4[16][16];
     // 新分块方法的系数
-    TCoeff *m_pcTrCoeffYnp0111;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1011;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1101;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1110;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffCbnp0111; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1011; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1101; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1110; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCrnp0111; ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1011; ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1101; ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1110; ///< transformed coefficient buffer (Cr)
-    UChar *m_puhCbfnp0111[3];    ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1011[3];    ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1101[3];    ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1110[3];    ///< array of coded block flags (CBF)
+    TCoeff *m_pcTrCoeffYnp0111;     ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1011;     ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1101;     ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1110;     ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffCbnp0111;    ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1011;    ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1101;    ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1110;    ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCrnp0111;    ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1011;    ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1101;    ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1110;    ///< transformed coefficient buffer (Cr)
+    UChar *m_puhCbfnp0111[3];       ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1011[3];       ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1101[3];       ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1110[3];       ///< array of coded block flags (CBF)
+    UChar *m_puhLumaIntraDirnp0111; ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1011; ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1101; ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1110; ///< array of intra directions (luma)
 
     TComDataCU();
     virtual ~TComDataCU();
@@ -332,10 +336,18 @@ public:
     Pel *&getPCMSampleCb() { return m_pcIPCMSampleCb; }
     Pel *&getPCMSampleCr() { return m_pcIPCMSampleCr; }
 
+    // 新分块方法的 getcbf 看情况实现 可选择直接取公有成员变量的方式
     UChar getCbf(UInt uiIdx, TextType eType) { return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx]; }
     UChar *getCbf(TextType eType) { return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]]; }
-    UChar getCbf(UInt uiIdx, TextType eType, UInt uiTrDepth) { return ((getCbf(uiIdx, eType) >> uiTrDepth) & 0x1); }
-    Void setCbf(UInt uiIdx, TextType eType, UChar uh) { m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx] = uh; }
+    UChar getCbf(UInt uiIdx, TextType eType, UInt uiTrDepth)
+    {
+        return ((getCbf(uiIdx, eType) >> uiTrDepth) & 0x1);
+    }
+    Void setCbf(UInt uiIdx, TextType eType, UChar uh)
+    {
+        // TODO: 项目不进入 不处理
+        m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx] = uh;
+    }
     Void clearCbf(UInt uiIdx, TextType eType, UInt uiNumParts);
     UChar getQtRootCbf(UInt uiIdx) { return getCbf(uiIdx, TEXT_LUMA, 0) || getCbf(uiIdx, TEXT_CHROMA_U, 0) || getCbf(uiIdx, TEXT_CHROMA_V, 0); }
 
@@ -374,6 +386,8 @@ public:
     UChar getLumaIntraDir(UInt uiIdx) { return m_puhLumaIntraDir[uiIdx]; }
     Void setLumaIntraDir(UInt uiIdx, UChar uh) { m_puhLumaIntraDir[uiIdx] = uh; }
     Void setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
+    // 增加
+    Void setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
 
     UChar *getChromaIntraDir() { return m_puhChromaIntraDir; }
     UChar getChromaIntraDir(UInt uiIdx) { return m_puhChromaIntraDir[uiIdx]; }

@@ -567,6 +567,7 @@ Void TDecSbac::parsePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     pcCU->setPredModeSubParts((PredMode)iPredMode, uiAbsPartIdx, uiDepth);
 }
 
+// 项目中编码时不会涉及到这个函数
 Void TDecSbac::parseIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, UInt depth)
 {
     PartSize mode = pcCU->getPartitionSize(absPartIdx);
