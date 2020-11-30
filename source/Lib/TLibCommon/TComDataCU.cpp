@@ -162,11 +162,16 @@ Void TComDataCU::create(UInt uiNumPartition, UInt uiWidth, UInt uiHeight, Bool b
         m_CUTransquantBypass = new Bool[uiNumPartition];
         m_pbMergeFlag = (Bool *)xMalloc(Bool, uiNumPartition);
         m_puhMergeIndex = (UChar *)xMalloc(UChar, uiNumPartition);
-        m_puhLumaIntraDir = (UChar *)xMalloc(UChar, uiNumPartition);
-        m_puhLumaIntraDirnp0111 = (UChar *)xMalloc(UChar, uiNumPartition);
-        m_puhLumaIntraDirnp1011 = (UChar *)xMalloc(UChar, uiNumPartition);
-        m_puhLumaIntraDirnp1101 = (UChar *)xMalloc(UChar, uiNumPartition);
-        m_puhLumaIntraDirnp1110 = (UChar *)xMalloc(UChar, uiNumPartition);
+        // m_puhLumaIntraDir = (UChar *)xMalloc(UChar, uiNumPartition);
+        // m_puhLumaIntraDirnp0111 = (UChar *)xMalloc(UChar, uiNumPartition);
+        // m_puhLumaIntraDirnp1011 = (UChar *)xMalloc(UChar, uiNumPartition);
+        // m_puhLumaIntraDirnp1101 = (UChar *)xMalloc(UChar, uiNumPartition);
+        // m_puhLumaIntraDirnp1110 = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhLumaIntraDir = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhLumaIntraDirnp0111 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhLumaIntraDirnp1011 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhLumaIntraDirnp1101 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhLumaIntraDirnp1110 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
         m_puhChromaIntraDir = (UChar *)xMalloc(UChar, uiNumPartition);
         m_puhInterDir = (UChar *)xMalloc(UChar, uiNumPartition);
 
@@ -745,11 +750,17 @@ Void TComDataCU::initCU(TComPic *pcPic, UInt iCUAddr)
         memset(m_phQP + firstElement, getSlice()->getSliceQp(), numElements * sizeof(*m_phQP));
         memset(m_pbMergeFlag + firstElement, false, numElements * sizeof(*m_pbMergeFlag));
         memset(m_puhMergeIndex + firstElement, 0, numElements * sizeof(*m_puhMergeIndex));
-        memset(m_puhLumaIntraDir + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDir));
-        memset(m_puhLumaIntraDirnp0111 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp0111));
-        memset(m_puhLumaIntraDirnp1011 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp1011));
-        memset(m_puhLumaIntraDirnp1101 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp1101));
-        memset(m_puhLumaIntraDirnp1110 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp1110));
+        // memset(m_puhLumaIntraDir + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDir));
+        // memset(m_puhLumaIntraDirnp0111 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp0111));
+        // memset(m_puhLumaIntraDirnp1011 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp1011));
+        // memset(m_puhLumaIntraDirnp1101 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp1101));
+        // memset(m_puhLumaIntraDirnp1110 + firstElement, DC_IDX, numElements * sizeof(*m_puhLumaIntraDirnp1110));
+        // 其实项目中 firstElement 一直为 0
+        memset(m_puhLumaIntraDir + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDir));
+        memset(m_puhLumaIntraDirnp0111 + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDirnp0111));
+        memset(m_puhLumaIntraDirnp1011 + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDirnp1011));
+        memset(m_puhLumaIntraDirnp1101 + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDirnp1101));
+        memset(m_puhLumaIntraDirnp1110 + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDirnp1110));
         memset(m_puhChromaIntraDir + firstElement, 0, numElements * sizeof(*m_puhChromaIntraDir));
         memset(m_puhInterDir + firstElement, 0, numElements * sizeof(*m_puhInterDir));
         memset(m_puhCbf[0] + firstElement, 0, numElements * sizeof(*m_puhCbf[0]));
@@ -898,11 +909,16 @@ Void TComDataCU::initEstData(UInt uiDepth, Int qp, Bool bTransquantBypass)
             m_phQP[ui] = qp;
             m_pbMergeFlag[ui] = 0;
             m_puhMergeIndex[ui] = 0;
-            m_puhLumaIntraDir[ui] = DC_IDX;
-            m_puhLumaIntraDirnp0111[ui] = DC_IDX;
-            m_puhLumaIntraDirnp1011[ui] = DC_IDX;
-            m_puhLumaIntraDirnp1101[ui] = DC_IDX;
-            m_puhLumaIntraDirnp1110[ui] = DC_IDX;
+            // m_puhLumaIntraDir[ui] = DC_IDX;
+            // m_puhLumaIntraDirnp0111[ui] = DC_IDX;
+            // m_puhLumaIntraDirnp1011[ui] = DC_IDX;
+            // m_puhLumaIntraDirnp1101[ui] = DC_IDX;
+            // m_puhLumaIntraDirnp1110[ui] = DC_IDX;
+            m_puhLumaIntraDir[ui << 4] = DC_IDX;
+            m_puhLumaIntraDirnp0111[ui << 4] = DC_IDX;
+            m_puhLumaIntraDirnp1011[ui << 4] = DC_IDX;
+            m_puhLumaIntraDirnp1101[ui << 4] = DC_IDX;
+            m_puhLumaIntraDirnp1110[ui << 4] = DC_IDX;
             m_puhChromaIntraDir[ui] = 0;
             m_puhInterDir[ui] = 0;
             m_puhCbf[0][ui] = 0;
@@ -976,11 +992,16 @@ Void TComDataCU::initSubCU(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth, I
 
     memset(m_pbMergeFlag, 0, iSizeInBool);
     memset(m_puhMergeIndex, 0, iSizeInUchar);
-    memset(m_puhLumaIntraDir, DC_IDX, iSizeInUchar);
-    memset(m_puhLumaIntraDirnp0111, DC_IDX, iSizeInUchar);
-    memset(m_puhLumaIntraDirnp1011, DC_IDX, iSizeInUchar);
-    memset(m_puhLumaIntraDirnp1101, DC_IDX, iSizeInUchar);
-    memset(m_puhLumaIntraDirnp1110, DC_IDX, iSizeInUchar);
+    // memset(m_puhLumaIntraDir, DC_IDX, iSizeInUchar);
+    // memset(m_puhLumaIntraDirnp0111, DC_IDX, iSizeInUchar);
+    // memset(m_puhLumaIntraDirnp1011, DC_IDX, iSizeInUchar);
+    // memset(m_puhLumaIntraDirnp1101, DC_IDX, iSizeInUchar);
+    // memset(m_puhLumaIntraDirnp1110, DC_IDX, iSizeInUchar);
+    memset(m_puhLumaIntraDir, DC_IDX, (iSizeInUchar << 4));
+    memset(m_puhLumaIntraDirnp0111, DC_IDX, (iSizeInUchar << 4));
+    memset(m_puhLumaIntraDirnp1011, DC_IDX, (iSizeInUchar << 4));
+    memset(m_puhLumaIntraDirnp1101, DC_IDX, (iSizeInUchar << 4));
+    memset(m_puhLumaIntraDirnp1110, DC_IDX, (iSizeInUchar << 4));
     memset(m_puhChromaIntraDir, 0, iSizeInUchar);
     memset(m_puhInterDir, 0, iSizeInUchar);
     memset(m_puhTrIdx, 0, iSizeInUchar);
@@ -1284,7 +1305,8 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     memcpy(m_pbMergeFlag + uiOffset, pcCU->getMergeFlag(), iSizeInBool);
     memcpy(m_puhMergeIndex + uiOffset, pcCU->getMergeIndex(), iSizeInUchar);
     // TODO: 这个函数是传统分块方法专用的 不考虑再处理新方法增加的成员变量
-    memcpy(m_puhLumaIntraDir + uiOffset, pcCU->getLumaIntraDir(), iSizeInUchar);
+    // memcpy(m_puhLumaIntraDir + uiOffset, pcCU->getLumaIntraDir(), iSizeInUchar);
+    memcpy(m_puhLumaIntraDir + (uiOffset << 4), pcCU->getLumaIntraDir(), iSizeInUchar << 4);
     memcpy(m_puhChromaIntraDir + uiOffset, pcCU->getChromaIntraDir(), iSizeInUchar);
     memcpy(m_puhInterDir + uiOffset, pcCU->getInterDir(), iSizeInUchar);
     memcpy(m_puhTrIdx + uiOffset, pcCU->getTransformIdx(), iSizeInUchar);
@@ -1366,12 +1388,17 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     memcpy(rpcCU->getCUTransquantBypass() + m_uiAbsIdxInLCU, m_CUTransquantBypass, sizeof(*m_CUTransquantBypass) * m_uiNumPartition);
     memcpy(rpcCU->getMergeFlag() + m_uiAbsIdxInLCU, m_pbMergeFlag, iSizeInBool);
     memcpy(rpcCU->getMergeIndex() + m_uiAbsIdxInLCU, m_puhMergeIndex, iSizeInUchar);
-    memcpy(rpcCU->getLumaIntraDir() + m_uiAbsIdxInLCU, m_puhLumaIntraDir, iSizeInUchar);
     // TODO: 这里预测角度信息的复制 表现得有点怪 检查
-    memcpy(rpcCU->m_puhLumaIntraDirnp0111 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp0111, iSizeInUchar);
-    memcpy(rpcCU->m_puhLumaIntraDirnp1011 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1011, iSizeInUchar);
-    memcpy(rpcCU->m_puhLumaIntraDirnp1101 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1101, iSizeInUchar);
-    memcpy(rpcCU->m_puhLumaIntraDirnp1110 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1110, iSizeInUchar);
+    // memcpy(rpcCU->getLumaIntraDir() + m_uiAbsIdxInLCU, m_puhLumaIntraDir, iSizeInUchar);
+    // memcpy(rpcCU->m_puhLumaIntraDirnp0111 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp0111, iSizeInUchar);
+    // memcpy(rpcCU->m_puhLumaIntraDirnp1011 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1011, iSizeInUchar);
+    // memcpy(rpcCU->m_puhLumaIntraDirnp1101 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1101, iSizeInUchar);
+    // memcpy(rpcCU->m_puhLumaIntraDirnp1110 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1110, iSizeInUchar);
+    memcpy(rpcCU->getLumaIntraDir() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDir, (iSizeInUchar << 4));
+    memcpy(rpcCU->getLumaIntraDirnp0111() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDirnp0111, (iSizeInUchar << 4));
+    memcpy(rpcCU->getLumaIntraDirnp1011() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDirnp1011, (iSizeInUchar << 4));
+    memcpy(rpcCU->getLumaIntraDirnp1101() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDirnp1101, (iSizeInUchar << 4));
+    memcpy(rpcCU->getLumaIntraDirnp1110() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDirnp1110, (iSizeInUchar << 4));
     memcpy(rpcCU->getChromaIntraDir() + m_uiAbsIdxInLCU, m_puhChromaIntraDir, iSizeInUchar);
     memcpy(rpcCU->getInterDir() + m_uiAbsIdxInLCU, m_puhInterDir, iSizeInUchar);
     memcpy(rpcCU->getTransformIdx() + m_uiAbsIdxInLCU, m_puhTrIdx, iSizeInUchar);
@@ -2239,7 +2266,8 @@ Void TComDataCU::setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiD
 {
     UInt uiCurrPartNumb = m_pcPic->getNumPartInCU() >> (uiDepth << 1);
 
-    memset(m_puhLumaIntraDir + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+    // memset(m_puhLumaIntraDir + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+    memset(m_puhLumaIntraDir + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
 }
 
 Void TComDataCU::setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth)
@@ -2251,16 +2279,16 @@ Void TComDataCU::setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth)
     switch (mask)
     {
     case 0b0111:
-        memset(m_puhLumaIntraDirnp0111 + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+        memset(m_puhLumaIntraDirnp0111 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
         break;
     case 0b1011:
-        memset(m_puhLumaIntraDirnp1011 + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+        memset(m_puhLumaIntraDirnp1011 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
         break;
     case 0b1101:
-        memset(m_puhLumaIntraDirnp1101 + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+        memset(m_puhLumaIntraDirnp1101 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
         break;
     case 0b1110:
-        memset(m_puhLumaIntraDirnp1110 + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+        memset(m_puhLumaIntraDirnp1110 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
         break;
 
     default:
@@ -2376,7 +2404,7 @@ Void TComDataCU::setMergeIndexSubParts(UInt uiMergeIndex, UInt uiAbsPartIdx, UIn
 {
     setSubPart<UChar>(uiMergeIndex, m_puhMergeIndex, uiAbsPartIdx, uiDepth, uiPartIdx);
 }
-
+// 色差在保存预测角度的时候没有考虑降采样 依然是一个 4x4 像素区域存一个模式
 Void TComDataCU::setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth)
 {
     UInt uiCurrPartNumb = m_pcPic->getNumPartInCU() >> (uiDepth << 1);

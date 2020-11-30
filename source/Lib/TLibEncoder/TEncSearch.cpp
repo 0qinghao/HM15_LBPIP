@@ -2384,12 +2384,14 @@ Void TEncSearch::xRecurIntraChromaCodingQT(TComDataCU *pcCU,
         }
         else
         {
-            pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_U, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
-            pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_V, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
+            // pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_U, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
+            // pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_V, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
             xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 0);
             xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 1);
         }
     }
+    // 只有在处理细分到 4x4(从Y分量看的 4x4) 块时才可能进入
+    // 处理方法是看到第一个这样的块时, 因为色差只有 2x2 没法处理, 因此连同后面的 3 个一起进行色差分量的预测编码, 组成一个 4x4 大小的色差进行处理, 后面碰到的 3 个 2x2 就跳过
     else
     {
         UInt uiSplitCbfU = 0;
@@ -2658,6 +2660,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             UInt uiOrgMode = uiRdModeList[uiMode];
 
             // 把当前处理的块所用的预测模式填写进存储模式的成员变量, 模式存储的格式是每 4x4 大小存放一个模式信息, 如果处理的是一个 32x32 块则需填充 64 个相同的模式
+            // *为了适应环状修改了存储结构
             pcCU->setLumaIntraDirSubParts(uiOrgMode, uiPartOffset, uiDepth + uiInitTrDepth);
             if (uiWidth != 4)
             {
@@ -2873,25 +2876,23 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 
         if (uiWidth != 4)
         {
-            //--- update transform index and cbf ---
-            // UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
             // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
             // ::memcpy(pcCU->getTransformIdx() + uiPartOffset, m_puhQTTempTrIdx, uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp0111[0] + uiPartOffset, m_puhQTTempCbfnp0111[0], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp0111[1] + uiPartOffset, m_puhQTTempCbfnp0111[1], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp0111[2] + uiPartOffset, m_puhQTTempCbfnp0111[2], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_LUMA, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[0], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[1], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[2], uiQPartNum * sizeof(UChar));
 
-            ::memcpy(pcCU->m_puhCbfnp1011[0] + uiPartOffset, m_puhQTTempCbfnp1011[0], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp1011[1] + uiPartOffset, m_puhQTTempCbfnp1011[1], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp1011[2] + uiPartOffset, m_puhQTTempCbfnp1011[2], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_LUMA, 0b1011) + uiPartOffset, m_puhQTTempCbfnp1011[0], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b1011) + uiPartOffset, m_puhQTTempCbfnp1011[1], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b1011) + uiPartOffset, m_puhQTTempCbfnp1011[2], uiQPartNum * sizeof(UChar));
 
-            ::memcpy(pcCU->m_puhCbfnp1101[0] + uiPartOffset, m_puhQTTempCbfnp1101[0], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp1101[1] + uiPartOffset, m_puhQTTempCbfnp1101[1], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp1101[2] + uiPartOffset, m_puhQTTempCbfnp1101[2], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_LUMA, 0b1101) + uiPartOffset, m_puhQTTempCbfnp1101[0], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b1101) + uiPartOffset, m_puhQTTempCbfnp1101[1], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b1101) + uiPartOffset, m_puhQTTempCbfnp1101[2], uiQPartNum * sizeof(UChar));
 
-            ::memcpy(pcCU->m_puhCbfnp1110[0] + uiPartOffset, m_puhQTTempCbfnp1110[0], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp1110[1] + uiPartOffset, m_puhQTTempCbfnp1110[1], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_puhCbfnp1110[2] + uiPartOffset, m_puhQTTempCbfnp1110[2], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_LUMA, 0b1110) + uiPartOffset, m_puhQTTempCbfnp1110[0], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b1110) + uiPartOffset, m_puhQTTempCbfnp1110[1], uiQPartNum * sizeof(UChar));
+            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b1110) + uiPartOffset, m_puhQTTempCbfnp1110[2], uiQPartNum * sizeof(UChar));
         }
 
         /* #region  无损下可以不再次重建. 在 RDO 过程中已经做过重建, 运行到这里保存的是尝试了最后一种模式后的重建状况, 不一定是最佳 RD 时的重建状态, 但无损模式下任何模式重建结果都一样, 所以这里的使用敲定的最佳模式再次重建可以跳过 */

@@ -337,11 +337,64 @@ public:
     Pel *&getPCMSampleCr() { return m_pcIPCMSampleCr; }
 
     // 新分块方法的 getcbf 看情况实现 可选择直接取公有成员变量的方式
-    UChar getCbf(UInt uiIdx, TextType eType) { return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx]; }
-    UChar *getCbf(TextType eType) { return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]]; }
+    UChar getCbf(UInt uiIdx, TextType eType)
+    {
+        return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+    }
+    UChar getCbfnp(UInt uiIdx, TextType eType, UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_puhCbfnp0111[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        case 0b1011:
+            return m_puhCbfnp1011[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        case 0b1101:
+            return m_puhCbfnp1101[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        case 0b1110:
+            return m_puhCbfnp1110[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        default:
+            assert(0);
+            break;
+        }
+    }
+    UChar *getCbf(TextType eType)
+    {
+        return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]];
+    }
+    UChar *getCbfnp(TextType eType, UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_puhCbfnp0111[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        case 0b1011:
+            return m_puhCbfnp1011[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        case 0b1101:
+            return m_puhCbfnp1101[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        case 0b1110:
+            return m_puhCbfnp1110[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        default:
+            assert(0);
+            return 0;
+            break;
+        }
+    }
     UChar getCbf(UInt uiIdx, TextType eType, UInt uiTrDepth)
     {
         return ((getCbf(uiIdx, eType) >> uiTrDepth) & 0x1);
+    }
+    UChar getCbfnp(UInt uiIdx, TextType eType, UInt uiTrDepth, UInt mask)
+    {
+        return ((getCbfnp(uiIdx, eType, mask) >> uiTrDepth) & 0x1);
     }
     Void setCbf(UInt uiIdx, TextType eType, UChar uh)
     {
@@ -383,15 +436,68 @@ public:
     {
         return m_puhLumaIntraDir;
     }
-    UChar getLumaIntraDir(UInt uiIdx) { return m_puhLumaIntraDir[uiIdx]; }
-    Void setLumaIntraDir(UInt uiIdx, UChar uh) { m_puhLumaIntraDir[uiIdx] = uh; }
+    UChar *getLumaIntraDirnp0111()
+    {
+        return m_puhLumaIntraDirnp0111;
+    }
+    UChar *getLumaIntraDirnp1011()
+    {
+        return m_puhLumaIntraDirnp1011;
+    }
+    UChar *getLumaIntraDirnp1101()
+    {
+        return m_puhLumaIntraDirnp1101;
+    }
+    UChar *getLumaIntraDirnp1110()
+    {
+        return m_puhLumaIntraDirnp1110;
+    }
+    // UChar getLumaIntraDir(UInt uiIdx)
+    // {
+    //     return m_puhLumaIntraDir[uiIdx];
+    // }
+    UChar getLumaIntraDir(UInt uiIdx)
+    {
+        return m_puhLumaIntraDir[uiIdx << 4];
+    }
+    UChar getLumaIntraDirnp0111(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp0111[uiIdx << 4];
+    }
+    UChar getLumaIntraDirnp1011(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp1011[uiIdx << 4];
+    }
+    UChar getLumaIntraDirnp1101(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp1101[uiIdx << 4];
+    }
+    UChar getLumaIntraDirnp1110(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp1110[uiIdx << 4];
+    }
+    // TODO: 不进入 不处理
+    Void setLumaIntraDir(UInt uiIdx, UChar uh)
+    {
+        m_puhLumaIntraDir[uiIdx] = uh;
+    }
     Void setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
     // 增加
     Void setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
 
-    UChar *getChromaIntraDir() { return m_puhChromaIntraDir; }
-    UChar getChromaIntraDir(UInt uiIdx) { return m_puhChromaIntraDir[uiIdx]; }
-    Void setChromaIntraDir(UInt uiIdx, UChar uh) { m_puhChromaIntraDir[uiIdx] = uh; }
+    UChar *getChromaIntraDir()
+    {
+        return m_puhChromaIntraDir;
+    }
+    UChar getChromaIntraDir(UInt uiIdx)
+    {
+        return m_puhChromaIntraDir[uiIdx];
+    }
+    // TODO: 不进入 不处理
+    Void setChromaIntraDir(UInt uiIdx, UChar uh)
+    {
+        m_puhChromaIntraDir[uiIdx] = uh;
+    }
     Void setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
 
     UChar *getInterDir() { return m_puhInterDir; }
