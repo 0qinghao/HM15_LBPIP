@@ -2391,7 +2391,7 @@ Void TEncSearch::xRecurIntraChromaCodingQT(TComDataCU *pcCU,
         }
     }
     // 只有在处理细分到 4x4(从Y分量看的 4x4) 块时才可能进入
-    // 处理方法是看到第一个这样的块时, 因为色差只有 2x2 没法处理, 因此连同后面的 3 个一起进行色差分量的预测编码, 组成一个 4x4 大小的色差进行处理, 后面碰到的 3 个 2x2 就跳过
+    // 处理方法是看到第一个这样的块时, 因为色差只有 2x2 没法处理, 因此连同后面的 3 个一起进行色差分量的预测编码, 组成一个 4x4 大小的色差进行处理, 后面碰到的 3 个 2x2 就跳过. 跳过逻辑的实现方法是递归调用本函数, 根据 FirstQ 的状态确认是否要进行编码, 只有第一次进行编码后面三次递归进去直接 return
     else
     {
         UInt uiSplitCbfU = 0;
@@ -3010,6 +3010,7 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     UInt uiBestMode = 0;
     UInt uiBestDist = 0;
     Double dBestCost = MAX_DOUBLE;
+    UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
 
     //----- init mode list -----
     UInt uiMinMode = 0;
