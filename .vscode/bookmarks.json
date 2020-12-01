@@ -3,11 +3,6 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncCu.cpp",
 		"bookmarks": [
 			{
-				"line": 259,
-				"column": 16,
-				"label": ""
-			},
-			{
 				"line": 658,
 				"column": 25,
 				"label": ""
@@ -23,12 +18,12 @@
 				"label": ""
 			},
 			{
-				"line": 1424,
+				"line": 1421,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 1437,
+				"line": 1433,
 				"column": 82,
 				"label": ""
 			}
@@ -75,6 +70,26 @@
 		]
 	},
 	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
+		"bookmarks": [
+			{
+				"line": 1153,
+				"column": 15,
+				"label": ""
+			},
+			{
+				"line": 2901,
+				"column": 44,
+				"label": ""
+			},
+			{
+				"line": 3032,
+				"column": 98,
+				"label": ""
+			}
+		]
+	},
+	{
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComPattern.cpp",
 		"bookmarks": [
 			{
@@ -103,12 +118,7 @@
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComDataCU.cpp",
 		"bookmarks": [
 			{
-				"line": 1159,
-				"column": 14,
-				"label": ""
-			},
-			{
-				"line": 3774,
+				"line": 3757,
 				"column": 14,
 				"label": ""
 			}
@@ -118,53 +128,23 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
 		"bookmarks": [
 			{
-				"line": 485,
+				"line": 484,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 581,
-				"column": 24,
+				"line": 579,
+				"column": 22,
 				"label": ""
 			},
 			{
-				"line": 605,
-				"column": 0,
-				"label": ""
-			},
-			{
-				"line": 663,
-				"column": 0,
-				"label": ""
-			},
-			{
-				"line": 1042,
+				"line": 1033,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 1132,
-				"column": 19,
-				"label": ""
-			},
-			{
-				"line": 1164,
-				"column": 13,
-				"label": ""
-			},
-			{
-				"line": 1167,
-				"column": 19,
-				"label": ""
-			},
-			{
-				"line": 1198,
-				"column": 37,
-				"label": ""
-			},
-			{
-				"line": 1323,
-				"column": 14,
+				"line": 1117,
+				"column": 16,
 				"label": ""
 			}
 		]
@@ -188,13 +168,8 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncEntropy.cpp",
 		"bookmarks": [
 			{
-				"line": 181,
+				"line": 179,
 				"column": 17,
-				"label": ""
-			},
-			{
-				"line": 197,
-				"column": 13,
 				"label": ""
 			}
 		]
@@ -235,26 +210,6 @@
 			{
 				"line": 46,
 				"column": 65,
-				"label": ""
-			}
-		]
-	},
-	{
-		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
-		"bookmarks": [
-			{
-				"line": 1858,
-				"column": 15,
-				"label": ""
-			},
-			{
-				"line": 2686,
-				"column": 29,
-				"label": ""
-			},
-			{
-				"line": 2960,
-				"column": 34,
 				"label": ""
 			}
 		]

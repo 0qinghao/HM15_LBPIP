@@ -172,7 +172,12 @@ Void TComDataCU::create(UInt uiNumPartition, UInt uiWidth, UInt uiHeight, Bool b
         m_puhLumaIntraDirnp1011 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
         m_puhLumaIntraDirnp1101 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
         m_puhLumaIntraDirnp1110 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
-        m_puhChromaIntraDir = (UChar *)xMalloc(UChar, uiNumPartition);
+        // m_puhChromaIntraDir = (UChar *)xMalloc(UChar, uiNumPartition);
+        m_puhChromaIntraDir = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhChromaIntraDirnp0111 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhChromaIntraDirnp1011 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhChromaIntraDirnp1101 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
+        m_puhChromaIntraDirnp1110 = (UChar *)xMalloc(UChar, uiNumPartition << 4);
         m_puhInterDir = (UChar *)xMalloc(UChar, uiNumPartition);
 
         m_puhTrIdx = (UChar *)xMalloc(UChar, uiNumPartition);
@@ -449,6 +454,26 @@ Void TComDataCU::destroy()
         {
             xFree(m_puhChromaIntraDir);
             m_puhChromaIntraDir = NULL;
+        }
+        if (m_puhChromaIntraDirnp0111)
+        {
+            xFree(m_puhChromaIntraDirnp0111);
+            m_puhChromaIntraDirnp0111 = NULL;
+        }
+        if (m_puhChromaIntraDirnp1011)
+        {
+            xFree(m_puhChromaIntraDirnp1011);
+            m_puhChromaIntraDirnp1011 = NULL;
+        }
+        if (m_puhChromaIntraDirnp1101)
+        {
+            xFree(m_puhChromaIntraDirnp1101);
+            m_puhChromaIntraDirnp1101 = NULL;
+        }
+        if (m_puhChromaIntraDirnp1110)
+        {
+            xFree(m_puhChromaIntraDirnp1110);
+            m_puhChromaIntraDirnp1110 = NULL;
         }
         if (m_puhTrIdx)
         {
@@ -761,7 +786,12 @@ Void TComDataCU::initCU(TComPic *pcPic, UInt iCUAddr)
         memset(m_puhLumaIntraDirnp1011 + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDirnp1011));
         memset(m_puhLumaIntraDirnp1101 + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDirnp1101));
         memset(m_puhLumaIntraDirnp1110 + (firstElement << 4), DC_IDX, (numElements << 4) * sizeof(*m_puhLumaIntraDirnp1110));
-        memset(m_puhChromaIntraDir + firstElement, 0, numElements * sizeof(*m_puhChromaIntraDir));
+        // memset(m_puhChromaIntraDir + firstElement, 0, numElements * sizeof(*m_puhChromaIntraDir));
+        memset(m_puhChromaIntraDir + (firstElement << 4), 0, (numElements << 4) * sizeof(*m_puhChromaIntraDir));
+        memset(m_puhChromaIntraDirnp0111 + (firstElement << 4), 0, (numElements << 4) * sizeof(*m_puhChromaIntraDirnp0111));
+        memset(m_puhChromaIntraDirnp1011 + (firstElement << 4), 0, (numElements << 4) * sizeof(*m_puhChromaIntraDirnp1011));
+        memset(m_puhChromaIntraDirnp1101 + (firstElement << 4), 0, (numElements << 4) * sizeof(*m_puhChromaIntraDirnp1101));
+        memset(m_puhChromaIntraDirnp1110 + (firstElement << 4), 0, (numElements << 4) * sizeof(*m_puhChromaIntraDirnp1110));
         memset(m_puhInterDir + firstElement, 0, numElements * sizeof(*m_puhInterDir));
         memset(m_puhCbf[0] + firstElement, 0, numElements * sizeof(*m_puhCbf[0]));
         memset(m_puhCbf[1] + firstElement, 0, numElements * sizeof(*m_puhCbf[1]));
@@ -919,7 +949,11 @@ Void TComDataCU::initEstData(UInt uiDepth, Int qp, Bool bTransquantBypass)
             m_puhLumaIntraDirnp1011[ui << 4] = DC_IDX;
             m_puhLumaIntraDirnp1101[ui << 4] = DC_IDX;
             m_puhLumaIntraDirnp1110[ui << 4] = DC_IDX;
-            m_puhChromaIntraDir[ui] = 0;
+            m_puhChromaIntraDir[ui << 4] = 0;
+            m_puhChromaIntraDirnp0111[ui << 4] = 0;
+            m_puhChromaIntraDirnp1011[ui << 4] = 0;
+            m_puhChromaIntraDirnp1101[ui << 4] = 0;
+            m_puhChromaIntraDirnp1110[ui << 4] = 0;
             m_puhInterDir[ui] = 0;
             m_puhCbf[0][ui] = 0;
             m_puhCbf[1][ui] = 0;
@@ -1002,7 +1036,12 @@ Void TComDataCU::initSubCU(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth, I
     memset(m_puhLumaIntraDirnp1011, DC_IDX, (iSizeInUchar << 4));
     memset(m_puhLumaIntraDirnp1101, DC_IDX, (iSizeInUchar << 4));
     memset(m_puhLumaIntraDirnp1110, DC_IDX, (iSizeInUchar << 4));
-    memset(m_puhChromaIntraDir, 0, iSizeInUchar);
+    // memset(m_puhChromaIntraDir, 0, iSizeInUchar);
+    memset(m_puhChromaIntraDir, 0, (iSizeInUchar << 4));
+    memset(m_puhChromaIntraDirnp0111, 0, (iSizeInUchar << 4));
+    memset(m_puhChromaIntraDirnp1011, 0, (iSizeInUchar << 4));
+    memset(m_puhChromaIntraDirnp1101, 0, (iSizeInUchar << 4));
+    memset(m_puhChromaIntraDirnp1110, 0, (iSizeInUchar << 4));
     memset(m_puhInterDir, 0, iSizeInUchar);
     memset(m_puhTrIdx, 0, iSizeInUchar);
     memset(m_puhTransformSkip[0], 0, iSizeInUchar);
@@ -1304,10 +1343,19 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     memcpy(m_CUTransquantBypass + uiOffset, pcCU->getCUTransquantBypass(), sizeof(*m_CUTransquantBypass) * uiNumPartition);
     memcpy(m_pbMergeFlag + uiOffset, pcCU->getMergeFlag(), iSizeInBool);
     memcpy(m_puhMergeIndex + uiOffset, pcCU->getMergeIndex(), iSizeInUchar);
-    // TODO: 这个函数是传统分块方法专用的 不考虑再处理新方法增加的成员变量
+    // TODO: 这里是 4x4 块网上统计才会进入的, 针对新分块方法, 复制的源数据是不是应该还是传统分块方法的结果
     // memcpy(m_puhLumaIntraDir + uiOffset, pcCU->getLumaIntraDir(), iSizeInUchar);
     memcpy(m_puhLumaIntraDir + (uiOffset << 4), pcCU->getLumaIntraDir(), iSizeInUchar << 4);
-    memcpy(m_puhChromaIntraDir + uiOffset, pcCU->getChromaIntraDir(), iSizeInUchar);
+    memcpy(m_puhLumaIntraDirnp0111 + (uiOffset << 4), pcCU->getLumaIntraDirnp0111(), iSizeInUchar << 4);
+    memcpy(m_puhLumaIntraDirnp1011 + (uiOffset << 4), pcCU->getLumaIntraDirnp1011(), iSizeInUchar << 4);
+    memcpy(m_puhLumaIntraDirnp1101 + (uiOffset << 4), pcCU->getLumaIntraDirnp1101(), iSizeInUchar << 4);
+    memcpy(m_puhLumaIntraDirnp1110 + (uiOffset << 4), pcCU->getLumaIntraDirnp1110(), iSizeInUchar << 4);
+    // memcpy(m_puhChromaIntraDir + uiOffset, pcCU->getChromaIntraDir(), iSizeInUchar);
+    memcpy(m_puhChromaIntraDir + (uiOffset << 4), pcCU->getChromaIntraDir(), (iSizeInUchar << 4));
+    memcpy(m_puhChromaIntraDirnp0111 + (uiOffset << 4), pcCU->getChromaIntraDirnp0111(), (iSizeInUchar << 4));
+    memcpy(m_puhChromaIntraDirnp1011 + (uiOffset << 4), pcCU->getChromaIntraDirnp1011(), (iSizeInUchar << 4));
+    memcpy(m_puhChromaIntraDirnp1101 + (uiOffset << 4), pcCU->getChromaIntraDirnp1101(), (iSizeInUchar << 4));
+    memcpy(m_puhChromaIntraDirnp1110 + (uiOffset << 4), pcCU->getChromaIntraDirnp1110(), (iSizeInUchar << 4));
     memcpy(m_puhInterDir + uiOffset, pcCU->getInterDir(), iSizeInUchar);
     memcpy(m_puhTrIdx + uiOffset, pcCU->getTransformIdx(), iSizeInUchar);
     memcpy(m_puhTransformSkip[0] + uiOffset, pcCU->getTransformSkip(TEXT_LUMA), iSizeInUchar);
@@ -1399,7 +1447,12 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     memcpy(rpcCU->getLumaIntraDirnp1011() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDirnp1011, (iSizeInUchar << 4));
     memcpy(rpcCU->getLumaIntraDirnp1101() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDirnp1101, (iSizeInUchar << 4));
     memcpy(rpcCU->getLumaIntraDirnp1110() + (m_uiAbsIdxInLCU << 4), m_puhLumaIntraDirnp1110, (iSizeInUchar << 4));
-    memcpy(rpcCU->getChromaIntraDir() + m_uiAbsIdxInLCU, m_puhChromaIntraDir, iSizeInUchar);
+    // memcpy(rpcCU->getChromaIntraDir() + m_uiAbsIdxInLCU, m_puhChromaIntraDir, iSizeInUchar);
+    memcpy(rpcCU->getChromaIntraDir() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDir, (iSizeInUchar << 4));
+    memcpy(rpcCU->getChromaIntraDirnp0111() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDirnp0111, (iSizeInUchar << 4));
+    memcpy(rpcCU->getChromaIntraDirnp1011() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDirnp1011, (iSizeInUchar << 4));
+    memcpy(rpcCU->getChromaIntraDirnp1101() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDirnp1101, (iSizeInUchar << 4));
+    memcpy(rpcCU->getChromaIntraDirnp1110() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDirnp1110, (iSizeInUchar << 4));
     memcpy(rpcCU->getInterDir() + m_uiAbsIdxInLCU, m_puhInterDir, iSizeInUchar);
     memcpy(rpcCU->getTransformIdx() + m_uiAbsIdxInLCU, m_puhTrIdx, iSizeInUchar);
     memcpy(rpcCU->getTransformSkip(TEXT_LUMA) + m_uiAbsIdxInLCU, m_puhTransformSkip[0], iSizeInUchar);
@@ -2405,11 +2458,40 @@ Void TComDataCU::setMergeIndexSubParts(UInt uiMergeIndex, UInt uiAbsPartIdx, UIn
     setSubPart<UChar>(uiMergeIndex, m_puhMergeIndex, uiAbsPartIdx, uiDepth, uiPartIdx);
 }
 // 色差在保存预测角度的时候没有考虑降采样 依然是一个 4x4 像素区域存一个模式
+// 改为每个点都存
 Void TComDataCU::setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth)
 {
     UInt uiCurrPartNumb = m_pcPic->getNumPartInCU() >> (uiDepth << 1);
 
-    memset(m_puhChromaIntraDir + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+    // memset(m_puhChromaIntraDir + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+    memset(m_puhChromaIntraDir + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
+}
+
+Void TComDataCU::setChromIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth)
+{
+    UInt uiAbsPartIdx = 0;
+    UInt uiCurrPartNumb = m_pcPic->getNumPartInCU() >> (uiDepth << 1);
+
+    // memset(m_puhChromaIntraDir + uiAbsPartIdx, uiDir, sizeof(UChar) * uiCurrPartNumb);
+    switch (mask)
+    {
+    case 0b0111:
+        memset(m_puhChromaIntraDirnp0111 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
+        break;
+    case 0b1011:
+        memset(m_puhChromaIntraDirnp1011 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
+        break;
+    case 0b1101:
+        memset(m_puhChromaIntraDirnp1101 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
+        break;
+    case 0b1110:
+        memset(m_puhChromaIntraDirnp1110 + (uiAbsPartIdx << 4), uiDir, sizeof(UChar) * (uiCurrPartNumb << 4));
+        break;
+
+    default:
+        assert(0);
+        break;
+    }
 }
 
 Void TComDataCU::setInterDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiPartIdx, UInt uiDepth)

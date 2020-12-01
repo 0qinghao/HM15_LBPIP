@@ -190,29 +190,35 @@ public:
     // 增加
     // codeCoeffNxN 中记录公共部分 bits
     UInt uiBitsComm;
+    UInt uiBitsCommChroma;
     // codeCoeffNxN 中记录每个 4x4 块所需的 bits, 最大 CU 是 32x32 所以实际上只用上 8x8 大小
     UInt uiBitsPer4x4[16][16];
+    UInt uiBitsPer4x4Chroma[16][16];
     // 新分块方法的系数
-    TCoeff *m_pcTrCoeffYnp0111;     ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1011;     ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1101;     ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1110;     ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffCbnp0111;    ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1011;    ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1101;    ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1110;    ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCrnp0111;    ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1011;    ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1101;    ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1110;    ///< transformed coefficient buffer (Cr)
-    UChar *m_puhCbfnp0111[3];       ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1011[3];       ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1101[3];       ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1110[3];       ///< array of coded block flags (CBF)
-    UChar *m_puhLumaIntraDirnp0111; ///< array of intra directions (luma)
-    UChar *m_puhLumaIntraDirnp1011; ///< array of intra directions (luma)
-    UChar *m_puhLumaIntraDirnp1101; ///< array of intra directions (luma)
-    UChar *m_puhLumaIntraDirnp1110; ///< array of intra directions (luma)
+    TCoeff *m_pcTrCoeffYnp0111;       ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1011;       ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1101;       ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1110;       ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffCbnp0111;      ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1011;      ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1101;      ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1110;      ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCrnp0111;      ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1011;      ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1101;      ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1110;      ///< transformed coefficient buffer (Cr)
+    UChar *m_puhCbfnp0111[3];         ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1011[3];         ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1101[3];         ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1110[3];         ///< array of coded block flags (CBF)
+    UChar *m_puhLumaIntraDirnp0111;   ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1011;   ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1101;   ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1110;   ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp0111; ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp1011; ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp1101; ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp1110; ///< array of intra directions (luma)
 
     TComDataCU();
     virtual ~TComDataCU();
@@ -489,9 +495,45 @@ public:
     {
         return m_puhChromaIntraDir;
     }
+    UChar *getChromaIntraDirnp0111()
+    {
+        return m_puhChromaIntraDirnp0111;
+    }
+    UChar *getChromaIntraDirnp1011()
+    {
+        return m_puhChromaIntraDirnp1011;
+    }
+    UChar *getChromaIntraDirnp1101()
+    {
+        return m_puhChromaIntraDirnp1101;
+    }
+    UChar *getChromaIntraDirnp1110()
+    {
+        return m_puhChromaIntraDirnp1110;
+    }
+    // UChar getChromaIntraDir(UInt uiIdx)
+    // {
+    //     return m_puhChromaIntraDir[uiIdx];
+    // }
     UChar getChromaIntraDir(UInt uiIdx)
     {
-        return m_puhChromaIntraDir[uiIdx];
+        return m_puhChromaIntraDir[uiIdx << 4];
+    }
+    UChar getChromaIntraDirnp0111(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp0111[uiIdx << 4];
+    }
+    UChar getChromaIntraDirnp1011(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp1011[uiIdx << 4];
+    }
+    UChar getChromaIntraDirnp1101(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp1101[uiIdx << 4];
+    }
+    UChar getChromaIntraDirnp1110(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp1110[uiIdx << 4];
     }
     // TODO: 不进入 不处理
     Void setChromaIntraDir(UInt uiIdx, UChar uh)
@@ -499,6 +541,8 @@ public:
         m_puhChromaIntraDir[uiIdx] = uh;
     }
     Void setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
+    // 增加
+    Void setChromIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
 
     UChar *getInterDir() { return m_puhInterDir; }
     UChar getInterDir(UInt uiIdx) { return m_puhInterDir[uiIdx]; }

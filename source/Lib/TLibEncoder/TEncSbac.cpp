@@ -1068,6 +1068,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     //DTRACE_CABAC_V(pcCU->getPredictionMode(uiAbsPartIdx))
     //DTRACE_CABAC_T("\n")
 
+    TextType eTTypeSrc = eTType;
+    UInt uiBitsCodedHeadCbfXYUCoeffU = this->getNumberOfWrittenBits();
+
     if (uiWidth > m_pcSlice->getSPS()->getMaxTrSize())
     {
         uiWidth = m_pcSlice->getSPS()->getMaxTrSize();
@@ -1163,7 +1166,22 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     Int iScanPosSig = scanPosLast;
 
     // 记录编码具体的 4x4 系数块之前所用的 bits
-    pcCU->uiBitsComm = this->getNumberOfWrittenBits();
+    if (eTTypeSrc == TEXT_LUMA)
+    {
+        pcCU->uiBitsComm = this->getNumberOfWrittenBits();
+    }
+    else if (eTTypeSrc == TEXT_CHROMA_U)
+    {
+        pcCU->uiBitsCommChroma = this->getNumberOfWrittenBits();
+    }
+    else if (eTTypeSrc == TEXT_CHROMA_V)
+    {
+        pcCU->uiBitsCommChroma += this->getNumberOfWrittenBits() - uiBitsCodedHeadCbfXYUCoeffU;
+    }
+    else
+    {
+        assert(0);
+    }
 
     // 挨个 4x4 块编码
     // 编码内容包括
@@ -1322,8 +1340,18 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             }
         }
         // 记录每个 4x4 块所需的 bits
-        UInt uiBitsCurr = this->getNumberOfWrittenBits();
-        pcCU->uiBitsPer4x4[iCGPosY][iCGPosX] = this->getNumberOfWrittenBits() - uiBitsPre;
+        if (eTTypeSrc == TEXT_LUMA)
+        {
+            pcCU->uiBitsPer4x4[iCGPosY][iCGPosX] = this->getNumberOfWrittenBits() - uiBitsPre;
+        }
+        else if (eTTypeSrc == TEXT_CHROMA_U)
+        {
+            pcCU->uiBitsPer4x4Chroma[iCGPosY][iCGPosX] = this->getNumberOfWrittenBits() - uiBitsPre;
+        }
+        else if (eTTypeSrc == TEXT_CHROMA_V)
+        {
+            pcCU->uiBitsPer4x4Chroma[iCGPosY][iCGPosX] += this->getNumberOfWrittenBits() - uiBitsPre;
+        }
     }
     return;
 }

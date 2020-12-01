@@ -285,6 +285,7 @@ protected:
 #endif
                              Double &dRDCost);
     Void xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiwidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
+    Void xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiwidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
 
     Void xSetIntraResultQT(TComDataCU *pcCU,
                            UInt uiTrDepth,

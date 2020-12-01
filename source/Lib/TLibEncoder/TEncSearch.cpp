@@ -990,7 +990,9 @@ UInt TEncSearch::xGetIntraBitsQT(TComDataCU *pcCU,
                                  Bool bRealCoeff /* just for test */)
 {
     m_pcEntropyCoder->resetBits();
+    // 编码色差时 两路色差共用一个 head
     xEncIntraHeader(pcCU, uiTrDepth, uiAbsPartIdx, bLuma, bChroma);
+    // 编码色差时 两路 cbf 在这里一起编码, 之后再编码残差
     xEncSubdivCbfQT(pcCU, uiTrDepth, uiAbsPartIdx, bLuma, bChroma);
 
     if (bLuma)
@@ -1793,6 +1795,60 @@ Void TEncSearch::xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &d
     dPUCostnp1011 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumLB + uiBitsSumRB;
     dPUCostnp1101 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumRB;
     dPUCostnp1110 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
+}
+// L-based 模式下编码计算 RDcost (Chroma)
+Void TEncSearch::xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110)
+{
+    // TODO: 8x8 块时, 色差经过降采样只剩下一个 4x4, 没办法简单算出新分块方法的 L 形部分比特数, 这里简单地令 4 种 L 的比特数为 4x4 整块的 3/4 + 公共部分
+    if (uiWidth == 8)
+    {
+        Double dCostFor4x4Chroma = pcCU->uiBitsCommChroma + pcCU->uiBitsPer4x4Chroma[0][0] * 0.75;
+        dCostnp0111 = dCostFor4x4Chroma;
+        dCostnp1011 = dCostFor4x4Chroma;
+        dCostnp1101 = dCostFor4x4Chroma;
+        dCostnp1110 = dCostFor4x4Chroma;
+        return;
+    }
+    UInt cnt4x4perline = uiWidth >> 3;
+    UInt cnt4x4halfline = cnt4x4perline >> 1;
+    UInt uiBitsSumLT = 0;
+    UInt uiBitsSumRT = 0;
+    UInt uiBitsSumLB = 0;
+    UInt uiBitsSumRB = 0;
+
+    for (UInt i = 0; i < cnt4x4halfline; i++)
+    {
+        for (UInt j = 0; j < cnt4x4halfline; j++)
+        {
+            uiBitsSumLT += pcCU->uiBitsPer4x4Chroma[i][j];
+        }
+    }
+    for (UInt i = 0; i < cnt4x4halfline; i++)
+    {
+        for (UInt j = cnt4x4halfline; j < cnt4x4perline; j++)
+        {
+            uiBitsSumRT += pcCU->uiBitsPer4x4Chroma[i][j];
+        }
+    }
+    for (UInt i = cnt4x4halfline; i < cnt4x4perline; i++)
+    {
+        for (UInt j = 0; j < cnt4x4halfline; j++)
+        {
+            uiBitsSumLB += pcCU->uiBitsPer4x4Chroma[i][j];
+        }
+    }
+    for (UInt i = cnt4x4halfline; i < cnt4x4perline; i++)
+    {
+        for (UInt j = cnt4x4halfline; j < cnt4x4perline; j++)
+        {
+            uiBitsSumRB += pcCU->uiBitsPer4x4Chroma[i][j];
+        }
+    }
+
+    dCostnp0111 = pcCU->uiBitsCommChroma + uiBitsSumRT + uiBitsSumLB + uiBitsSumRB;
+    dCostnp1011 = pcCU->uiBitsCommChroma + uiBitsSumLT + uiBitsSumLB + uiBitsSumRB;
+    dCostnp1101 = pcCU->uiBitsCommChroma + uiBitsSumLT + uiBitsSumRT + uiBitsSumRB;
+    dCostnp1110 = pcCU->uiBitsCommChroma + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
 }
 
 // uiAbsPartIdx 表示 8x8 块细分为 4 个 4x4 时, 当前处理的是第几个 4x4 块. 即在处理 4x4 块时 uiAbsPartIdx 才可能为 0 之外的值
@@ -3010,6 +3066,10 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     UInt uiBestMode = 0;
     UInt uiBestDist = 0;
     Double dBestCost = MAX_DOUBLE;
+    Double dBestCostnp0111 = MAX_DOUBLE;
+    Double dBestCostnp1011 = MAX_DOUBLE;
+    Double dBestCostnp1101 = MAX_DOUBLE;
+    Double dBestCostnp1110 = MAX_DOUBLE;
     UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
 
     //----- init mode list -----
@@ -3027,6 +3087,13 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
         //----- chroma coding -----
         UInt uiDist = 0;
         pcCU->setChromIntraDirSubParts(uiModeList[uiMode], 0, uiDepth);
+        if (uiWidth != 4)
+        {
+            pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b0111, uiDepth);
+            pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1011, uiDepth);
+            pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1101, uiDepth);
+            pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1110, uiDepth);
+        }
         xRecurIntraChromaCodingQT(pcCU, 0, 0, pcOrgYuv, pcPredYuv, pcResiYuv, uiDist);
         if (pcCU->getSlice()->getPPS()->getUseTransformSkip())
         {
@@ -3034,6 +3101,14 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
         }
         UInt uiBits = xGetIntraBitsQT(pcCU, 0, 0, false, true, false);
         Double dCost = m_pcRdCost->calcRdCost(uiBits, uiDist);
+        Double dCostnp0111 = 0.0;
+        Double dCostnp1011 = 0.0;
+        Double dCostnp1101 = 0.0;
+        Double dCostnp1110 = 0.0;
+        if (uiWidth != 4)
+        {
+            xRecurIntraChromaCodingQTnp(pcCU, uiWidth, dCostnp0111, dCostnp1011, dCostnp1101, dCostnp1110);
+        }
 
         //----- compare -----
         if (dCost < dBestCost)
@@ -3045,8 +3120,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
             xSetIntraResultChromaQT(pcCU, 0, 0, pcRecoYuv);
             ::memcpy(m_puhQTTempCbf[1], pcCU->getCbf(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
             ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
-            ::memcpy(m_puhQTTempTransformSkipFlag[1], pcCU->getTransformSkip(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
-            ::memcpy(m_puhQTTempTransformSkipFlag[2], pcCU->getTransformSkip(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
+            // ::memcpy(m_puhQTTempTransformSkipFlag[1], pcCU->getTransformSkip(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
+            // ::memcpy(m_puhQTTempTransformSkipFlag[2], pcCU->getTransformSkip(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
         }
     }
 
@@ -3054,8 +3129,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     UInt uiQPN = pcCU->getPic()->getNumPartInCU() >> (uiDepth << 1);
     ::memcpy(pcCU->getCbf(TEXT_CHROMA_U), m_puhQTTempCbf[1], uiQPN * sizeof(UChar));
     ::memcpy(pcCU->getCbf(TEXT_CHROMA_V), m_puhQTTempCbf[2], uiQPN * sizeof(UChar));
-    ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U), m_puhQTTempTransformSkipFlag[1], uiQPN * sizeof(UChar));
-    ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V), m_puhQTTempTransformSkipFlag[2], uiQPN * sizeof(UChar));
+    // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U), m_puhQTTempTransformSkipFlag[1], uiQPN * sizeof(UChar));
+    // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V), m_puhQTTempTransformSkipFlag[2], uiQPN * sizeof(UChar));
     pcCU->setChromIntraDirSubParts(uiBestMode, 0, uiDepth);
     pcCU->getTotalDistortion() += uiBestDist - uiPreCalcDistC;
 
