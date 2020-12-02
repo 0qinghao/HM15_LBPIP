@@ -1799,10 +1799,11 @@ Void TEncSearch::xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &d
 // L-based 模式下编码计算 RDcost (Chroma)
 Void TEncSearch::xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110)
 {
-    // TODO: 8x8 块时, 色差经过降采样只剩下一个 4x4, 没办法简单算出新分块方法的 L 形部分比特数, 这里简单地令 4 种 L 的比特数为 4x4 整块的 3/4 + 公共部分
+    // TODO: 8x8 块时, 色差经过降采样只剩下一个 4x4, 此时返回整个 4x4 块的 cost, 最后比较哪种模式好并不需要把这部分的色差做 L 算结果, 具体逻辑交给向上回归部分处理
+    // TODO: 亮度那边的新方法 RD 计算, 可以考虑 cbf 部分取 3/4
     if (uiWidth == 8)
     {
-        Double dCostFor4x4Chroma = pcCU->uiBitsCommChroma + pcCU->uiBitsPer4x4Chroma[0][0] * 0.75;
+        Double dCostFor4x4Chroma = pcCU->uiBitsCommChroma + pcCU->uiBitsPer4x4Chroma[0][0];
         dCostnp0111 = dCostFor4x4Chroma;
         dCostnp1011 = dCostFor4x4Chroma;
         dCostnp1101 = dCostFor4x4Chroma;
@@ -2469,6 +2470,7 @@ Void TEncSearch::xRecurIntraChromaCodingQT(TComDataCU *pcCU,
 }
 
 Void TEncSearch::xSetIntraResultChromaQT(TComDataCU *pcCU,
+                                         // 下面两个参数在处理 4x4 块时肯定为 0
                                          UInt uiTrDepth,
                                          UInt uiAbsPartIdx,
                                          TComYuv *pcRecoYuv)
@@ -2481,6 +2483,7 @@ Void TEncSearch::xSetIntraResultChromaQT(TComDataCU *pcCU,
         UInt uiQTLayer = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize() - uiLog2TrSize;
 
         Bool bChromaSame = false;
+        // 只可能在处理 8x8 细分下来的 4x4 时才可能进入
         if (uiLog2TrSize == 2)
         {
             assert(uiTrDepth > 0);
@@ -2518,6 +2521,7 @@ Void TEncSearch::xSetIntraResultChromaQT(TComDataCU *pcCU,
         UInt uiLog2TrSizeChroma = (bChromaSame ? uiLog2TrSize : uiLog2TrSize - 1);
         m_pcQTTempTComYuv[uiQTLayer].copyPartToPartChroma(pcRecoYuv, uiAbsPartIdx, 1 << uiLog2TrSizeChroma, 1 << uiLog2TrSizeChroma);
     }
+    // 只可能在处理 8x8 细分下来的 4x4 时才可能进入
     else
     {
         UInt uiNumQPart = pcCU->getPic()->getNumPartInCU() >> ((uiFullDepth + 1) << 1);
@@ -2526,6 +2530,50 @@ Void TEncSearch::xSetIntraResultChromaQT(TComDataCU *pcCU,
             xSetIntraResultChromaQT(pcCU, uiTrDepth + 1, uiAbsPartIdx + uiPart * uiNumQPart, pcRecoYuv);
         }
     }
+}
+Void TEncSearch::xSetIntraResultChromaQTnp(TComDataCU *pcCU,
+                                           UInt mask)
+{
+    UInt uiFullDepth = pcCU->getDepth(0);
+    UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> uiFullDepth] + 2;
+    UInt uiQTLayer = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize() - uiLog2TrSize;
+
+    //===== copy transform coefficients =====
+    UInt uiNumCoeffC = (pcCU->getSlice()->getSPS()->getMaxCUWidth() * pcCU->getSlice()->getSPS()->getMaxCUHeight()) >> (uiFullDepth << 1);
+    uiNumCoeffC >>= 2;
+    TCoeff *pcCoeffSrcU = m_ppcQTTempCoeffCb[uiQTLayer];
+    TCoeff *pcCoeffSrcV = m_ppcQTTempCoeffCr[uiQTLayer];
+    TCoeff *pcCoeffDstU = NULL;
+    TCoeff *pcCoeffDstV = NULL;
+    switch (mask)
+    {
+    case 0b0111:
+        pcCoeffDstU = pcCU->m_pcTrCoeffCbnp0111;
+        pcCoeffDstV = pcCU->m_pcTrCoeffCrnp0111;
+        break;
+    case 0b1011:
+        pcCoeffDstU = pcCU->m_pcTrCoeffCbnp1011;
+        pcCoeffDstV = pcCU->m_pcTrCoeffCrnp1011;
+        break;
+    case 0b1101:
+        pcCoeffDstU = pcCU->m_pcTrCoeffCbnp1101;
+        pcCoeffDstV = pcCU->m_pcTrCoeffCrnp1101;
+        break;
+    case 0b1110:
+        pcCoeffDstU = pcCU->m_pcTrCoeffCbnp1110;
+        pcCoeffDstV = pcCU->m_pcTrCoeffCrnp1110;
+        break;
+    default:
+        assert(0);
+    }
+
+    ::memcpy(pcCoeffDstU, pcCoeffSrcU, sizeof(TCoeff) * uiNumCoeffC);
+    ::memcpy(pcCoeffDstV, pcCoeffSrcV, sizeof(TCoeff) * uiNumCoeffC);
+
+    // 起重建作用 新分块模式似乎不需要特意去存储各自的重建结果
+    //===== copy reconstruction =====
+    // UInt uiLog2TrSizeChroma = uiLog2TrSize - 1;
+    // m_pcQTTempTComYuv[uiQTLayer].copyPartToPartChroma(pcRecoYuv, 0, 1 << uiLog2TrSizeChroma, 1 << uiLog2TrSizeChroma);
 }
 
 Void TEncSearch::preestChromaPredMode(TComDataCU *pcCU,
@@ -2860,20 +2908,6 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             if (uiOrgMode == MAX_UINT)
             {
                 break;
-                if (dPUCostnp0111 < dBestPUCostnp0111)
-                {
-                    uiBestPUModenp0111 = uiOrgMode;
-                    dBestPUCostnp0111 = dPUCostnp0111;
-
-                    xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b0111);
-
-                    UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
-                    // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
-                    // ::memcpy(m_puhQTTempTrIdx0111, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    ::memcpy(m_puhQTTempCbfnp0111[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    ::memcpy(m_puhQTTempCbfnp0111[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    ::memcpy(m_puhQTTempCbfnp0111[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                }
             }
 #else
             UInt uiOrgMode = uiBestPUMode;
@@ -3064,17 +3098,24 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
 {
     UInt uiDepth = pcCU->getDepth(0);
     UInt uiBestMode = 0;
+    UInt uiBestModenp0111 = 0;
+    UInt uiBestModenp1011 = 0;
+    UInt uiBestModenp1101 = 0;
+    UInt uiBestModenp1110 = 0;
     UInt uiBestDist = 0;
     Double dBestCost = MAX_DOUBLE;
     Double dBestCostnp0111 = MAX_DOUBLE;
     Double dBestCostnp1011 = MAX_DOUBLE;
     Double dBestCostnp1101 = MAX_DOUBLE;
     Double dBestCostnp1110 = MAX_DOUBLE;
-    UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
+    // TODO: 改逻辑 NxN 才右移, 新分块方式可能会产生误解
+    // UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
+    UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0);
 
     //----- init mode list -----
     UInt uiMinMode = 0;
     UInt uiModeList[NUM_CHROMA_MODE];
+    // FIXIT: 由于各种新模式和传统模式亮度块选取的最优模式不一样, 所以对各种模式来说各自的色差模式表是不同的
     pcCU->getAllowedChromaDir(0, uiModeList);
     UInt uiMaxMode = NUM_CHROMA_MODE;
 
@@ -3123,6 +3164,53 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
             // ::memcpy(m_puhQTTempTransformSkipFlag[1], pcCU->getTransformSkip(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
             // ::memcpy(m_puhQTTempTransformSkipFlag[2], pcCU->getTransformSkip(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
         }
+        if (uiWidth != 4)
+        {
+            if (dCostnp0111 < dBestCostnp0111)
+            {
+                dBestCostnp0111 = dCostnp0111;
+                uiBestModenp0111 = uiModeList[uiMode];
+
+                xSetIntraResultChromaQTnp(pcCU, 0b0111);
+
+                UInt uiQPN = pcCU->getPic()->getNumPartInCU() >> (uiDepth << 1);
+                ::memcpy(m_puhQTTempCbfnp0111[1], pcCU->getCbf(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
+                ::memcpy(m_puhQTTempCbfnp0111[2], pcCU->getCbf(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
+            }
+            if (dCostnp1011 < dBestCostnp1011)
+            {
+                dBestCostnp1011 = dCostnp1011;
+                uiBestModenp1011 = uiModeList[uiMode];
+
+                xSetIntraResultChromaQTnp(pcCU, 0b1011);
+
+                UInt uiQPN = pcCU->getPic()->getNumPartInCU() >> (uiDepth << 1);
+                ::memcpy(m_puhQTTempCbfnp1011[1], pcCU->getCbf(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
+                ::memcpy(m_puhQTTempCbfnp1011[2], pcCU->getCbf(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
+            }
+            if (dCostnp1101 < dBestCostnp1101)
+            {
+                dBestCostnp1101 = dCostnp1101;
+                uiBestModenp1101 = uiModeList[uiMode];
+
+                xSetIntraResultChromaQTnp(pcCU, 0b1101);
+
+                UInt uiQPN = pcCU->getPic()->getNumPartInCU() >> (uiDepth << 1);
+                ::memcpy(m_puhQTTempCbfnp1101[1], pcCU->getCbf(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
+                ::memcpy(m_puhQTTempCbfnp1101[2], pcCU->getCbf(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
+            }
+            if (dCostnp1110 < dBestCostnp1110)
+            {
+                dBestCostnp1110 = dCostnp1110;
+                uiBestModenp1110 = uiModeList[uiMode];
+
+                xSetIntraResultChromaQTnp(pcCU, 0b1110);
+
+                UInt uiQPN = pcCU->getPic()->getNumPartInCU() >> (uiDepth << 1);
+                ::memcpy(m_puhQTTempCbfnp1110[1], pcCU->getCbf(TEXT_CHROMA_U), uiQPN * sizeof(UChar));
+                ::memcpy(m_puhQTTempCbfnp1110[2], pcCU->getCbf(TEXT_CHROMA_V), uiQPN * sizeof(UChar));
+            }
+        }
     }
 
     //----- set data -----
@@ -3131,8 +3219,31 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     ::memcpy(pcCU->getCbf(TEXT_CHROMA_V), m_puhQTTempCbf[2], uiQPN * sizeof(UChar));
     // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_U), m_puhQTTempTransformSkipFlag[1], uiQPN * sizeof(UChar));
     // ::memcpy(pcCU->getTransformSkip(TEXT_CHROMA_V), m_puhQTTempTransformSkipFlag[2], uiQPN * sizeof(UChar));
+    if (uiWidth != 4)
+    {
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b0111), m_puhQTTempCbfnp0111[1], uiQPN * sizeof(UChar));
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b0111), m_puhQTTempCbfnp0111[2], uiQPN * sizeof(UChar));
+
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b1011), m_puhQTTempCbfnp1011[1], uiQPN * sizeof(UChar));
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b1011), m_puhQTTempCbfnp1011[2], uiQPN * sizeof(UChar));
+
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b1101), m_puhQTTempCbfnp1101[1], uiQPN * sizeof(UChar));
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b1101), m_puhQTTempCbfnp1101[2], uiQPN * sizeof(UChar));
+
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b1110), m_puhQTTempCbfnp1110[1], uiQPN * sizeof(UChar));
+        ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b1110), m_puhQTTempCbfnp1110[2], uiQPN * sizeof(UChar));
+    }
+
     pcCU->setChromIntraDirSubParts(uiBestMode, 0, uiDepth);
-    pcCU->getTotalDistortion() += uiBestDist - uiPreCalcDistC;
+    // 失真 0, 根本不用算
+    // pcCU->getTotalDistortion() += uiBestDist - uiPreCalcDistC;
+    if (uiWidth != 4)
+    {
+        pcCU->setChromIntraDirSubPartsnp(uiBestModenp0111, 0b0111, uiDepth);
+        pcCU->setChromIntraDirSubPartsnp(uiBestModenp1011, 0b1011, uiDepth);
+        pcCU->setChromIntraDirSubPartsnp(uiBestModenp1101, 0b1101, uiDepth);
+        pcCU->setChromIntraDirSubPartsnp(uiBestModenp1110, 0b1110, uiDepth);
+    }
 
     //----- restore context models -----
     m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiDepth][CI_CURR_BEST]);

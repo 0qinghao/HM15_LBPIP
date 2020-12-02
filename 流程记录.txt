@@ -9,7 +9,7 @@ xCompressCU 开始处理一个 CTU 32x32
                 ==================================================
                 修改 xRecurIntraCodingQT 记录编码当前 CU 中每个 4x4 块所用的 bits 和 公共部分的 bits
                 xRecurIntraCodingQTnp 累加新方法下特定部分的 bits (new partition 即 L 形分块) (重复 4 种 L 分块)
-                    公共部分 + 特定 L 覆盖的 4x4 块 calcRdCost 计算 RD
+                    公共部分 + 特定 L 覆盖的 4x4 块 
                 某个模式 RD 更小就更新 BestMode xSetIntraResultQTnp
                 ==================================================
         estIntraPredChromaQT 处理色差
@@ -22,7 +22,7 @@ xCompressCU 开始处理一个 CTU 32x32
                 ==================================================
                 修改 xGetIntraBitsQT 记录编码当前 CU 中每个 4x4 块所用的 bits 和 公共部分的 bits
                 xRecurIntraChromaCodingQTnp 累加新方法下特定部分的 bits (new partition 即 L 形分块) (重复 4 种 L 分块)
-                    公共部分 + 特定 L 覆盖的 4x4 块 calcRdCost 计算 RD
+                    公共部分 + 特定 L 覆盖的 4x4 块 
                 某个模式 RD 更小就更新 BestMode xSetIntraResultChromaQTnp
                 ==================================================
         encode 标志模式系数等

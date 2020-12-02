@@ -311,6 +311,8 @@ protected:
                                  UInt uiTrDepth,
                                  UInt uiAbsPartIdx,
                                  TComYuv *pcRecoYuv);
+    Void xSetIntraResultChromaQTnp(TComDataCU *pcCU,
+                                   UInt mask);
 
     Void xStoreIntraResultQT(TComDataCU *pcCU,
                              UInt uiTrDepth,

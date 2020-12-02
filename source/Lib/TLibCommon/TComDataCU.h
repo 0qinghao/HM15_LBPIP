@@ -102,7 +102,7 @@ private:
     UChar *m_puhTrIdx; ///< array of transform indices
     // 变换跳过标志
     UChar *m_puhTransformSkip[3]; ///< array of transform skipping flags
-    // coding block flag 待处理的块如果全为 0 则 cbf 标志为 0, 否则 1
+    // coding block flag 待处理的 PU 块如果整个全为 0(一个 PU 只有一个 cbf, 不是像 significant_flag 那样的 4x4 一个) 则 cbf 标志为 0, 否则 1
     UChar *m_puhCbf[3];             ///< array of coded block flags (CBF)
     TComCUMvField m_acCUMvField[2]; ///< array of motion vectors
     // 量化后的系数
