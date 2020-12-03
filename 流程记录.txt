@@ -51,9 +51,9 @@ xCompressCU 开始处理一个 CTU 32x32
                             xGetIntraBitsQT calcRdCost 编码残差 计算 RD
                         某个模式 RD 更小就更新 BestMode xSetIntraResultQT
                         ==================================================
-                        xRecurIntraCodingQTnp 用新方法按给定模式编码亮度 (new partition 即 L 形分块) (重复 4 种 L 分块)
-                            取出正常块状做出的残差
-                            xGetIntraBitsQTnp calcRdCostnp 编码特定部分残差 计算 RD
+                        修改 xRecurIntraCodingQT 记录编码当前 CU 中每个 4x4 块所用的 bits 和 公共部分的 bits
+                        xRecurIntraCodingQTnp 累加新方法下特定部分的 bits (new partition 即 L 形分块) (重复 4 种 L 分块)
+                            公共部分 + 特定 L 覆盖的 4x4 块 
                         某个模式 RD 更小就更新 BestMode xSetIntraResultQTnp
                         ==================================================
                 estIntraPredChromaQT 处理色差
@@ -64,9 +64,9 @@ xCompressCU 开始处理一个 CTU 32x32
                             xGetIntraBitsQT calcRdCost 编码残差 计算 RD
                         某个模式 RD 更小就更新 BestMode xSetIntraResultChromaQT
                         ==================================================
-                        xRecurIntraChromaCodingQT 用新方法按给定模式编码色差
-                            取出正常块状做出的残差
-                            xGetIntraBitsQTnp calcRdCostnp 编码特定部分残差 计算 RD
+                        修改 xGetIntraBitsQT 记录编码当前 CU 中每个 4x4 块所用的 bits 和 公共部分的 bits
+                        xRecurIntraChromaCodingQTnp 累加新方法下特定部分的 bits (new partition 即 L 形分块) (重复 4 种 L 分块)
+                            公共部分 + 特定 L 覆盖的 4x4 块 
                         某个模式 RD 更小就更新 BestMode xSetIntraResultChromaQTnp
                         ==================================================
                 encode 标志模式系数等
@@ -74,8 +74,7 @@ xCompressCU 开始处理一个 CTU 32x32
                 xCheckBestMode 在向下分割时必定更新最佳模式
                 ==================================================
                 (针对 4 种 L 分块模式)
-                encode 标志模式系数等
-                getTotalBits calcRdCost 计算 16x16 层 L 分块模式的总代价
+                利用 RD 过程中插入记录的数据 计算 16x16 层 L 分块模式的总代价
                 ==================================================
             加上分块标志重(2Nx2N)新计算总代价
             ==================================================
@@ -96,9 +95,9 @@ xCompressCU 开始处理一个 CTU 32x32
                                     xGetIntraBitsQT calcRdCost 编码残差 计算 RD
                                 某个模式 RD 更小就更新 BestMode xSetIntraResultQT
                                 ==================================================
-                                xRecurIntraCodingQTnp 用新方法按给定模式编码亮度 (new partition 即 L 形分块) (重复 4 种 L 分块)
-                                    取出正常块状做出的残差
-                                    xGetIntraBitsQTnp calcRdCostnp 编码特定部分残差 计算 RD
+                                修改 xRecurIntraCodingQT 记录编码当前 CU 中每个 4x4 块所用的 bits 和 公共部分的 bits
+                                xRecurIntraCodingQTnp 累加新方法下特定部分的 bits (new partition 即 L 形分块) (重复 4 种 L 分块)
+                                    公共部分 + 特定 L 覆盖的 4x4 块 
                                 某个模式 RD 更小就更新 BestMode xSetIntraResultQTnp
                                 ==================================================
                         estIntraPredChromaQT 处理色差
@@ -109,9 +108,9 @@ xCompressCU 开始处理一个 CTU 32x32
                                     xGetIntraBitsQT calcRdCost 编码残差 计算 RD
                                 某个模式 RD 更小就更新 BestMode xSetIntraResultChromaQT
                                 ==================================================
-                                xRecurIntraChromaCodingQT 用新方法按给定模式编码色差
-                                    取出正常块状做出的残差
-                                    xGetIntraBitsQTnp calcRdCostnp 编码特定部分残差 计算 RD
+                                修改 xGetIntraBitsQT 记录编码当前 CU 中每个 4x4 块所用的 bits 和 公共部分的 bits
+                                xRecurIntraChromaCodingQTnp 累加新方法下特定部分的 bits (new partition 即 L 形分块) (重复 4 种 L 分块)
+                                    公共部分 + 特定 L 覆盖的 4x4 块 
                                 某个模式 RD 更小就更新 BestMode xSetIntraResultChromaQTnp
                                 ==================================================
                         encode 标志模式系数等
@@ -119,8 +118,7 @@ xCompressCU 开始处理一个 CTU 32x32
                         xCheckBestMode 在向下分割时必定更新最佳模式
                         ==================================================
                         (针对 4 种 L 分块模式)
-                        encode 标志模式系数等
-                        getTotalBits calcRdCost 计算 8x8 层 L 分块模式的总代价
+                        利用 RD 过程中插入记录的数据 计算 8x8 层 L 分块模式的总代价
                         ==================================================
 
                     xCheckRDCostIntra 8x8 层内部分下去处理 4x4
