@@ -485,7 +485,7 @@ public:
     // TODO: 不进入 不处理
     Void setLumaIntraDir(UInt uiIdx, UChar uh)
     {
-        m_puhLumaIntraDir[uiIdx] = uh;
+        m_puhLumaIntraDir[uiIdx << 4] = uh;
     }
     Void setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
     // 增加
@@ -538,7 +538,7 @@ public:
     // TODO: 不进入 不处理
     Void setChromaIntraDir(UInt uiIdx, UChar uh)
     {
-        m_puhChromaIntraDir[uiIdx] = uh;
+        m_puhChromaIntraDir[uiIdx << 4] = uh;
     }
     Void setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
     // 增加

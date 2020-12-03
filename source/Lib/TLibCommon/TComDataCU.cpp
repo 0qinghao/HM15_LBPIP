@@ -1215,9 +1215,20 @@ Void TComDataCU::copySubCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     m_pbMergeFlag = pcCU->getMergeFlag() + uiPart;
     m_puhMergeIndex = pcCU->getMergeIndex() + uiPart;
 
-    // TODO: 项目运行中没有到达这里, 也就没有处理新分块方法对应的标志
-    m_puhLumaIntraDir = pcCU->getLumaIntraDir() + uiPart;
-    m_puhChromaIntraDir = pcCU->getChromaIntraDir() + uiPart;
+    // TODO: 项目编码运行中没有到达这里, 也就没有处理新分块方法对应的标志
+    // 解码器有运行到这!
+    // m_puhLumaIntraDir = pcCU->getLumaIntraDir() + uiPart;
+    m_puhLumaIntraDir = pcCU->getLumaIntraDir() + (uiPart << 4);
+    m_puhLumaIntraDirnp0111 = pcCU->getLumaIntraDirnp0111() + (uiPart << 4);
+    m_puhLumaIntraDirnp1011 = pcCU->getLumaIntraDirnp1011() + (uiPart << 4);
+    m_puhLumaIntraDirnp1101 = pcCU->getLumaIntraDirnp1101() + (uiPart << 4);
+    m_puhLumaIntraDirnp1110 = pcCU->getLumaIntraDirnp1110() + (uiPart << 4);
+    // m_puhChromaIntraDir = pcCU->getChromaIntraDir() + uiPart;
+    m_puhChromaIntraDir = pcCU->getChromaIntraDir() + (uiPart << 4);
+    m_puhChromaIntraDirnp0111 = pcCU->getChromaIntraDirnp0111() + (uiPart << 4);
+    m_puhChromaIntraDirnp1011 = pcCU->getChromaIntraDirnp1011() + (uiPart << 4);
+    m_puhChromaIntraDirnp1101 = pcCU->getChromaIntraDirnp1101() + (uiPart << 4);
+    m_puhChromaIntraDirnp1110 = pcCU->getChromaIntraDirnp1110() + (uiPart << 4);
     m_puhInterDir = pcCU->getInterDir() + uiPart;
     m_puhTrIdx = pcCU->getTransformIdx() + uiPart;
     m_puhTransformSkip[0] = pcCU->getTransformSkip(TEXT_LUMA) + uiPart;
@@ -1225,9 +1236,22 @@ Void TComDataCU::copySubCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     m_puhTransformSkip[2] = pcCU->getTransformSkip(TEXT_CHROMA_V) + uiPart;
 
     // TODO: 项目运行中没有到达这里, 也就没有处理新分块方法对应的 cbf 标志
+    // 解码器有运行到这
     m_puhCbf[0] = pcCU->getCbf(TEXT_LUMA) + uiPart;
     m_puhCbf[1] = pcCU->getCbf(TEXT_CHROMA_U) + uiPart;
     m_puhCbf[2] = pcCU->getCbf(TEXT_CHROMA_V) + uiPart;
+    m_puhCbfnp0111[0] = pcCU->getCbfnp(TEXT_LUMA, 0b0111) + uiPart;
+    m_puhCbfnp0111[1] = pcCU->getCbfnp(TEXT_CHROMA_U, 0b0111) + uiPart;
+    m_puhCbfnp0111[2] = pcCU->getCbfnp(TEXT_CHROMA_V, 0b0111) + uiPart;
+    m_puhCbfnp1011[0] = pcCU->getCbfnp(TEXT_LUMA, 0b1011) + uiPart;
+    m_puhCbfnp1011[1] = pcCU->getCbfnp(TEXT_CHROMA_U, 0b1011) + uiPart;
+    m_puhCbfnp1011[2] = pcCU->getCbfnp(TEXT_CHROMA_V, 0b1011) + uiPart;
+    m_puhCbfnp1101[0] = pcCU->getCbfnp(TEXT_LUMA, 0b1101) + uiPart;
+    m_puhCbfnp1101[1] = pcCU->getCbfnp(TEXT_CHROMA_U, 0b1101) + uiPart;
+    m_puhCbfnp1101[2] = pcCU->getCbfnp(TEXT_CHROMA_V, 0b1101) + uiPart;
+    m_puhCbfnp1110[0] = pcCU->getCbfnp(TEXT_LUMA, 0b1110) + uiPart;
+    m_puhCbfnp1110[1] = pcCU->getCbfnp(TEXT_CHROMA_U, 0b1110) + uiPart;
+    m_puhCbfnp1110[2] = pcCU->getCbfnp(TEXT_CHROMA_V, 0b1110) + uiPart;
 
     m_puhDepth = pcCU->getDepth() + uiPart;
     m_puhWidth = pcCU->getWidth() + uiPart;
@@ -1501,6 +1525,7 @@ Void TComDataCU::copyToPic(UChar uhDepth)
 }
 
 // 这个函数虽然会执行 但是在本项目中不会造成任何影响
+// 注释掉了 根本不会执行这个函数 不影响编解码
 Void TComDataCU::copyToPic(UChar uhDepth, UInt uiPartIdx, UInt uiPartDepth)
 {
     TComDataCU *&rpcCU = m_pcPic->getCU(m_uiCUAddr);
