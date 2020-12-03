@@ -666,29 +666,30 @@ Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     UInt uiIntraDirChroma = pcCU->getChromaIntraDir(uiAbsPartIdx);
 
-    if (uiIntraDirChroma == DM_CHROMA_IDX)
-    {
-        m_pcBinIf->encodeBin(0, m_cCUChromaPredSCModel.get(0, 0, 0));
-    }
-    else
-    {
-        UInt uiAllowedChromaDir[NUM_CHROMA_MODE];
-        pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
+    // if (uiIntraDirChroma == DM_CHROMA_IDX)
+    // {
+    //     m_pcBinIf->encodeBin(0, m_cCUChromaPredSCModel.get(0, 0, 0));
+    // }
+    // else
+    // {
+    //     UInt uiAllowedChromaDir[NUM_CHROMA_MODE];
+    //     pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
 
-        for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
-        {
-            if (uiIntraDirChroma == uiAllowedChromaDir[i])
-            {
-                uiIntraDirChroma = i;
-                break;
-            }
-        }
-        m_pcBinIf->encodeBin(1, m_cCUChromaPredSCModel.get(0, 0, 0));
+    //     for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    //     {
+    //         if (uiIntraDirChroma == uiAllowedChromaDir[i])
+    //         {
+    //             uiIntraDirChroma = i;
+    //             break;
+    //         }
+    //     }
+    //     m_pcBinIf->encodeBin(1, m_cCUChromaPredSCModel.get(0, 0, 0));
 
-        // 用 2 bit 编码预测角度
-        m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 2);
-    }
-    return;
+    //     // 用 2 bit 编码预测角度
+    // 用 5 bit 编码全搜索色差角度
+    m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 5);
+    // }
+    // return;
 }
 
 Void TEncSbac::codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx)

@@ -3120,7 +3120,10 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     UInt uiModeListnp1101[NUM_CHROMA_MODE];
     UInt uiModeListnp1110[NUM_CHROMA_MODE];
     // FIXIT: 由于各种新模式和传统模式亮度块选取的最优模式不一样, 所以对各种模式来说各自的色差模式表是不同的
-    pcCU->getAllowedChromaDir(0, uiModeList);
+    // TODO: 暂时跳过这个问题, 色差不去参考亮度的模式了, 做全搜索, 而且这样对于环状应该是更有利的. 当然对比的标准对象需要也改成全搜索
+    // TODO: 如果亮度那边也类似地不去看 MPMs, 也就解决了 rd 不准确的问题, 这样做是否可行?
+    // pcCU->getAllowedChromaDir(0, uiModeList);
+    pcCU->getAllowedChromaDir32(0, uiModeList);
     if (uiWidth != 4)
     {
         pcCU->getAllowedChromaDirnp(0, uiModeListnp0111, uiModeListnp1011, uiModeListnp1101, uiModeListnp1110);

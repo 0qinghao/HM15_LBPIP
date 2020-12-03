@@ -627,9 +627,10 @@ Void TDecSbac::parseIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, UInt dept
 
 Void TDecSbac::parseIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
-    UInt uiSymbol;
+    // UInt uiSymbol;
+    UInt uiSymbol = 1;
 
-    m_pcTDecBinIf->decodeBin(uiSymbol, m_cCUChromaPredSCModel.get(0, 0, 0));
+    // m_pcTDecBinIf->decodeBin(uiSymbol, m_cCUChromaPredSCModel.get(0, 0, 0));
 
     if (uiSymbol == 0)
     {
@@ -639,9 +640,10 @@ Void TDecSbac::parseIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiD
     {
         {
             UInt uiIPredMode;
-            m_pcTDecBinIf->decodeBinsEP(uiIPredMode, 2);
+            m_pcTDecBinIf->decodeBinsEP(uiIPredMode, 5);
             UInt uiAllowedChromaDir[NUM_CHROMA_MODE];
-            pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
+            // pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
+            pcCU->getAllowedChromaDir32(uiAbsPartIdx, uiAllowedChromaDir);
             uiSymbol = uiAllowedChromaDir[uiIPredMode];
         }
     }
