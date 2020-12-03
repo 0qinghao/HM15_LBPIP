@@ -2041,21 +2041,17 @@ Bool TComDataCU::isLosslessCoded(UInt absPartIdx)
 */
 Void TComDataCU::getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList)
 {
-    uiModeList[0] = PLANAR_IDX;
-    uiModeList[1] = VER_IDX;
-    uiModeList[2] = HOR_IDX;
-    uiModeList[3] = DC_IDX;
-    uiModeList[4] = DM_CHROMA_IDX;
+    // uiModeList[0] = PLANAR_IDX;
+    // uiModeList[1] = VER_IDX;
+    // uiModeList[2] = HOR_IDX;
+    // uiModeList[3] = DC_IDX;
+    // uiModeList[4] = DM_CHROMA_IDX;
 
-    UInt uiLumaMode = getLumaIntraDir(uiAbsPartIdx);
+    // UInt uiLumaMode = getLumaIntraDir(uiAbsPartIdx);
 
-    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    for (Int i = 0; i < NUM_CHROMA_MODE; i++)
     {
-        if (uiLumaMode == uiModeList[i])
-        {
-            uiModeList[i] = 34; // VER+8 mode
-            break;
-        }
+        uiModeList[i] = i; // VER+8 mode
     }
 }
 Void TComDataCU::getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110)
