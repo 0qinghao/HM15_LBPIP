@@ -686,7 +686,7 @@ Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // m_pcBinIf->encodeBin(1, m_cCUChromaPredSCModel.get(0, 0, 0));
 
         // 用 2 bit 编码预测角度
-        m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 6);
+        m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 5);
     }
     return;
 }
