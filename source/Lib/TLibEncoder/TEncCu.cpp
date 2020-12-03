@@ -1415,26 +1415,27 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     {
         m_pcEntropyCoder->encodeCUTransquantBypassFlag(rpcTempCU, 0, true);
     }
-    m_pcEntropyCoder->encodeSkipFlag(rpcTempCU, 0, true);
-    m_pcEntropyCoder->encodePredMode(rpcTempCU, 0, true);
+    // m_pcEntropyCoder->encodeSkipFlag(rpcTempCU, 0, true);
+    // m_pcEntropyCoder->encodePredMode(rpcTempCU, 0, true);
     m_pcEntropyCoder->encodePartSize(rpcTempCU, 0, uiDepth, true);
     m_pcEntropyCoder->encodePredInfo(rpcTempCU, 0, true);
-    m_pcEntropyCoder->encodeIPCMInfo(rpcTempCU, 0, true);
+    // m_pcEntropyCoder->encodeIPCMInfo(rpcTempCU, 0, true);
 
     // Encode Coefficients
     // 编码系数(无损时编码残差)
     // 此处重新编码是因为前面编码是为了计算 RD 代价 (不特殊设置的话 RD 代价并不是编码体积, 直接拿体积做 RD 只发生在特殊的无损模式下)
-    Bool bCodeDQP = getdQPFlag();
+    // 同时保持熵编码器连续性 因为此时熵编码器的状态是测试完亮度最后一个模式\色差最后一个模式的状态 并不是最佳模式的状态
+    Bool bCodeDQP = getdQPFlag(); // 项目中永远为 false
     m_pcEntropyCoder->encodeCoeff(rpcTempCU, 0, uiDepth, rpcTempCU->getWidth(0), rpcTempCU->getHeight(0), bCodeDQP);
-    setdQPFlag(bCodeDQP);
+    // setdQPFlag(bCodeDQP);
 
     m_pcRDGoOnSbacCoder->store(m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]);
 
     rpcTempCU->getTotalBits() = m_pcEntropyCoder->getNumberOfWrittenBits();
-    rpcTempCU->getTotalBins() = ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
+    // rpcTempCU->getTotalBins() = ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
     rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion());
 
-    xCheckDQP(rpcTempCU);
+    // xCheckDQP(rpcTempCU);
     // xCheckBestMode 向下划分时, 比较对象是 DOUBLE_MAX, RD 必定更好, 存储上层的结果. 特殊的是 4与8 的比较也在此处实现
     xCheckBestMode(rpcBestCU, rpcTempCU, uiDepth);
 }

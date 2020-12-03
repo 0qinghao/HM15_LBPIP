@@ -28,7 +28,7 @@
 				"label": ""
 			},
 			{
-				"line": 1437,
+				"line": 1438,
 				"column": 82,
 				"label": ""
 			}
@@ -108,7 +108,7 @@
 				"label": ""
 			},
 			{
-				"line": 3959,
+				"line": 3969,
 				"column": 14,
 				"label": ""
 			}
@@ -118,52 +118,52 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
 		"bookmarks": [
 			{
-				"line": 485,
+				"line": 486,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 581,
+				"line": 582,
 				"column": 24,
 				"label": ""
 			},
 			{
-				"line": 605,
+				"line": 606,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 663,
+				"line": 664,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 1043,
+				"line": 1044,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 1136,
+				"line": 1137,
 				"column": 19,
 				"label": ""
 			},
 			{
-				"line": 1168,
+				"line": 1169,
 				"column": 13,
 				"label": ""
 			},
 			{
-				"line": 1185,
+				"line": 1186,
 				"column": 19,
 				"label": ""
 			},
 			{
-				"line": 1216,
+				"line": 1217,
 				"column": 37,
 				"label": ""
 			},
 			{
-				"line": 1341,
+				"line": 1342,
 				"column": 14,
 				"label": ""
 			}

@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -646,6 +646,7 @@ public:
     Void getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList);
     Void getAllowedChromaDir32(UInt uiAbsPartIdx, UInt *uiModeList);
     Void getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110);
+    Void getAllowedChromaDir32np(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110);
     Int getIntraDirLumaPredictor(UInt uiAbsPartIdx, Int *uiIntraDirPred, Int *piMode = NULL);
 
     // -------------------------------------------------------------------------------------------------------------------

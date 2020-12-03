@@ -2104,6 +2104,16 @@ Void TComDataCU::getAllowedChromaDir32(UInt uiAbsPartIdx, UInt *uiModeList)
         // }
     }
 }
+Void TComDataCU::getAllowedChromaDir32np(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110)
+{
+    for (UInt i = 0; i < NUM_CHROMA_MODE; i++)
+    {
+        uiModeListnp0111[i] = i;
+        uiModeListnp1011[i] = i;
+        uiModeListnp1101[i] = i;
+        uiModeListnp1110[i] = i;
+    }
+}
 Void TComDataCU::getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110)
 {
     uiModeListnp0111[0] = PLANAR_IDX;

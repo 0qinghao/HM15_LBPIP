@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -398,6 +398,7 @@ Void TEncSbac::codeMVPIdx(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefLi
     xWriteUnaryMaxSymbol(iSymbol, m_cMVPIdxSCModel.get(0), 1, iNum - 1);
 }
 
+// 在 encodeSplitFlag 里面处理新分块方法的区分 这里保持原样就好
 Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
     PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);

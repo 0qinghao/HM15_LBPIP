@@ -169,7 +169,7 @@
 #define FAST_UDI_USE_MPM 0
 
 // 项目中不涉及该参数, 可以改成 1 方便看代码
-#define RDO_WITHOUT_DQP_BITS 0 ///< Disable counting dQP bits in RDO-based mode decision
+#define RDO_WITHOUT_DQP_BITS 1 ///< Disable counting dQP bits in RDO-based mode decision
 
 #define FULL_NBIT 0 ///< When enabled, compute costs using full sample bitdepth.  When disabled, compute costs as if it is 8-bit source video.
 #if FULL_NBIT
