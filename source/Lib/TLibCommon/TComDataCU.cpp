@@ -2058,6 +2058,67 @@ Void TComDataCU::getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList)
         }
     }
 }
+Void TComDataCU::getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110)
+{
+    uiModeListnp0111[0] = PLANAR_IDX;
+    uiModeListnp0111[1] = VER_IDX;
+    uiModeListnp0111[2] = HOR_IDX;
+    uiModeListnp0111[3] = DC_IDX;
+    uiModeListnp0111[4] = DM_CHROMA_IDX;
+    uiModeListnp1011[0] = PLANAR_IDX;
+    uiModeListnp1011[1] = VER_IDX;
+    uiModeListnp1011[2] = HOR_IDX;
+    uiModeListnp1011[3] = DC_IDX;
+    uiModeListnp1011[4] = DM_CHROMA_IDX;
+    uiModeListnp1101[0] = PLANAR_IDX;
+    uiModeListnp1101[1] = VER_IDX;
+    uiModeListnp1101[2] = HOR_IDX;
+    uiModeListnp1101[3] = DC_IDX;
+    uiModeListnp1101[4] = DM_CHROMA_IDX;
+    uiModeListnp1110[0] = PLANAR_IDX;
+    uiModeListnp1110[1] = VER_IDX;
+    uiModeListnp1110[2] = HOR_IDX;
+    uiModeListnp1110[3] = DC_IDX;
+    uiModeListnp1110[4] = DM_CHROMA_IDX;
+
+    UInt uiLumaModenp0111 = getLumaIntraDirnp0111(uiAbsPartIdx);
+    UInt uiLumaModenp1011 = getLumaIntraDirnp1011(uiAbsPartIdx);
+    UInt uiLumaModenp1101 = getLumaIntraDirnp1101(uiAbsPartIdx);
+    UInt uiLumaModenp1110 = getLumaIntraDirnp1110(uiAbsPartIdx);
+
+    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    {
+        if (uiLumaModenp0111 == uiModeListnp0111[i])
+        {
+            uiModeListnp0111[i] = 34; // VER+8 mode
+            break;
+        }
+    }
+    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    {
+        if (uiLumaModenp1011 == uiModeListnp1011[i])
+        {
+            uiModeListnp1011[i] = 34; // VER+8 mode
+            break;
+        }
+    }
+    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    {
+        if (uiLumaModenp1101 == uiModeListnp1101[i])
+        {
+            uiModeListnp1101[i] = 34; // VER+8 mode
+            break;
+        }
+    }
+    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    {
+        if (uiLumaModenp1110 == uiModeListnp1110[i])
+        {
+            uiModeListnp1110[i] = 34; // VER+8 mode
+            break;
+        }
+    }
+}
 
 /** Get most probable intra modes
 *\param   uiAbsPartIdx

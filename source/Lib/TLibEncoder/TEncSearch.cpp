@@ -3115,8 +3115,16 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     //----- init mode list -----
     UInt uiMinMode = 0;
     UInt uiModeList[NUM_CHROMA_MODE];
+    UInt uiModeListnp0111[NUM_CHROMA_MODE];
+    UInt uiModeListnp1011[NUM_CHROMA_MODE];
+    UInt uiModeListnp1101[NUM_CHROMA_MODE];
+    UInt uiModeListnp1110[NUM_CHROMA_MODE];
     // FIXIT: 由于各种新模式和传统模式亮度块选取的最优模式不一样, 所以对各种模式来说各自的色差模式表是不同的
     pcCU->getAllowedChromaDir(0, uiModeList);
+    if (uiWidth != 4)
+    {
+        pcCU->getAllowedChromaDirnp(0, uiModeListnp0111, uiModeListnp1011, uiModeListnp1101, uiModeListnp1110);
+    }
     UInt uiMaxMode = NUM_CHROMA_MODE;
 
     //----- check chroma modes -----
@@ -3125,7 +3133,7 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
         //----- restore context models -----
         m_pcRDGoOnSbacCoder->load(m_pppcRDSbacCoder[uiDepth][CI_CURR_BEST]);
 
-        //----- chroma coding -----
+        //----- chroma coding ----
         UInt uiDist = 0;
         pcCU->setChromIntraDirSubParts(uiModeList[uiMode], 0, uiDepth);
         if (uiWidth != 4)
