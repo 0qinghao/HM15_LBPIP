@@ -219,6 +219,10 @@ public:
     UChar *m_puhChromaIntraDirnp1011; ///< array of intra directions (luma)
     UChar *m_puhChromaIntraDirnp1101; ///< array of intra directions (luma)
     UChar *m_puhChromaIntraDirnp1110; ///< array of intra directions (luma)
+    Double m_dTotalCostnpLpart0111;   ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1011;   ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1101;   ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1110;   ///< sum of partition RD costs
 
     TComDataCU();
     virtual ~TComDataCU();
@@ -667,6 +671,27 @@ public:
     // -------------------------------------------------------------------------------------------------------------------
 
     Double &getTotalCost() { return m_dTotalCost; }
+    // 增加
+    Double &getTotalCostnp(UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_dTotalCostnpLpart0111;
+            break;
+        case 0b1011:
+            return m_dTotalCostnpLpart1011;
+            break;
+        case 0b1101:
+            return m_dTotalCostnpLpart1101;
+            break;
+        case 0b1110:
+            return m_dTotalCostnpLpart1110;
+            break;
+        default:
+            assert(0);
+        }
+    }
     UInt &getTotalDistortion() { return m_uiTotalDistortion; }
     UInt &getTotalBits() { return m_uiTotalBits; }
     UInt &getTotalNumPart() { return m_uiNumPartition; }

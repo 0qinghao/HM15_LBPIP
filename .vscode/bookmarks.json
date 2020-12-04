@@ -23,12 +23,17 @@
 				"label": ""
 			},
 			{
-				"line": 1424,
+				"line": 1420,
+				"column": 58,
+				"label": ""
+			},
+			{
+				"line": 1426,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 1438,
+				"line": 1452,
 				"column": 82,
 				"label": ""
 			}
@@ -100,26 +105,11 @@
 		]
 	},
 	{
-		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComDataCU.cpp",
-		"bookmarks": [
-			{
-				"line": 1198,
-				"column": 14,
-				"label": ""
-			},
-			{
-				"line": 3969,
-				"column": 14,
-				"label": ""
-			}
-		]
-	},
-	{
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
 		"bookmarks": [
 			{
-				"line": 486,
-				"column": 15,
+				"line": 487,
+				"column": 16,
 				"label": ""
 			},
 			{
@@ -153,18 +143,18 @@
 				"label": ""
 			},
 			{
-				"line": 1186,
-				"column": 19,
+				"line": 1187,
+				"column": 16,
 				"label": ""
 			},
 			{
-				"line": 1217,
-				"column": 37,
+				"line": 1218,
+				"column": 28,
 				"label": ""
 			},
 			{
-				"line": 1342,
-				"column": 14,
+				"line": 1343,
+				"column": 8,
 				"label": ""
 			}
 		]
@@ -235,6 +225,16 @@
 			{
 				"line": 46,
 				"column": 65,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
+		"bookmarks": [
+			{
+				"line": 936,
+				"column": 124,
 				"label": ""
 			}
 		]

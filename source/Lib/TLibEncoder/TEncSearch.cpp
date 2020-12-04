@@ -934,7 +934,8 @@ Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
                 m_pcEntropyCoder->encodePredMode(pcCU, 0, true);
             }
 
-            m_pcEntropyCoder->encodePartSize(pcCU, 0, pcCU->getDepth(0), true);
+            // 在 RD 搜索过程中, 由于不太方便针对不同新分块方法设置不同 partsize, 因此干脆搜索时以都不编码 partsize 信息来做 RDO, 改为在 RDO 最后阶段即比较上下层 cost 之前, 手动加上固定不同分块模式所需的 bits
+            // m_pcEntropyCoder->encodePartSize(pcCU, 0, pcCU->getDepth(0), true);
 
             if (pcCU->isIntra(0) && pcCU->getPartitionSize(0) == SIZE_2Nx2N)
             {
