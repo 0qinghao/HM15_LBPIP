@@ -625,6 +625,7 @@ Void TDecSbac::parseIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, UInt dept
     }
 }
 
+// 解码色差预测角度
 Void TDecSbac::parseIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
     // UInt uiSymbol;

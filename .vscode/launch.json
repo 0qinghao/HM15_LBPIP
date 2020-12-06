@@ -52,6 +52,58 @@
                     "ignoreFailures": true
                 }
             ],
+        },
+        {
+            "name": "运行编码器 release",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/TAppEncoderStatic",
+            "args": [
+                "-c",
+                "${workspaceFolder}/cfg/encoder_intra_main_LL.cfg",
+                "-c",
+                // "${workspaceFolder}/cfg/per-sequence/wsl_BasketballPass.cfg"
+                "${workspaceFolder}/cfg/per-sequence/wsl_SlideEditing.cfg"
+                // "${workspaceFolder}/cfg/per-sequence/wsl_ChinaSpeed.cfg"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bin",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        },
+        {
+            "name": "运行解码器 release",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/TAppDecoderStatic",
+            "args": [
+                "-b",
+                "${workspaceFolder}/bin/SlideEditing_1280x720_30.bin",
+                "-o",
+                "${workspaceFolder}/bin/dec_SlideEditing_1280x720_30.yuv"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bin",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
         }
     ]
 }

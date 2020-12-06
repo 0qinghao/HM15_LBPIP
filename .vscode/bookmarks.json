@@ -31,11 +31,6 @@
 				"line": 1426,
 				"column": 17,
 				"label": ""
-			},
-			{
-				"line": 1452,
-				"column": 82,
-				"label": ""
 			}
 		]
 	},
@@ -235,6 +230,16 @@
 			{
 				"line": 936,
 				"column": 124,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$/source/Lib/TLibDecoder/TDecSbac.cpp",
+		"bookmarks": [
+			{
+				"line": 627,
+				"column": 6,
 				"label": ""
 			}
 		]

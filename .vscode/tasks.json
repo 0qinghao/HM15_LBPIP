@@ -48,6 +48,22 @@
                 "focus": true
             },
             "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "构建所有 release",
+            "command": "make",
+            "args": [
+                "-j8",
+                "release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/linux"
+            },
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
         }
     ]
 }
