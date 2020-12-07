@@ -1357,6 +1357,165 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     }
     return;
 }
+Void TEncSbac::codeModeRes(TComDataCU *pcCU)
+{
+    // 编码内容包括
+    // (熵编码)
+    // significant coeff group flag
+    // significant coeff flag
+    // greater than 1 flag
+    // greater than 2 flag
+    // (等概率旁路编码)
+    // coeff sign
+    // coeff remain
+    // for (Int iSubSet = iLastScanSet; iSubSet >= 0; iSubSet--)
+    // {
+    //     Int numNonZero = 0;
+    //     Int iSubPos = iSubSet << LOG2_SCAN_SET_SIZE;
+    //     uiGoRiceParam = 0;
+    //     Int absCoeff[16];
+    //     UInt coeffSigns = 0;
+
+    //     Int lastNZPosInCG = -1, firstNZPosInCG = SCAN_SET_SIZE;
+
+    //     if (iScanPosSig == scanPosLast)
+    //     {
+    //         absCoeff[0] = abs(pcCoef[posLast]);
+    //         coeffSigns = (pcCoef[posLast] < 0);
+    //         numNonZero = 1;
+    //         lastNZPosInCG = iScanPosSig;
+    //         firstNZPosInCG = iScanPosSig;
+    //         iScanPosSig--;
+    //     }
+
+    //     // 如果这个标志为 0, 表示这个 4x4 块里面全是 0
+    //     // encode significant_coeffgroup_flag
+    //     Int iCGBlkPos = scanCG[iSubSet];
+    //     Int iCGPosY = iCGBlkPos / uiNumBlkSide;
+    //     Int iCGPosX = iCGBlkPos - (iCGPosY * uiNumBlkSide);
+    //     if (iSubSet == iLastScanSet || iSubSet == 0)
+    //     {
+    //         uiSigCoeffGroupFlag[iCGBlkPos] = 1;
+    //     }
+    //     else
+    //     {
+    //         UInt uiSigCoeffGroup = (uiSigCoeffGroupFlag[iCGBlkPos] != 0);
+    //         UInt uiCtxSig = TComTrQuant::getSigCoeffGroupCtxInc(uiSigCoeffGroupFlag, iCGPosX, iCGPosY, uiWidth, uiHeight);
+    //         m_pcBinIf->encodeBin(uiSigCoeffGroup, baseCoeffGroupCtx[uiCtxSig]);
+    //     }
+
+    //     // encode significant_coeff_flag
+    //     if (uiSigCoeffGroupFlag[iCGBlkPos])
+    //     {
+    //         Int patternSigCtx = TComTrQuant::calcPatternSigCtx(uiSigCoeffGroupFlag, iCGPosX, iCGPosY, uiWidth, uiHeight);
+    //         UInt uiBlkPos, uiPosY, uiPosX, uiSig, uiCtxSig;
+    //         for (; iScanPosSig >= iSubPos; iScanPosSig--)
+    //         {
+    //             uiBlkPos = scan[iScanPosSig];
+    //             uiPosY = uiBlkPos >> uiLog2BlockSize;
+    //             uiPosX = uiBlkPos - (uiPosY << uiLog2BlockSize);
+    //             uiSig = (pcCoef[uiBlkPos] != 0);
+    //             if (iScanPosSig > iSubPos || iSubSet == 0 || numNonZero)
+    //             {
+    //                 uiCtxSig = TComTrQuant::getSigCtxInc(patternSigCtx, uiScanIdx, uiPosX, uiPosY, uiLog2BlockSize, eTType);
+    //                 m_pcBinIf->encodeBin(uiSig, baseCtx[uiCtxSig]);
+    //             }
+    //             if (uiSig)
+    //             {
+    //                 absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
+    //                 coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
+    //                 numNonZero++;
+    //                 if (lastNZPosInCG == -1)
+    //                 {
+    //                     lastNZPosInCG = iScanPosSig;
+    //                 }
+    //                 firstNZPosInCG = iScanPosSig;
+    //             }
+    //         }
+    //     }
+    //     else
+    //     {
+    //         iScanPosSig = iSubPos - 1;
+    //     }
+
+    //     if (numNonZero > 0)
+    //     {
+    //         Bool signHidden = (lastNZPosInCG - firstNZPosInCG >= SBH_THRESHOLD);
+    //         UInt uiCtxSet = (iSubSet > 0 && eTType == TEXT_LUMA) ? 2 : 0;
+
+    //         if (c1 == 0)
+    //         {
+    //             uiCtxSet++;
+    //         }
+    //         c1 = 1;
+    //         ContextModel *baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUOneSCModel.get(0, 0) + 4 * uiCtxSet : m_cCUOneSCModel.get(0, 0) + NUM_ONE_FLAG_CTX_LUMA + 4 * uiCtxSet;
+
+    //         Int numC1Flag = min(numNonZero, C1FLAG_NUMBER);
+    //         Int firstC2FlagIdx = -1;
+    //         // 对一个 4x4 里面的前 8(C1FLAG_NUMBER) 个非零系数编码 coeff_abs_level_greater1_flag
+    //         for (Int idx = 0; idx < numC1Flag; idx++)
+    //         {
+    //             UInt uiSymbol = absCoeff[idx] > 1;
+    //             m_pcBinIf->encodeBin(uiSymbol, baseCtxMod[c1]);
+    //             if (uiSymbol)
+    //             {
+    //                 c1 = 0;
+    //                 if (firstC2FlagIdx == -1)
+    //                 {
+    //                     firstC2FlagIdx = idx;
+    //                 }
+    //             }
+    //             else if ((c1 < 3) && (c1 > 0))
+    //             {
+    //                 c1++;
+    //             }
+    //         }
+
+    //         // 编码 4x4 块内第一个幅值大于 1 的系数的 coeff_abs_level_greater2_flag
+    //         if (c1 == 0)
+    //         {
+    //             baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUAbsSCModel.get(0, 0) + uiCtxSet : m_cCUAbsSCModel.get(0, 0) + NUM_ABS_FLAG_CTX_LUMA + uiCtxSet;
+    //             if (firstC2FlagIdx != -1)
+    //             {
+    //                 UInt symbol = absCoeff[firstC2FlagIdx] > 2;
+    //                 m_pcBinIf->encodeBin(symbol, baseCtxMod[0]);
+    //             }
+    //         }
+
+    //         // 符号位隐藏技术, 不会进入
+    //         if (beValid && signHidden)
+    //         {
+    //             m_pcBinIf->encodeBinsEP((coeffSigns >> 1), numNonZero - 1);
+    //         }
+    //         else
+    //         {
+    //             m_pcBinIf->encodeBinsEP(coeffSigns, numNonZero);
+    //         }
+
+    //         Int iFirstCoeff2 = 1;
+    //         if (c1 == 0 || numNonZero > C1FLAG_NUMBER)
+    //         {
+    //             for (Int idx = 0; idx < numNonZero; idx++)
+    //             {
+    //                 UInt baseLevel = (idx < C1FLAG_NUMBER) ? (2 + iFirstCoeff2) : 1;
+    //                 if (absCoeff[idx] >= baseLevel)
+    //                 {
+    //                     xWriteCoefRemainExGolomb(absCoeff[idx] - baseLevel, uiGoRiceParam);
+    //                     if (absCoeff[idx] > 3 * (1 << uiGoRiceParam))
+    //                     {
+    //                         uiGoRiceParam = min<UInt>(uiGoRiceParam + 1, 4);
+    //                     }
+    //                 }
+    //                 if (absCoeff[idx] >= 2)
+    //                 {
+    //                     iFirstCoeff2 = 0;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // return;
+}
 
 /** code SAO offset sign
  * \param code sign value

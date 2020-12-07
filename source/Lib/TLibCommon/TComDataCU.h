@@ -223,6 +223,14 @@ public:
     Double m_dTotalCostnpLpart1011;   ///< sum of partition RD costs
     Double m_dTotalCostnpLpart1101;   ///< sum of partition RD costs
     Double m_dTotalCostnpLpart1110;   ///< sum of partition RD costs
+    Double dBestCostLpartY0111;
+    Double dBestCostLpartY1011;
+    Double dBestCostLpartY1101;
+    Double dBestCostLpartY1110;
+    Double dBestCostLpartC0111;
+    Double dBestCostLpartC1011;
+    Double dBestCostLpartC1101;
+    Double dBestCostLpartC1110;
 
     TComDataCU();
     virtual ~TComDataCU();

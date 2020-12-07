@@ -1171,6 +1171,7 @@ Void TEncSearch::xIntraCodingLumaBlk(TComDataCU *pcCU,
     {
         Pel *pPred = piPred;
         Pel *pResi = piResi;
+        // NOTE: 这里重建值的指针指向了 piReco, 而 piReco 恰好在最开头指向了和 piPred 相同的地址. 因此预测值在此处被覆盖掉了, 变成了完全准确的重建值, 完全不符合这个变量名的意思了. 但是这样做其实没有影响, 只是影响代码的阅读理解, 因为有用的东西是残差值, 事实上代码在这之后根本就用不上预测值了. (但是代码后面居然还把这个变量当作正常的在用, 尽管不会影响编解码结果, 很是迷惑)
         Pel *pReco = piReco;
         Pel *pRecQt = piRecQt;
         Pel *pRecIPred = piRecIPred;
@@ -2844,6 +2845,8 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                     uiBestPUModenp0111 = uiOrgMode;
                     dBestPUCostnp0111 = dPUCostnp0111;
 
+                    pcCU->dBestCostLpartY0111 = dBestPUCostnp0111;
+
                     xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b0111);
 
                     UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
@@ -2857,6 +2860,8 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                 {
                     uiBestPUModenp1011 = uiOrgMode;
                     dBestPUCostnp1011 = dPUCostnp1011;
+
+                    pcCU->dBestCostLpartY1011 = dBestPUCostnp1011;
 
                     xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b1011);
 
@@ -2872,6 +2877,8 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                     uiBestPUModenp1101 = uiOrgMode;
                     dBestPUCostnp1101 = dPUCostnp1101;
 
+                    pcCU->dBestCostLpartY1101 = dBestPUCostnp1101;
+
                     xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b1101);
 
                     UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
@@ -2885,6 +2892,8 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                 {
                     uiBestPUModenp1110 = uiOrgMode;
                     dBestPUCostnp1110 = dPUCostnp1110;
+
+                    pcCU->dBestCostLpartY1110 = dBestPUCostnp1110;
 
                     xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b1110);
 
@@ -3183,6 +3192,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
                 dBestCostnp0111 = dCostnp0111;
                 uiBestModenp0111 = uiModeList[uiMode];
 
+                pcCU->dBestCostLpartC0111 = dBestCostnp0111;
+
                 xSetIntraResultChromaQTnp(pcCU, 0b0111);
 
                 UInt uiQPN = pcCU->getPic()->getNumPartInCU() >> (uiDepth << 1);
@@ -3193,6 +3204,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
             {
                 dBestCostnp1011 = dCostnp1011;
                 uiBestModenp1011 = uiModeList[uiMode];
+
+                pcCU->dBestCostLpartC1011 = dBestCostnp1011;
 
                 xSetIntraResultChromaQTnp(pcCU, 0b1011);
 
@@ -3205,6 +3218,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
                 dBestCostnp1101 = dCostnp1101;
                 uiBestModenp1101 = uiModeList[uiMode];
 
+                pcCU->dBestCostLpartC1101 = dBestCostnp1101;
+
                 xSetIntraResultChromaQTnp(pcCU, 0b1101);
 
                 UInt uiQPN = pcCU->getPic()->getNumPartInCU() >> (uiDepth << 1);
@@ -3215,6 +3230,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
             {
                 dBestCostnp1110 = dCostnp1110;
                 uiBestModenp1110 = uiModeList[uiMode];
+
+                pcCU->dBestCostLpartC1110 = dBestCostnp1110;
 
                 xSetIntraResultChromaQTnp(pcCU, 0b1110);
 

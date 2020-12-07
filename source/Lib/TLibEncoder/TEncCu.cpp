@@ -149,24 +149,26 @@ Void TEncCu::destroy()
             delete m_ppcRecoYuvBest[i];
             m_ppcRecoYuvBest[i] = NULL;
         }
-        if (m_ppcPredYuvTemp[i])
-        {
-            m_ppcPredYuvTemp[i]->destroy();
-            delete m_ppcPredYuvTemp[i];
-            m_ppcPredYuvTemp[i] = NULL;
-        }
+        // TODO: 小心内存问题
+        // if (m_ppcPredYuvTemp[i])
+        // {
+        //     m_ppcPredYuvTemp[i]->destroy();
+        //     delete m_ppcPredYuvTemp[i];
+        //     m_ppcPredYuvTemp[i] = NULL;
+        // }
         if (m_ppcResiYuvTemp[i])
         {
             m_ppcResiYuvTemp[i]->destroy();
             delete m_ppcResiYuvTemp[i];
             m_ppcResiYuvTemp[i] = NULL;
         }
-        if (m_ppcRecoYuvTemp[i])
-        {
-            m_ppcRecoYuvTemp[i]->destroy();
-            delete m_ppcRecoYuvTemp[i];
-            m_ppcRecoYuvTemp[i] = NULL;
-        }
+        // TODO: 小心内存问题
+        // if (m_ppcRecoYuvTemp[i])
+        // {
+        //     m_ppcRecoYuvTemp[i]->destroy();
+        //     delete m_ppcRecoYuvTemp[i];
+        //     m_ppcRecoYuvTemp[i] = NULL;
+        // }
         if (m_ppcOrigYuv[i])
         {
             m_ppcOrigYuv[i]->destroy();
@@ -691,8 +693,13 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
         m_pcEntropyCoder->resetBits();
         m_pcEntropyCoder->encodeSplitFlag(rpcBestCU, 0, uiDepth, true);
         rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
-        rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
+        // rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
         rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion()); // 更新 BestCU 的代价
+        // 针对 L 分块模式, 加上分块标志重新计算总代价
+        rpcBestCU->getTotalCostnp(0b0111) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        rpcBestCU->getTotalCostnp(0b1011) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        rpcBestCU->getTotalCostnp(0b1101) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        rpcBestCU->getTotalCostnp(0b1110) += m_pcEntropyCoder->getNumberOfWrittenBits();
 
         // Early CU determination
         if (m_pcEncCfg->getUseEarlyCU() && rpcBestCU->isSkipped(0))
@@ -709,11 +716,12 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
         bBoundary = true;
     }
 
+    // 项目中不考虑 PCM
     // copy orginal YUV samples to PCM buffer
-    if (rpcBestCU->isLosslessCoded(0) && (rpcBestCU->getIPCMFlag(0) == false))
-    {
-        xFillPCMBuffer(rpcBestCU, m_ppcOrigYuv[uiDepth]);
-    }
+    // if (rpcBestCU->isLosslessCoded(0) && (rpcBestCU->getIPCMFlag(0) == false))
+    // {
+    //     xFillPCMBuffer(rpcBestCU, m_ppcOrigYuv[uiDepth]);
+    // }
     if ((g_uiMaxCUWidth >> uiDepth) == rpcTempCU->getSlice()->getPPS()->getMinCuDQPSize())
     {
         Int idQP = m_pcEncCfg->getMaxDeltaQP();
@@ -1437,9 +1445,8 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // rpcTempCU->getTotalBins() = ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
     rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion());
 
-    Char cPartSize = *rpcTempCU->getPartitionSize();
     // RD 过程中手动加上分块信息需要的代价, 后期真正 code 才正常编码
-    switch (cPartSize)
+    switch (eSize)
     {
     case SIZE_NxN:
         rpcTempCU->getTotalCost() += PartSizeCost_NxN;
@@ -1451,7 +1458,13 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
         assert(0);
     }
     // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
-    rpcTempCU->getTotalCostnp(0b0111) = PartSizeCost_B_0111;
+    if (eSize != SIZE_NxN)
+    {
+        rpcTempCU->getTotalCostnp(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + PartSizeCost_B_0111;
+        rpcTempCU->getTotalCostnp(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011 + PartSizeCost_B_1011;
+        rpcTempCU->getTotalCostnp(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101 + PartSizeCost_B_1101;
+        rpcTempCU->getTotalCostnp(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110 + PartSizeCost_B_1110;
+    }
 
     // xCheckDQP(rpcTempCU);
     // xCheckBestMode 向下划分时, 比较对象是 DOUBLE_MAX, RD 必定更好, 存储上层的结果. 特殊的是 4与8 的比较也在此处实现
@@ -1517,14 +1530,15 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         rpcTempCU = pcCU;
 
         // Change Prediction data
-        pcYuv = m_ppcPredYuvBest[uiDepth];
+        // 此时的预测值地址存放的东西已经名不副实了, 是重建值
+        // pcYuv = m_ppcPredYuvBest[uiDepth];
         m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
-        m_ppcPredYuvTemp[uiDepth] = pcYuv;
+        // m_ppcPredYuvTemp[uiDepth] = pcYuv;
 
         // Change Reconstruction data
-        pcYuv = m_ppcRecoYuvBest[uiDepth];
+        // pcYuv = m_ppcRecoYuvBest[uiDepth];
         m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
-        m_ppcRecoYuvTemp[uiDepth] = pcYuv;
+        // m_ppcRecoYuvTemp[uiDepth] = pcYuv;
 
         pcYuv = NULL;
         pcCU = NULL;

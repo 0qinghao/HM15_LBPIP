@@ -399,6 +399,9 @@ enum PartSize
 #define PartSizeCost_2Nx2N 4;
 #define PartSizeCost_NxN 1;
 #define PartSizeCost_B_0111 4;
+#define PartSizeCost_B_1011 3;
+#define PartSizeCost_B_1101 3;
+#define PartSizeCost_B_1110 3;
 
 /// supported prediction type
 enum PredMode

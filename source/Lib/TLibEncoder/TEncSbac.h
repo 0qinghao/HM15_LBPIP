@@ -176,6 +176,7 @@ public:
 
     Void codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int height, TextType eTType, UInt uiScanIdx);
     Void codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType);
+    Void codeModeRes(TComDataCU *pcCU);
     void codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt width, UInt height, TextType eTType);
 
     // -------------------------------------------------------------------------------------------------------------------
