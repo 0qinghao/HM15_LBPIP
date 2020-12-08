@@ -806,7 +806,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
 #endif
                     // 4个划分的最优的信息的累加，以便和为分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
                     rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth); // Keep best part data to current temporary data.
-                    // TODO: 在这里记录/计算 8 16 层的 L 部分总 Cost
+                    // TODO: 在这里记录/计算 8 16 层的 1/4 块状部分总 Cost, 后面上层的 BestCU L Cost 加上这里对应的 1/4 得到新分块方法的 Cost
                     xCopyYuv2Tmp(pcSubBestPartCU->getTotalNumPart() * uiPartUnitIdx, uhNextDepth);
                 }
                 else if (bInSlice)
@@ -1522,6 +1522,7 @@ Void TEncCu::xCheckIntraPCM(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU)
  */
 Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt uiDepth)
 {
+    // 新方法 Cost 计算: Best L + Temp 1/4
     if (rpcTempCU->getTotalCost() < rpcBestCU->getTotalCost())
     {
         TComYuv *pcYuv;
