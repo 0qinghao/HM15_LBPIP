@@ -3068,6 +3068,27 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             pcCU->setLumaIntraDirSubPartsnp(uiBestPUModenp1101, 0b1101, uiDepth + uiInitTrDepth);
             pcCU->setLumaIntraDirSubPartsnp(uiBestPUModenp1110, 0b1110, uiDepth + uiInitTrDepth);
         }
+
+        if (uiWidth == 4)
+        {
+            switch (uiPU)
+            {
+            case 0:
+                pcCU->dBestCostQuarPartLT = dBestPUCost;
+                break;
+            case 1:
+                pcCU->dBestCostQuarPartRT = dBestPUCost;
+                break;
+            case 2:
+                pcCU->dBestCostQuarPartLB = dBestPUCost;
+                break;
+            case 3:
+                pcCU->dBestCostQuarPartRB = dBestPUCost;
+                break;
+            default:
+                assert(0);
+            }
+        }
     } // PU loop
 
     if (uiNumPU > 1)

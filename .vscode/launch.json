@@ -62,8 +62,8 @@
                 "-c",
                 "${workspaceFolder}/cfg/encoder_intra_main_LL.cfg",
                 "-c",
-                // "${workspaceFolder}/cfg/per-sequence/wsl_BasketballPass.cfg"
-                "${workspaceFolder}/cfg/per-sequence/wsl_SlideEditing.cfg"
+                "${workspaceFolder}/cfg/per-sequence/wsl_BasketballPass.cfg"
+                // "${workspaceFolder}/cfg/per-sequence/wsl_SlideEditing.cfg"
                 // "${workspaceFolder}/cfg/per-sequence/wsl_ChinaSpeed.cfg"
             ],
             "stopAtEntry": false,
@@ -87,9 +87,11 @@
             "program": "${workspaceFolder}/bin/TAppDecoderStatic",
             "args": [
                 "-b",
-                "${workspaceFolder}/bin/SlideEditing_1280x720_30.bin",
+                // "${workspaceFolder}/bin/SlideEditing_1280x720_30.bin",
+                "${workspaceFolder}/bin/BasketballPass_416x240_50.bin",
                 "-o",
-                "${workspaceFolder}/bin/dec_SlideEditing_1280x720_30.yuv"
+                // "${workspaceFolder}/bin/dec_SlideEditing_1280x720_30.yuv"
+                "${workspaceFolder}/bin/dec_BasketballPass_416x240_50.yuv"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",

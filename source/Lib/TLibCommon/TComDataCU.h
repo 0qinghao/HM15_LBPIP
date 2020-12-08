@@ -195,22 +195,24 @@ public:
     UInt uiBitsPer4x4[16][16];
     UInt uiBitsPer4x4Chroma[16][16];
     // 新分块方法的系数
-    TCoeff *m_pcTrCoeffYnp0111;       ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1011;       ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1101;       ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffYnp1110;       ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffCbnp0111;      ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1011;      ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1101;      ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCbnp1110;      ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCrnp0111;      ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1011;      ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1101;      ///< transformed coefficient buffer (Cr)
-    TCoeff *m_pcTrCoeffCrnp1110;      ///< transformed coefficient buffer (Cr)
-    UChar *m_puhCbfnp0111[3];         ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1011[3];         ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1101[3];         ///< array of coded block flags (CBF)
-    UChar *m_puhCbfnp1110[3];         ///< array of coded block flags (CBF)
+    TCoeff *m_pcTrCoeffYnp0111;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1011;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1101;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1110;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffCbnp0111; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1011; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1101; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1110; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCrnp0111; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1011; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1101; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1110; ///< transformed coefficient buffer (Cr)
+    // 新分块方法的 cbf 标志
+    UChar *m_puhCbfnp0111[3]; ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1011[3]; ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1101[3]; ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1110[3]; ///< array of coded block flags (CBF)
+    // 新分块方法的预测角度记录
     UChar *m_puhLumaIntraDirnp0111;   ///< array of intra directions (luma)
     UChar *m_puhLumaIntraDirnp1011;   ///< array of intra directions (luma)
     UChar *m_puhLumaIntraDirnp1101;   ///< array of intra directions (luma)
@@ -219,10 +221,12 @@ public:
     UChar *m_puhChromaIntraDirnp1011; ///< array of intra directions (luma)
     UChar *m_puhChromaIntraDirnp1101; ///< array of intra directions (luma)
     UChar *m_puhChromaIntraDirnp1110; ///< array of intra directions (luma)
-    Double m_dTotalCostnpLpart0111;   ///< sum of partition RD costs
-    Double m_dTotalCostnpLpart1011;   ///< sum of partition RD costs
-    Double m_dTotalCostnpLpart1101;   ///< sum of partition RD costs
-    Double m_dTotalCostnpLpart1110;   ///< sum of partition RD costs
+    // 新分块方法 L 区域的最优总 Cost
+    Double m_dTotalCostnpLpart0111; ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1011; ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1101; ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1110; ///< sum of partition RD costs
+    // 用于计算 L 区域最优总 Cost 的暂存数据
     Double dBestCostLpartY0111;
     Double dBestCostLpartY1011;
     Double dBestCostLpartY1101;
@@ -231,6 +235,11 @@ public:
     Double dBestCostLpartC1011;
     Double dBestCostLpartC1101;
     Double dBestCostLpartC1110;
+    // L 分块的 1/4 矩形区域的最优 Cost
+    Double dBestCostQuarPartLT;
+    Double dBestCostQuarPartRT;
+    Double dBestCostQuarPartLB;
+    Double dBestCostQuarPartRB;
 
     TComDataCU();
     virtual ~TComDataCU();

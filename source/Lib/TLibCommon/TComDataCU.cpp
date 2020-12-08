@@ -1350,7 +1350,7 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     assert(uiPartUnitIdx < 4);
 
     m_dTotalCost += pcCU->getTotalCost();
-    m_uiTotalDistortion += pcCU->getTotalDistortion();
+    // m_uiTotalDistortion += pcCU->getTotalDistortion();
     m_uiTotalBits += pcCU->getTotalBits();
 
     UInt uiOffset = pcCU->getTotalNumPart() * uiPartUnitIdx;
@@ -1360,14 +1360,13 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     Int iSizeInBool = sizeof(Bool) * uiNumPartition;
 
     Int sizeInChar = sizeof(Char) * uiNumPartition;
-    memcpy(m_skipFlag + uiOffset, pcCU->getSkipFlag(), sizeof(*m_skipFlag) * uiNumPartition);
+    // memcpy(m_skipFlag + uiOffset, pcCU->getSkipFlag(), sizeof(*m_skipFlag) * uiNumPartition);
     memcpy(m_phQP + uiOffset, pcCU->getQP(), sizeInChar);
     memcpy(m_pePartSize + uiOffset, pcCU->getPartitionSize(), sizeof(*m_pePartSize) * uiNumPartition);
     memcpy(m_pePredMode + uiOffset, pcCU->getPredictionMode(), sizeof(*m_pePredMode) * uiNumPartition);
     memcpy(m_CUTransquantBypass + uiOffset, pcCU->getCUTransquantBypass(), sizeof(*m_CUTransquantBypass) * uiNumPartition);
-    memcpy(m_pbMergeFlag + uiOffset, pcCU->getMergeFlag(), iSizeInBool);
-    memcpy(m_puhMergeIndex + uiOffset, pcCU->getMergeIndex(), iSizeInUchar);
-    // TODO: 这里是 4x4 块网上统计才会进入的, 针对新分块方法, 复制的源数据是不是应该还是传统分块方法的结果
+    // memcpy(m_pbMergeFlag + uiOffset, pcCU->getMergeFlag(), iSizeInBool);
+    // memcpy(m_puhMergeIndex + uiOffset, pcCU->getMergeIndex(), iSizeInUchar);
     // memcpy(m_puhLumaIntraDir + uiOffset, pcCU->getLumaIntraDir(), iSizeInUchar);
     memcpy(m_puhLumaIntraDir + (uiOffset << 4), pcCU->getLumaIntraDir(), iSizeInUchar << 4);
     memcpy(m_puhLumaIntraDirnp0111 + (uiOffset << 4), pcCU->getLumaIntraDirnp0111(), iSizeInUchar << 4);
@@ -1380,11 +1379,11 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     memcpy(m_puhChromaIntraDirnp1011 + (uiOffset << 4), pcCU->getChromaIntraDirnp1011(), (iSizeInUchar << 4));
     memcpy(m_puhChromaIntraDirnp1101 + (uiOffset << 4), pcCU->getChromaIntraDirnp1101(), (iSizeInUchar << 4));
     memcpy(m_puhChromaIntraDirnp1110 + (uiOffset << 4), pcCU->getChromaIntraDirnp1110(), (iSizeInUchar << 4));
-    memcpy(m_puhInterDir + uiOffset, pcCU->getInterDir(), iSizeInUchar);
+    // memcpy(m_puhInterDir + uiOffset, pcCU->getInterDir(), iSizeInUchar);
     memcpy(m_puhTrIdx + uiOffset, pcCU->getTransformIdx(), iSizeInUchar);
-    memcpy(m_puhTransformSkip[0] + uiOffset, pcCU->getTransformSkip(TEXT_LUMA), iSizeInUchar);
-    memcpy(m_puhTransformSkip[1] + uiOffset, pcCU->getTransformSkip(TEXT_CHROMA_U), iSizeInUchar);
-    memcpy(m_puhTransformSkip[2] + uiOffset, pcCU->getTransformSkip(TEXT_CHROMA_V), iSizeInUchar);
+    // memcpy(m_puhTransformSkip[0] + uiOffset, pcCU->getTransformSkip(TEXT_LUMA), iSizeInUchar);
+    // memcpy(m_puhTransformSkip[1] + uiOffset, pcCU->getTransformSkip(TEXT_CHROMA_U), iSizeInUchar);
+    // memcpy(m_puhTransformSkip[2] + uiOffset, pcCU->getTransformSkip(TEXT_CHROMA_V), iSizeInUchar);
 
     // TODO: 这个函数是传统分块方法专用的 不考虑再处理新方法增加的成员变量
     memcpy(m_puhCbf[0] + uiOffset, pcCU->getCbf(TEXT_LUMA), iSizeInUchar);
@@ -1395,23 +1394,23 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     memcpy(m_puhWidth + uiOffset, pcCU->getWidth(), iSizeInUchar);
     memcpy(m_puhHeight + uiOffset, pcCU->getHeight(), iSizeInUchar);
 
-    memcpy(m_apiMVPIdx[0] + uiOffset, pcCU->getMVPIdx(REF_PIC_LIST_0), iSizeInUchar);
-    memcpy(m_apiMVPIdx[1] + uiOffset, pcCU->getMVPIdx(REF_PIC_LIST_1), iSizeInUchar);
-    memcpy(m_apiMVPNum[0] + uiOffset, pcCU->getMVPNum(REF_PIC_LIST_0), iSizeInUchar);
-    memcpy(m_apiMVPNum[1] + uiOffset, pcCU->getMVPNum(REF_PIC_LIST_1), iSizeInUchar);
+    // memcpy(m_apiMVPIdx[0] + uiOffset, pcCU->getMVPIdx(REF_PIC_LIST_0), iSizeInUchar);
+    // memcpy(m_apiMVPIdx[1] + uiOffset, pcCU->getMVPIdx(REF_PIC_LIST_1), iSizeInUchar);
+    // memcpy(m_apiMVPNum[0] + uiOffset, pcCU->getMVPNum(REF_PIC_LIST_0), iSizeInUchar);
+    // memcpy(m_apiMVPNum[1] + uiOffset, pcCU->getMVPNum(REF_PIC_LIST_1), iSizeInUchar);
 
-    memcpy(m_pbIPCMFlag + uiOffset, pcCU->getIPCMFlag(), iSizeInBool);
+    // memcpy(m_pbIPCMFlag + uiOffset, pcCU->getIPCMFlag(), iSizeInBool);
 
     m_pcCUAboveLeft = pcCU->getCUAboveLeft();
     m_pcCUAboveRight = pcCU->getCUAboveRight();
     m_pcCUAbove = pcCU->getCUAbove();
     m_pcCULeft = pcCU->getCULeft();
 
-    m_apcCUColocated[0] = pcCU->getCUColocated(REF_PIC_LIST_0);
-    m_apcCUColocated[1] = pcCU->getCUColocated(REF_PIC_LIST_1);
+    // m_apcCUColocated[0] = pcCU->getCUColocated(REF_PIC_LIST_0);
+    // m_apcCUColocated[1] = pcCU->getCUColocated(REF_PIC_LIST_1);
 
-    m_acCUMvField[0].copyFrom(pcCU->getCUMvField(REF_PIC_LIST_0), pcCU->getTotalNumPart(), uiOffset);
-    m_acCUMvField[1].copyFrom(pcCU->getCUMvField(REF_PIC_LIST_1), pcCU->getTotalNumPart(), uiOffset);
+    // m_acCUMvField[0].copyFrom(pcCU->getCUMvField(REF_PIC_LIST_0), pcCU->getTotalNumPart(), uiOffset);
+    // m_acCUMvField[1].copyFrom(pcCU->getCUMvField(REF_PIC_LIST_1), pcCU->getTotalNumPart(), uiOffset);
 
     UInt uiTmp = g_uiMaxCUWidth * g_uiMaxCUHeight >> (uiDepth << 1);
     UInt uiTmp2 = uiPartUnitIdx * uiTmp;
@@ -1419,7 +1418,7 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
 #if ADAPTIVE_QP_SELECTION
     memcpy(m_pcArlCoeffY + uiTmp2, pcCU->getArlCoeffY(), sizeof(Int) * uiTmp);
 #endif
-    memcpy(m_pcIPCMSampleY + uiTmp2, pcCU->getPCMSampleY(), sizeof(Pel) * uiTmp);
+    // memcpy(m_pcIPCMSampleY + uiTmp2, pcCU->getPCMSampleY(), sizeof(Pel) * uiTmp);
 
     uiTmp >>= 2;
     uiTmp2 >>= 2;
@@ -1429,11 +1428,11 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     memcpy(m_pcArlCoeffCb + uiTmp2, pcCU->getArlCoeffCb(), sizeof(Int) * uiTmp);
     memcpy(m_pcArlCoeffCr + uiTmp2, pcCU->getArlCoeffCr(), sizeof(Int) * uiTmp);
 #endif
-    memcpy(m_pcIPCMSampleCb + uiTmp2, pcCU->getPCMSampleCb(), sizeof(Pel) * uiTmp);
-    memcpy(m_pcIPCMSampleCr + uiTmp2, pcCU->getPCMSampleCr(), sizeof(Pel) * uiTmp);
-    m_uiTotalBins += pcCU->getTotalBins();
-    memcpy(m_sliceStartCU + uiOffset, pcCU->m_sliceStartCU, sizeof(UInt) * uiNumPartition);
-    memcpy(m_sliceSegmentStartCU + uiOffset, pcCU->m_sliceSegmentStartCU, sizeof(UInt) * uiNumPartition);
+    // memcpy(m_pcIPCMSampleCb + uiTmp2, pcCU->getPCMSampleCb(), sizeof(Pel) * uiTmp);
+    // memcpy(m_pcIPCMSampleCr + uiTmp2, pcCU->getPCMSampleCr(), sizeof(Pel) * uiTmp);
+    // m_uiTotalBins += pcCU->getTotalBins();
+    // memcpy(m_sliceStartCU + uiOffset, pcCU->m_sliceStartCU, sizeof(UInt) * uiNumPartition);
+    // memcpy(m_sliceSegmentStartCU + uiOffset, pcCU->m_sliceSegmentStartCU, sizeof(UInt) * uiNumPartition);
 }
 
 // Copy current predicted part to a CU in picture.
@@ -1443,23 +1442,23 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     TComDataCU *&rpcCU = m_pcPic->getCU(m_uiCUAddr);
 
     rpcCU->getTotalCost() = m_dTotalCost;
-    rpcCU->getTotalDistortion() = m_uiTotalDistortion;
+    // rpcCU->getTotalDistortion() = m_uiTotalDistortion;
     rpcCU->getTotalBits() = m_uiTotalBits;
 
     Int iSizeInUchar = sizeof(UChar) * m_uiNumPartition;
-    Int iSizeInBool = sizeof(Bool) * m_uiNumPartition;
+    // Int iSizeInBool = sizeof(Bool) * m_uiNumPartition;
 
     Int sizeInChar = sizeof(Char) * m_uiNumPartition;
 
-    memcpy(rpcCU->getSkipFlag() + m_uiAbsIdxInLCU, m_skipFlag, sizeof(*m_skipFlag) * m_uiNumPartition);
+    // memcpy(rpcCU->getSkipFlag() + m_uiAbsIdxInLCU, m_skipFlag, sizeof(*m_skipFlag) * m_uiNumPartition);
 
     memcpy(rpcCU->getQP() + m_uiAbsIdxInLCU, m_phQP, sizeInChar);
 
     memcpy(rpcCU->getPartitionSize() + m_uiAbsIdxInLCU, m_pePartSize, sizeof(*m_pePartSize) * m_uiNumPartition);
     memcpy(rpcCU->getPredictionMode() + m_uiAbsIdxInLCU, m_pePredMode, sizeof(*m_pePredMode) * m_uiNumPartition);
     memcpy(rpcCU->getCUTransquantBypass() + m_uiAbsIdxInLCU, m_CUTransquantBypass, sizeof(*m_CUTransquantBypass) * m_uiNumPartition);
-    memcpy(rpcCU->getMergeFlag() + m_uiAbsIdxInLCU, m_pbMergeFlag, iSizeInBool);
-    memcpy(rpcCU->getMergeIndex() + m_uiAbsIdxInLCU, m_puhMergeIndex, iSizeInUchar);
+    // memcpy(rpcCU->getMergeFlag() + m_uiAbsIdxInLCU, m_pbMergeFlag, iSizeInBool);
+    // memcpy(rpcCU->getMergeIndex() + m_uiAbsIdxInLCU, m_puhMergeIndex, iSizeInUchar);
     // TODO: 这里预测角度信息的复制 表现得有点怪 检查
     // memcpy(rpcCU->getLumaIntraDir() + m_uiAbsIdxInLCU, m_puhLumaIntraDir, iSizeInUchar);
     // memcpy(rpcCU->m_puhLumaIntraDirnp0111 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp0111, iSizeInUchar);
@@ -1477,11 +1476,11 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     memcpy(rpcCU->getChromaIntraDirnp1011() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDirnp1011, (iSizeInUchar << 4));
     memcpy(rpcCU->getChromaIntraDirnp1101() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDirnp1101, (iSizeInUchar << 4));
     memcpy(rpcCU->getChromaIntraDirnp1110() + (m_uiAbsIdxInLCU << 4), m_puhChromaIntraDirnp1110, (iSizeInUchar << 4));
-    memcpy(rpcCU->getInterDir() + m_uiAbsIdxInLCU, m_puhInterDir, iSizeInUchar);
+    // memcpy(rpcCU->getInterDir() + m_uiAbsIdxInLCU, m_puhInterDir, iSizeInUchar);
     memcpy(rpcCU->getTransformIdx() + m_uiAbsIdxInLCU, m_puhTrIdx, iSizeInUchar);
-    memcpy(rpcCU->getTransformSkip(TEXT_LUMA) + m_uiAbsIdxInLCU, m_puhTransformSkip[0], iSizeInUchar);
-    memcpy(rpcCU->getTransformSkip(TEXT_CHROMA_U) + m_uiAbsIdxInLCU, m_puhTransformSkip[1], iSizeInUchar);
-    memcpy(rpcCU->getTransformSkip(TEXT_CHROMA_V) + m_uiAbsIdxInLCU, m_puhTransformSkip[2], iSizeInUchar);
+    // memcpy(rpcCU->getTransformSkip(TEXT_LUMA) + m_uiAbsIdxInLCU, m_puhTransformSkip[0], iSizeInUchar);
+    // memcpy(rpcCU->getTransformSkip(TEXT_CHROMA_U) + m_uiAbsIdxInLCU, m_puhTransformSkip[1], iSizeInUchar);
+    // memcpy(rpcCU->getTransformSkip(TEXT_CHROMA_V) + m_uiAbsIdxInLCU, m_puhTransformSkip[2], iSizeInUchar);
 
     memcpy(rpcCU->getCbf(TEXT_LUMA) + m_uiAbsIdxInLCU, m_puhCbf[0], iSizeInUchar);
     memcpy(rpcCU->getCbf(TEXT_CHROMA_U) + m_uiAbsIdxInLCU, m_puhCbf[1], iSizeInUchar);
@@ -1491,15 +1490,15 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     memcpy(rpcCU->getWidth() + m_uiAbsIdxInLCU, m_puhWidth, iSizeInUchar);
     memcpy(rpcCU->getHeight() + m_uiAbsIdxInLCU, m_puhHeight, iSizeInUchar);
 
-    memcpy(rpcCU->getMVPIdx(REF_PIC_LIST_0) + m_uiAbsIdxInLCU, m_apiMVPIdx[0], iSizeInUchar);
-    memcpy(rpcCU->getMVPIdx(REF_PIC_LIST_1) + m_uiAbsIdxInLCU, m_apiMVPIdx[1], iSizeInUchar);
-    memcpy(rpcCU->getMVPNum(REF_PIC_LIST_0) + m_uiAbsIdxInLCU, m_apiMVPNum[0], iSizeInUchar);
-    memcpy(rpcCU->getMVPNum(REF_PIC_LIST_1) + m_uiAbsIdxInLCU, m_apiMVPNum[1], iSizeInUchar);
+    // memcpy(rpcCU->getMVPIdx(REF_PIC_LIST_0) + m_uiAbsIdxInLCU, m_apiMVPIdx[0], iSizeInUchar);
+    // memcpy(rpcCU->getMVPIdx(REF_PIC_LIST_1) + m_uiAbsIdxInLCU, m_apiMVPIdx[1], iSizeInUchar);
+    // memcpy(rpcCU->getMVPNum(REF_PIC_LIST_0) + m_uiAbsIdxInLCU, m_apiMVPNum[0], iSizeInUchar);
+    // memcpy(rpcCU->getMVPNum(REF_PIC_LIST_1) + m_uiAbsIdxInLCU, m_apiMVPNum[1], iSizeInUchar);
 
-    m_acCUMvField[0].copyTo(rpcCU->getCUMvField(REF_PIC_LIST_0), m_uiAbsIdxInLCU);
-    m_acCUMvField[1].copyTo(rpcCU->getCUMvField(REF_PIC_LIST_1), m_uiAbsIdxInLCU);
+    // m_acCUMvField[0].copyTo(rpcCU->getCUMvField(REF_PIC_LIST_0), m_uiAbsIdxInLCU);
+    // m_acCUMvField[1].copyTo(rpcCU->getCUMvField(REF_PIC_LIST_1), m_uiAbsIdxInLCU);
 
-    memcpy(rpcCU->getIPCMFlag() + m_uiAbsIdxInLCU, m_pbIPCMFlag, iSizeInBool);
+    // memcpy(rpcCU->getIPCMFlag() + m_uiAbsIdxInLCU, m_pbIPCMFlag, iSizeInBool);
 
     UInt uiTmp = (g_uiMaxCUWidth * g_uiMaxCUHeight) >> (uhDepth << 1);
     UInt uiTmp2 = m_uiAbsIdxInLCU * m_pcPic->getMinCUWidth() * m_pcPic->getMinCUHeight();
@@ -1507,7 +1506,7 @@ Void TComDataCU::copyToPic(UChar uhDepth)
 #if ADAPTIVE_QP_SELECTION
     memcpy(rpcCU->getArlCoeffY() + uiTmp2, m_pcArlCoeffY, sizeof(Int) * uiTmp);
 #endif
-    memcpy(rpcCU->getPCMSampleY() + uiTmp2, m_pcIPCMSampleY, sizeof(Pel) * uiTmp);
+    // memcpy(rpcCU->getPCMSampleY() + uiTmp2, m_pcIPCMSampleY, sizeof(Pel) * uiTmp);
 
     uiTmp >>= 2;
     uiTmp2 >>= 2;
@@ -1517,11 +1516,11 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     memcpy(rpcCU->getArlCoeffCb() + uiTmp2, m_pcArlCoeffCb, sizeof(Int) * uiTmp);
     memcpy(rpcCU->getArlCoeffCr() + uiTmp2, m_pcArlCoeffCr, sizeof(Int) * uiTmp);
 #endif
-    memcpy(rpcCU->getPCMSampleCb() + uiTmp2, m_pcIPCMSampleCb, sizeof(Pel) * uiTmp);
-    memcpy(rpcCU->getPCMSampleCr() + uiTmp2, m_pcIPCMSampleCr, sizeof(Pel) * uiTmp);
-    rpcCU->getTotalBins() = m_uiTotalBins;
-    memcpy(rpcCU->m_sliceStartCU + m_uiAbsIdxInLCU, m_sliceStartCU, sizeof(UInt) * m_uiNumPartition);
-    memcpy(rpcCU->m_sliceSegmentStartCU + m_uiAbsIdxInLCU, m_sliceSegmentStartCU, sizeof(UInt) * m_uiNumPartition);
+    // memcpy(rpcCU->getPCMSampleCb() + uiTmp2, m_pcIPCMSampleCb, sizeof(Pel) * uiTmp);
+    // memcpy(rpcCU->getPCMSampleCr() + uiTmp2, m_pcIPCMSampleCr, sizeof(Pel) * uiTmp);
+    // rpcCU->getTotalBins() = m_uiTotalBins;
+    // memcpy(rpcCU->m_sliceStartCU + m_uiAbsIdxInLCU, m_sliceStartCU, sizeof(UInt) * m_uiNumPartition);
+    // memcpy(rpcCU->m_sliceSegmentStartCU + m_uiAbsIdxInLCU, m_sliceSegmentStartCU, sizeof(UInt) * m_uiNumPartition);
 }
 
 // 这个函数虽然会执行 但是在本项目中不会造成任何影响

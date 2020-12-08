@@ -806,6 +806,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
 #endif
                     // 4个划分的最优的信息的累加，以便和为分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
                     rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth); // Keep best part data to current temporary data.
+                    // TODO: 在这里记录/计算 8 16 层的 L 部分总 Cost
                     xCopyYuv2Tmp(pcSubBestPartCU->getTotalNumPart() * uiPartUnitIdx, uhNextDepth);
                 }
                 else if (bInSlice)
@@ -1530,7 +1531,7 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         rpcTempCU = pcCU;
 
         // Change Prediction data
-        // 此时的预测值地址存放的东西已经名不副实了, 是重建值
+        // 此时的预测值地址存放的东西已经名不副实了, 是重建值. 而且已经不会再使用预测值了, 不用把 Temp 换过去也没事
         // pcYuv = m_ppcPredYuvBest[uiDepth];
         m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
         // m_ppcPredYuvTemp[uiDepth] = pcYuv;
