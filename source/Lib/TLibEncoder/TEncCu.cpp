@@ -1400,7 +1400,6 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
 
     rpcTempCU->setSkipFlagSubParts(false, 0, uiDepth);
 
-    // TODO: 注意这里只设置了正常分块模式的 partsize, 要注意对后面有没有影响
     rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
     rpcTempCU->setPredModeSubParts(MODE_INTRA, 0, uiDepth);
 
@@ -1427,8 +1426,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // 项目不会编码的标志
     // m_pcEntropyCoder->encodeSkipFlag(rpcTempCU, 0, true);
     // m_pcEntropyCoder->encodePredMode(rpcTempCU, 0, true);
-    // 不方便不同分块方式临时设置/计算一次 partsize, 因此干脆不做编码, 改为加固定的所需 bits
-    // m_pcEntropyCoder->encodePartSize(rpcTempCU, 0, uiDepth, true);
+    m_pcEntropyCoder->encodePartSize(rpcTempCU, 0, uiDepth, true);
     m_pcEntropyCoder->encodePredInfo(rpcTempCU, 0, true);
     // m_pcEntropyCoder->encodeIPCMInfo(rpcTempCU, 0, true);
 
@@ -1446,18 +1444,20 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // rpcTempCU->getTotalBins() = ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
     rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion());
 
+    // 还是决定在 split flag 那边处理新分块信息
     // RD 过程中手动加上分块信息需要的代价, 后期真正 code 才正常编码
-    switch (eSize)
-    {
-    case SIZE_NxN:
-        rpcTempCU->getTotalCost() += PartSizeCost_NxN;
-        break;
-    case SIZE_2Nx2N:
-        rpcTempCU->getTotalCost() += PartSizeCost_2Nx2N;
-        break;
-    default:
-        assert(0);
-    }
+    // switch (eSize)
+    // {
+    // case SIZE_NxN:
+    //     rpcTempCU->getTotalCost() += PartSizeCost_NxN;
+    //     break;
+    // case SIZE_2Nx2N:
+    //     rpcTempCU->getTotalCost() += PartSizeCost_2Nx2N;
+    //     break;
+    // default:
+    //     assert(0);
+    // }
+
     // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
     if (eSize != SIZE_NxN)
     {

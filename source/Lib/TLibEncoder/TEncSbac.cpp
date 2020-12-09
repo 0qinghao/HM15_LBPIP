@@ -585,8 +585,11 @@ Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
     assert(uiCtx < 3);
     m_pcBinIf->encodeBin(uiCurrSplitFlag, m_cCUSplitFlagSCModel.get(0, 0, uiCtx));
-    // 需要替换为新方法的分块标志
-    // m_pcBinIf->encodeBinsEP(uiCurrSplitFlag, 3);
+    // // 需要替换为新方法的分块标志
+    // if (uiCurrSplitFlag)
+    // {
+    //     m_pcBinIf->encodeBinsEP(uiCurrSplitFlag, 2);
+    // }
     //DTRACE_CABAC_VL(g_nSymbolCounter++)
     //DTRACE_CABAC_T("\tSplitFlag\n")
     return;
