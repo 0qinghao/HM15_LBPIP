@@ -113,7 +113,7 @@
 #define MAX_UINT 0xFFFFFFFFU           ///< max. value of unsigned 32-bit integer
 #define MAX_INT 2147483647             ///< max. value of signed 32-bit integer
 #define MAX_INT64 0x7FFFFFFFFFFFFFFFLL ///< max. value of signed 64-bit integer
-#define MAX_DOUBLE 1.7e+308 - 1        ///< max. value of double-type value
+#define MAX_DOUBLE 1.7e+308            ///< max. value of double-type value
 #define MAX_UCHAR 0xFFU                // 无符号 char 类型的最大值, 用于滤波判定表 m_aucIntraFilter
 
 #define MIN_QP 0

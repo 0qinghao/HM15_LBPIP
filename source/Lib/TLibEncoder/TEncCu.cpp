@@ -777,6 +777,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
             UChar uhNextDepth = uiDepth + 1;
             TComDataCU *pcSubBestPartCU = m_ppcBestCU[uhNextDepth];
             TComDataCU *pcSubTempPartCU = m_ppcTempCU[uhNextDepth];
+            Double dCostPre;
 
             for (UInt uiPartUnitIdx = 0; uiPartUnitIdx < 4; uiPartUnitIdx++)
             {
@@ -809,8 +810,29 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     xCompressCU(pcSubBestPartCU, pcSubTempPartCU, uhNextDepth);
 #endif
                     // 4个划分的最优的信息的累加，以便和为分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
-                    rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth); // Keep best part data to current temporary data.
+                    rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth);
                     // TODO: 在这里记录/计算 8 16 层的 1/4 块状部分总 Cost, 后面上层的 BestCU L Cost 加上这里对应的 1/4 得到新分块方法的 Cost
+                    switch (uiPartUnitIdx)
+                    {
+                    case 0:
+                        rpcTempCU->dBestCostQuarPartLT = rpcTempCU->getTotalBits();
+                        dCostPre = rpcTempCU->getTotalBits();
+                        break;
+                    case 1:
+                        rpcTempCU->dBestCostQuarPartRT = rpcTempCU->getTotalBits() - dCostPre;
+                        dCostPre = rpcTempCU->getTotalBits();
+                        break;
+                    case 2:
+                        rpcTempCU->dBestCostQuarPartLB = rpcTempCU->getTotalBits() - dCostPre;
+                        dCostPre = rpcTempCU->getTotalBits();
+                        break;
+                    case 3:
+                        rpcTempCU->dBestCostQuarPartRB = rpcTempCU->getTotalBits() - dCostPre;
+                        dCostPre = rpcTempCU->getTotalBits();
+                        break;
+                    default:
+                        assert(0);
+                    }
                     xCopyYuv2Tmp(pcSubBestPartCU->getTotalNumPart() * uiPartUnitIdx, uhNextDepth);
                 }
                 else if (bInSlice)
@@ -1527,9 +1549,12 @@ Void TEncCu::xCheckIntraPCM(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU)
  */
 Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt uiDepth)
 {
-    if (*rpcTempCU->getWidth() != 8)
+    // 向下计算时 Status=0, 向上回归时 Status=1
+    Bool bStatus = rpcBestCU->getTotalCost() != MAX_DOUBLE;
+
+    if (*rpcBestCU->getWidth() != 8)
     {
-        if (rpcBestCU->getTotalCost() == MAX_DOUBLE) // 表示在向下搜索的过程种
+        if (bStatus == 0) // 表示在向下搜索的过程中
         {
             rpcTempCU->getTotalBits() += 1; // 模拟编码分块标志 0
         }
@@ -1557,7 +1582,7 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
 
     // 新方法 Cost 计算: Best L + Temp 1/4
-    if (!(rpcBestCU->getTotalCost() == MAX_DOUBLE)) // 向上回归时计算新方法的 Cost
+    if (bStatus == 1) // 向上回归时计算新方法的 Cost
     {
         rpcTempCU->m_dTotalCostnp0111 = rpcBestCU->getTotalCostnpLpart(0b0111) + rpcTempCU->dBestCostQuarPartLT;
         rpcTempCU->m_dTotalCostnp1011 = rpcBestCU->getTotalCostnpLpart(0b1011) + rpcTempCU->dBestCostQuarPartRT;
@@ -1565,13 +1590,33 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         rpcTempCU->m_dTotalCostnp1110 = rpcBestCU->getTotalCostnpLpart(0b1110) + rpcTempCU->dBestCostQuarPartRB;
     }
 
-    if (rpcTempCU->getTotalCost() < rpcBestCU->getTotalCost())
+    Double dMin;
+    Int iMinPos;
+    if (bStatus == 1) // 向上回归时从所有 6 种情况里面找最小值
+    {
+        Double CostList[6] = {rpcBestCU->getTotalCost(),
+                              rpcTempCU->getTotalCost(),
+                              rpcTempCU->m_dTotalCostnp0111,
+                              rpcTempCU->m_dTotalCostnp1011,
+                              rpcTempCU->m_dTotalCostnp1101,
+                              rpcTempCU->m_dTotalCostnp1110};
+        iMinPos = min_element(CostList, CostList + 6) - CostList;
+        dMin = CostList[iMinPos];
+    }
+    else
+    {
+        dMin = rpcTempCU->getTotalCost();
+    }
+
+    if (dMin < rpcBestCU->getTotalCost())
     {
         TComYuv *pcYuv;
         // Change Information data
         TComDataCU *pcCU = rpcBestCU;
         rpcBestCU = rpcTempCU;
         rpcTempCU = pcCU;
+        rpcBestCU->getTotalCost() = dMin;
+        rpcBestCU->getTotalBits() = dMin;
 
         // Change Prediction data
         // 此时的预测值地址存放的东西已经名不副实了, 是重建值. 而且已经不会再使用预测值了, 不用把 Temp 换过去也没事

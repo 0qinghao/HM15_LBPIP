@@ -312,6 +312,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
         offsetChroma += (size >> 2);
         xEncodeTransform(pcCU, offsetLuma, offsetChroma, uiAbsPartIdx, uiDepth, width, height, uiTrIdx, bCodeDQP);
 
+        // 8x8 块在这里同时编码了亮度和色差的系数
         uiAbsPartIdx += partNum;
         offsetLuma += size;
         offsetChroma += (size >> 2);
