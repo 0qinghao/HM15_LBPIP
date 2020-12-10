@@ -691,19 +691,19 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
         }
 
         m_pcEntropyCoder->resetBits();
-        m_pcEntropyCoder->encodeSplitFlag(rpcBestCU, 0, uiDepth, true);
-        rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
+        // m_pcEntropyCoder->encodeSplitFlag(rpcBestCU, 0, uiDepth, true);
+        // rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
         // rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
-        rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion()); // 更新 BestCU 的代价
+        // rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion()); // 更新 BestCU 的代价
         // 针对 L 分块模式, 加上分块标志重新计算总代价. 因为 L 分块视为 split=1, 和传统一样在向上回归时计算 split 代价, 在向下计算时暂时不处理
-        Bool bCurrSplitFlag = rpcBestCU->getDepth(0) > uiDepth;
-        if (bCurrSplitFlag == true)
-        {
-            rpcBestCU->getTotalCostnp(0b0111) += m_pcEntropyCoder->getNumberOfWrittenBits();
-            rpcBestCU->getTotalCostnp(0b1011) += m_pcEntropyCoder->getNumberOfWrittenBits();
-            rpcBestCU->getTotalCostnp(0b1101) += m_pcEntropyCoder->getNumberOfWrittenBits();
-            rpcBestCU->getTotalCostnp(0b1110) += m_pcEntropyCoder->getNumberOfWrittenBits();
-        }
+        // Bool bCurrSplitFlag = rpcBestCU->getDepth(0) > uiDepth;
+        // if (bCurrSplitFlag == true)
+        // {
+        //     rpcBestCU->getTotalCostnpLpart(0b0111) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        //     rpcBestCU->getTotalCostnpLpart(0b1011) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        //     rpcBestCU->getTotalCostnpLpart(0b1101) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        //     rpcBestCU->getTotalCostnpLpart(0b1110) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        // }
 
         // Early CU determination
         if (m_pcEncCfg->getUseEarlyCU() && rpcBestCU->isSkipped(0))
@@ -823,10 +823,11 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
             if (!bBoundary)
             {
                 m_pcEntropyCoder->resetBits();
-                m_pcEntropyCoder->encodeSplitFlag(rpcTempCU, 0, uiDepth, true);
+                // 不处理 split 标志, 丢到 xCheckBestMode 里面模拟计算
+                // m_pcEntropyCoder->encodeSplitFlag(rpcTempCU, 0, uiDepth, true);
 
-                rpcTempCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
-                rpcTempCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
+                // rpcTempCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
+                // rpcTempCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
             }
             rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion());
 
@@ -1465,10 +1466,10 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
     if (eSize != SIZE_NxN)
     {
-        rpcTempCU->getTotalCostnp(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111; // + PartSizeCost_B_0111;
-        rpcTempCU->getTotalCostnp(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011; // + PartSizeCost_B_1011;
-        rpcTempCU->getTotalCostnp(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101; // + PartSizeCost_B_1101;
-        rpcTempCU->getTotalCostnp(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110; // + PartSizeCost_B_1110;
+        rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111; // + PartSizeCost_B_0111;
+        rpcTempCU->getTotalCostnpLpart(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011; // + PartSizeCost_B_1011;
+        rpcTempCU->getTotalCostnpLpart(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101; // + PartSizeCost_B_1101;
+        rpcTempCU->getTotalCostnpLpart(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110; // + PartSizeCost_B_1110;
     }
 
     // xCheckDQP(rpcTempCU);
@@ -1526,7 +1527,44 @@ Void TEncCu::xCheckIntraPCM(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU)
  */
 Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt uiDepth)
 {
+    if (*rpcTempCU->getWidth() != 8)
+    {
+        if (rpcBestCU->getTotalCost() == MAX_DOUBLE) // 表示在向下搜索的过程种
+        {
+            rpcTempCU->getTotalBits() += 1; // 模拟编码分块标志 0
+        }
+        else
+        {
+            rpcTempCU->getTotalBits() += (0 + 1);              // 模拟编码分块标志 1 和切块方式(正常四分)
+            rpcTempCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcTempCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcTempCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcTempCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        }
+    }                                                    // FIXIT: 向上回归的时候是不是重复计算了?
+    else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况, 和标准不同, 需要记录怎么切 四分还是L
+    {
+        rpcTempCU->getTotalBits() += (0 + 1);              // 模拟编码分块标志 1 和切块方式(正常四分)
+        rpcTempCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcTempCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcTempCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcTempCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+    }
+    else // 8x8 块不往下分的情况
+    {
+        // rpcTempCU->getTotalBits() += 3;
+    }
+    rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
+
     // 新方法 Cost 计算: Best L + Temp 1/4
+    if (!(rpcBestCU->getTotalCost() == MAX_DOUBLE)) // 向上回归时计算新方法的 Cost
+    {
+        rpcTempCU->m_dTotalCostnp0111 = rpcBestCU->getTotalCostnpLpart(0b0111) + rpcTempCU->dBestCostQuarPartLT;
+        rpcTempCU->m_dTotalCostnp1011 = rpcBestCU->getTotalCostnpLpart(0b1011) + rpcTempCU->dBestCostQuarPartRT;
+        rpcTempCU->m_dTotalCostnp1101 = rpcBestCU->getTotalCostnpLpart(0b1101) + rpcTempCU->dBestCostQuarPartLB;
+        rpcTempCU->m_dTotalCostnp1110 = rpcBestCU->getTotalCostnpLpart(0b1110) + rpcTempCU->dBestCostQuarPartRB;
+    }
+
     if (rpcTempCU->getTotalCost() < rpcBestCU->getTotalCost())
     {
         TComYuv *pcYuv;

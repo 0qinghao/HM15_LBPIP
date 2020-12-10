@@ -240,6 +240,11 @@ public:
     Double dBestCostQuarPartRT;
     Double dBestCostQuarPartLB;
     Double dBestCostQuarPartRB;
+    // 新分块方法的总 Cost
+    Double m_dTotalCostnp0111; ///< sum of partition RD costs
+    Double m_dTotalCostnp1011; ///< sum of partition RD costs
+    Double m_dTotalCostnp1101; ///< sum of partition RD costs
+    Double m_dTotalCostnp1110; ///< sum of partition RD costs
 
     TComDataCU();
     virtual ~TComDataCU();
@@ -689,7 +694,7 @@ public:
 
     Double &getTotalCost() { return m_dTotalCost; }
     // 增加
-    Double &getTotalCostnp(UInt mask)
+    Double &getTotalCostnpLpart(UInt mask)
     {
         switch (mask)
         {
@@ -704,6 +709,26 @@ public:
             break;
         case 0b1110:
             return m_dTotalCostnpLpart1110;
+            break;
+        default:
+            assert(0);
+        }
+    }
+    Double &getTotalCostnp(UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_dTotalCostnp0111;
+            break;
+        case 0b1011:
+            return m_dTotalCostnp1011;
+            break;
+        case 0b1101:
+            return m_dTotalCostnp1101;
+            break;
+        case 0b1110:
+            return m_dTotalCostnp1110;
             break;
         default:
             assert(0);

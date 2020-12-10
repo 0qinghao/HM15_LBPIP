@@ -18,13 +18,18 @@
 				"label": ""
 			},
 			{
-				"line": 879,
+				"line": 884,
 				"column": 61,
 				"label": ""
 			},
 			{
-				"line": 1433,
+				"line": 1438,
 				"column": 17,
+				"label": ""
+			},
+			{
+				"line": 1543,
+				"column": 26,
 				"label": ""
 			}
 		]
@@ -235,21 +240,6 @@
 			{
 				"line": 627,
 				"column": 6,
-				"label": ""
-			}
-		]
-	},
-	{
-		"path": "$ROOTPATH$\\流程记录.txt",
-		"bookmarks": [
-			{
-				"line": 138,
-				"column": 29,
-				"label": ""
-			},
-			{
-				"line": 143,
-				"column": 35,
 				"label": ""
 			}
 		]
