@@ -695,11 +695,15 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
         rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
         // rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
         rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion()); // 更新 BestCU 的代价
-        // 针对 L 分块模式, 加上分块标志重新计算总代价
-        rpcBestCU->getTotalCostnp(0b0111) += m_pcEntropyCoder->getNumberOfWrittenBits();
-        rpcBestCU->getTotalCostnp(0b1011) += m_pcEntropyCoder->getNumberOfWrittenBits();
-        rpcBestCU->getTotalCostnp(0b1101) += m_pcEntropyCoder->getNumberOfWrittenBits();
-        rpcBestCU->getTotalCostnp(0b1110) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        // 针对 L 分块模式, 加上分块标志重新计算总代价. 因为 L 分块视为 split=1, 和传统一样在向上回归时计算 split 代价, 在向下计算时暂时不处理
+        Bool bCurrSplitFlag = rpcBestCU->getDepth(0) > uiDepth;
+        if (bCurrSplitFlag == true)
+        {
+            rpcBestCU->getTotalCostnp(0b0111) += m_pcEntropyCoder->getNumberOfWrittenBits();
+            rpcBestCU->getTotalCostnp(0b1011) += m_pcEntropyCoder->getNumberOfWrittenBits();
+            rpcBestCU->getTotalCostnp(0b1101) += m_pcEntropyCoder->getNumberOfWrittenBits();
+            rpcBestCU->getTotalCostnp(0b1110) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        }
 
         // Early CU determination
         if (m_pcEncCfg->getUseEarlyCU() && rpcBestCU->isSkipped(0))
@@ -1461,10 +1465,10 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
     if (eSize != SIZE_NxN)
     {
-        rpcTempCU->getTotalCostnp(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + PartSizeCost_B_0111;
-        rpcTempCU->getTotalCostnp(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011 + PartSizeCost_B_1011;
-        rpcTempCU->getTotalCostnp(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101 + PartSizeCost_B_1101;
-        rpcTempCU->getTotalCostnp(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110 + PartSizeCost_B_1110;
+        rpcTempCU->getTotalCostnp(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111; // + PartSizeCost_B_0111;
+        rpcTempCU->getTotalCostnp(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011; // + PartSizeCost_B_1011;
+        rpcTempCU->getTotalCostnp(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101; // + PartSizeCost_B_1101;
+        rpcTempCU->getTotalCostnp(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110; // + PartSizeCost_B_1110;
     }
 
     // xCheckDQP(rpcTempCU);

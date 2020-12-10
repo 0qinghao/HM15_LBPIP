@@ -238,5 +238,20 @@
 				"label": ""
 			}
 		]
+	},
+	{
+		"path": "$ROOTPATH$\\流程记录.txt",
+		"bookmarks": [
+			{
+				"line": 138,
+				"column": 29,
+				"label": ""
+			},
+			{
+				"line": 143,
+				"column": 35,
+				"label": ""
+			}
+		]
 	}
 ]
