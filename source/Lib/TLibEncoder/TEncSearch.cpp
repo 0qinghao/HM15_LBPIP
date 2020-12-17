@@ -934,7 +934,15 @@ Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
                 m_pcEntropyCoder->encodePredMode(pcCU, 0, true);
             }
 
-            m_pcEntropyCoder->encodePartSize(pcCU, 0, pcCU->getDepth(0), true);
+            // m_pcEntropyCoder->encodePartSize(pcCU, 0, pcCU->getDepth(0), true);
+            if (pcCU->getPartitionSize(0) == SIZE_NxN)
+            {
+                assert(*pcCU->getWidth() == 8); // 新方法里面最底层的 4x4 块配合 L 算总代价的时候不需要编码 PartSize 了, 因为 8x8 层已经编码了一个 PartSize 标志且算到了 L 部分的体积里, 解码 8x8 层时只需要一个 PartSize 加上新 flag 指示切块形式就足够了, 4x4 的一个 PartSize 再算上就已经重复了
+            }
+            else
+            {
+                m_pcEntropyCoder->encodePartSize(pcCU, 0, pcCU->getDepth(0), true);
+            }
 
             if (pcCU->isIntra(0) && pcCU->getPartitionSize(0) == SIZE_2Nx2N)
             {

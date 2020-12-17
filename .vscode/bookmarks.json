@@ -23,12 +23,12 @@
 				"label": ""
 			},
 			{
-				"line": 1460,
+				"line": 1471,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 1568,
+				"line": 1570,
 				"column": 26,
 				"label": ""
 			}
@@ -233,7 +233,7 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
 		"bookmarks": [
 			{
-				"line": 1172,
+				"line": 1178,
 				"column": 17,
 				"label": ""
 			}

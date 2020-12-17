@@ -1450,6 +1450,17 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     {
         m_pcEntropyCoder->encodeCUTransquantBypassFlag(rpcTempCU, 0, true);
     }
+
+    // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
+    // 搜索过程中没有加上 bypass flag, 这里加上
+    if (eSize != SIZE_NxN)
+    {
+        rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_0111;
+        rpcTempCU->getTotalCostnpLpart(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1011;
+        rpcTempCU->getTotalCostnpLpart(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1101;
+        rpcTempCU->getTotalCostnpLpart(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1110;
+    }
+
     // 项目不会编码的标志
     // m_pcEntropyCoder->encodeSkipFlag(rpcTempCU, 0, true);
     // m_pcEntropyCoder->encodePredMode(rpcTempCU, 0, true);
@@ -1484,15 +1495,6 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // default:
     //     assert(0);
     // }
-
-    // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
-    if (eSize != SIZE_NxN)
-    {
-        rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111; // + PartSizeCost_B_0111;
-        rpcTempCU->getTotalCostnpLpart(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011; // + PartSizeCost_B_1011;
-        rpcTempCU->getTotalCostnpLpart(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101; // + PartSizeCost_B_1101;
-        rpcTempCU->getTotalCostnpLpart(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110; // + PartSizeCost_B_1110;
-    }
 
     // xCheckDQP(rpcTempCU);
     // xCheckBestMode 向下划分时, 比较对象是 DOUBLE_MAX, RD 必定更好, 存储上层的结果. 特殊的是 4与8 的比较也在此处实现
@@ -1561,23 +1563,22 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         else
         {
             rpcTempCU->getTotalBits() += (0 + 1);              // 模拟编码分块标志 1 和切块方式(正常四分)
-            rpcTempCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-            rpcTempCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-            rpcTempCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-            rpcTempCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
         }
     }                                                    // FIXIT: 向上回归的时候是不是重复计算了?
     else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况, 和标准不同, 需要记录怎么切 四分还是L
     {
         rpcTempCU->getTotalBits() += (0 + 1);              // 模拟编码分块标志 1 和切块方式(正常四分)
-        rpcTempCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-        rpcTempCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-        rpcTempCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-        rpcTempCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
     }
     else // 8x8 块不往下分的情况
     {
-        // rpcTempCU->getTotalBits() += 3;
     }
     rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
 
@@ -1605,10 +1606,11 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     }
     else
     {
+        iMinPos = 1;
         dMin = rpcTempCU->getTotalCost();
     }
 
-    if (dMin < rpcBestCU->getTotalCost())
+    if (iMinPos != 0)
     {
         TComYuv *pcYuv;
         // Change Information data

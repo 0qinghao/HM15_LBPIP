@@ -496,7 +496,7 @@ Void TEncSbac::codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx)
 Void TEncSbac::codeCUTransquantBypassFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     UInt uiSymbol = pcCU->getCUTransquantBypass(uiAbsPartIdx);
-    m_pcBinIf->encodeBin(uiSymbol, m_CUTransquantBypassFlagSCModel.get(0, 0, 0));
+    // m_pcBinIf->encodeBin(uiSymbol, m_CUTransquantBypassFlagSCModel.get(0, 0, 0));
 }
 
 /** code skip flag

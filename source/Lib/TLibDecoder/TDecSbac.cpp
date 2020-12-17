@@ -353,8 +353,8 @@ Void TDecSbac::parseIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
 Void TDecSbac::parseCUTransquantBypassFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
-    UInt uiSymbol;
-    m_pcTDecBinIf->decodeBin(uiSymbol, m_CUTransquantBypassFlagSCModel.get(0, 0, 0));
+    UInt uiSymbol = 1;
+    // m_pcTDecBinIf->decodeBin(uiSymbol, m_CUTransquantBypassFlagSCModel.get(0, 0, 0));
     pcCU->setCUTransquantBypassSubParts(uiSymbol ? true : false, uiAbsPartIdx, uiDepth);
 }
 
