@@ -60,7 +60,7 @@ Double TComRdCost::calcRdCost(UInt uiBits, UInt uiDistortion, Bool bFlag, DFunc 
 {
     Double dRdCost = 0.0;
     Double dLambda = 0.0;
-
+    // TODO: 无损下可以不算 lambda, 可以跳过加快速度
     switch (eDFunc)
     {
     case DF_SSE:

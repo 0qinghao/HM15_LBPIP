@@ -809,26 +809,30 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     // 递归调用 xCompressCU 实现四叉树分割编码
                     xCompressCU(pcSubBestPartCU, pcSubTempPartCU, uhNextDepth);
 #endif
-                    // 4个划分的最优的信息的累加，以便和为分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
+                    // 4个划分的最优的信息的累加，以便和分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
                     rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth);
                     // TODO: 在这里记录/计算 8 16 层的 1/4 块状部分总 Cost, 后面上层的 BestCU L Cost 加上这里对应的 1/4 得到新分块方法的 Cost
                     switch (uiPartUnitIdx)
                     {
                     case 0:
-                        rpcTempCU->dBestCostQuarPartLT = rpcTempCU->getTotalBits();
-                        dCostPre = rpcTempCU->getTotalBits();
+                        rpcTempCU->dBestCostQuarPartLT = pcSubBestPartCU->getTotalBits();
+                        // rpcTempCU->dBestCostQuarPartLT = rpcTempCU->getTotalBits();
+                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     case 1:
-                        rpcTempCU->dBestCostQuarPartRT = rpcTempCU->getTotalBits() - dCostPre;
-                        dCostPre = rpcTempCU->getTotalBits();
+                        rpcTempCU->dBestCostQuarPartRT = pcSubBestPartCU->getTotalBits();
+                        // rpcTempCU->dBestCostQuarPartRT = rpcTempCU->getTotalBits() - dCostPre;
+                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     case 2:
-                        rpcTempCU->dBestCostQuarPartLB = rpcTempCU->getTotalBits() - dCostPre;
-                        dCostPre = rpcTempCU->getTotalBits();
+                        rpcTempCU->dBestCostQuarPartLB = pcSubBestPartCU->getTotalBits();
+                        // rpcTempCU->dBestCostQuarPartLB = rpcTempCU->getTotalBits() - dCostPre;
+                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     case 3:
-                        rpcTempCU->dBestCostQuarPartRB = rpcTempCU->getTotalBits() - dCostPre;
-                        dCostPre = rpcTempCU->getTotalBits();
+                        rpcTempCU->dBestCostQuarPartRB = pcSubBestPartCU->getTotalBits();
+                        // rpcTempCU->dBestCostQuarPartRB = rpcTempCU->getTotalBits() - dCostPre;
+                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     default:
                         assert(0);
@@ -1593,6 +1597,13 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
 
     Double dMin;
     Int iMinPos;
+    // if (bStatus == 1) // 模拟 HEVC 标准状况
+    // {
+    //     Double CostList[2] = {rpcBestCU->getTotalCost(),
+    //                           rpcTempCU->getTotalCost()};
+    //     iMinPos = min_element(CostList, CostList + 2) - CostList;
+    //     dMin = CostList[iMinPos];
+    // }
     if (bStatus == 1) // 向上回归时从所有 6 种情况里面找最小值
     {
         Double CostList[6] = {rpcBestCU->getTotalCost(),
@@ -1612,6 +1623,13 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
 
     if (iMinPos != 0)
     {
+        // 如果 L 分块更好,要处理coeff dir cbf,还要记得把totalcost(bits)换成对应的totalcostnp
+        // switch (iMinPos)
+        // {
+        // case 1:
+        //     break;
+
+        // }
         TComYuv *pcYuv;
         // Change Information data
         TComDataCU *pcCU = rpcBestCU;
