@@ -1623,37 +1623,134 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
 
     if (iMinPos != 0)
     {
-        // 如果 L 分块更好,要处理coeff dir cbf,还要记得把totalcost(bits)换成对应的totalcostnp
-        // switch (iMinPos)
-        // {
-        // case 1:
-        //     break;
-
-        // }
-        TComYuv *pcYuv;
-        // Change Information data
         TComDataCU *pcCU = rpcBestCU;
+
+        switch (iMinPos)
+        {
+        case 1:
+            break;
+        case 2:
+            MergeLnQuar(rpcBestCU, rpcTempCU, 0b0111);
+            break;
+        case 3:
+            MergeLnQuar(rpcBestCU, rpcTempCU, 0b1011);
+            break;
+        case 4:
+            MergeLnQuar(rpcBestCU, rpcTempCU, 0b1101);
+            break;
+        case 5:
+            MergeLnQuar(rpcBestCU, rpcTempCU, 0b1110);
+            break;
+        default:
+            assert(0);
+        }
         rpcBestCU = rpcTempCU;
         rpcTempCU = pcCU;
+        // 前期模拟
         rpcBestCU->getTotalCost() = dMin;
         rpcBestCU->getTotalBits() = dMin;
 
-        // Change Prediction data
-        // 此时的预测值地址存放的东西已经名不副实了, 是重建值. 而且已经不会再使用预测值了, 不用把 Temp 换过去也没事
-        // pcYuv = m_ppcPredYuvBest[uiDepth];
-        m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
-        // m_ppcPredYuvTemp[uiDepth] = pcYuv;
-
-        // Change Reconstruction data
-        // pcYuv = m_ppcRecoYuvBest[uiDepth];
-        m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
-        // m_ppcRecoYuvTemp[uiDepth] = pcYuv;
-
-        pcYuv = NULL;
         pcCU = NULL;
+        // 其实没有意义 对于无损来说哪次的重建结果都一样
+        m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
+        m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
 
-        // store temp best CI for next CU coding
         m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
+    }
+    // {
+    //     // 如果 L 分块更好,要处理coeff dir cbf,还要记得把totalcost(bits)换成对应的totalcostnp
+    //     // switch (iMinPos)
+    //     // {
+    //     // case 1:
+    //     //     break;
+
+    //     // }
+    //     TComYuv *pcYuv;
+    //     // Change Information data
+    //     TComDataCU *pcCU = rpcBestCU;
+    //     rpcBestCU = rpcTempCU;
+    //     rpcTempCU = pcCU;
+    //     rpcBestCU->getTotalCost() = dMin;
+    //     rpcBestCU->getTotalBits() = dMin;
+
+    //     // Change Prediction data
+    //     // 此时的预测值地址存放的东西已经名不副实了, 是重建值. 而且已经不会再使用预测值了, 不用把 Temp 换过去也没事
+    //     // pcYuv = m_ppcPredYuvBest[uiDepth];
+    //     m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
+    //     // m_ppcPredYuvTemp[uiDepth] = pcYuv;
+
+    //     // Change Reconstruction data
+    //     // pcYuv = m_ppcRecoYuvBest[uiDepth];
+    //     m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
+    //     // m_ppcRecoYuvTemp[uiDepth] = pcYuv;
+
+    //     pcYuv = NULL;
+    //     pcCU = NULL;
+
+    //     // store temp best CI for next CU coding
+    //     m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
+    // }
+}
+
+// 如果 L 形分块的总 Cost 更小, 把对应的 L 形分块组合后的数据处理好存放到 rpcBestCU
+// rpcBestCU: 上层大块数据
+// rpcTempCU: 下层 4 分小块数据
+// 函数内部修改 Temp 的数据, 函数后应有一步把 Best 指向 Temp
+// 运行此函数时肯定处于向上回归的过程
+Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt mask)
+{
+    UInt uiWidth = rpcBestCU->getWidth(0);
+    UInt uiQuarSize = (uiWidth >> 1) * (uiWidth >> 1);
+
+    // 处理亮度系数部分
+    {
+        TCoeff *pcCoeffTempY = rpcTempCU->getCoeffY();
+        TCoeff *pcCoeffTempYQuarpart = pcCoeffTempY;
+        TCoeff *pcCoeffBestYLpart;
+        TCoeff *pcCoeffMergeY;
+        switch (mask)
+        {
+        case 0b0111:
+            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp0111;
+            pcCoeffMergeY = pcCoeffBestYLpart;
+            break;
+        case 0b1011:
+            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1011;
+            pcCoeffMergeY = pcCoeffBestYLpart;
+            pcCoeffMergeY += (uiWidth >> 1);
+            pcCoeffTempYQuarpart += uiQuarSize;
+            break;
+        case 0b1101:
+            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1101;
+            pcCoeffMergeY = pcCoeffBestYLpart;
+            pcCoeffMergeY += 2 * uiQuarSize;
+            pcCoeffTempYQuarpart += 2 * uiQuarSize;
+            break;
+        case 0b1110:
+            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1110;
+            pcCoeffMergeY = pcCoeffBestYLpart;
+            pcCoeffMergeY += 2 * uiQuarSize + (uiWidth >> 1);
+            pcCoeffTempYQuarpart += 3 * uiQuarSize;
+            break;
+        }
+        for (Int i = 0; i < (uiWidth >> 1); i++)
+        {
+            ::memcpy(pcCoeffMergeY, pcCoeffTempYQuarpart, sizeof(TCoeff) * (uiWidth >> 1));
+            pcCoeffMergeY += uiWidth;
+            pcCoeffTempYQuarpart += (uiWidth >> 1);
+        }
+        ::memcpy(pcCoeffTempY, pcCoeffBestYLpart, sizeof(TCoeff) * uiWidth * uiWidth);
+        pcCoeffTempY = NULL;
+        pcCoeffTempYQuarpart = NULL;
+        pcCoeffBestYLpart = NULL;
+        pcCoeffMergeY = NULL;
+    }
+    // 处理色差系数部分
+    {}
+    // 处理 Cost 记录部分
+    {}
+    // 处理 Cbf 部分
+    {
     }
 }
 

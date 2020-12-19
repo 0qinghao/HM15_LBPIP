@@ -124,6 +124,9 @@ public:
     Void setBitCounter(TComBitCounter *pcBitCounter) { m_pcBitCounter = pcBitCounter; }
     Int updateLCUDataISlice(TComDataCU *pcCU, Int LCUIdx, Int width, Int height);
 
+    // 增加
+    Void MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt mask);
+
 protected:
     Void finishCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
 #if AMP_ENC_SPEEDUP
