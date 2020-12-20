@@ -490,28 +490,28 @@ public:
     // }
     UChar getLumaIntraDir(UInt uiIdx)
     {
-        return m_puhLumaIntraDir[uiIdx << 4];
+        return m_puhLumaIntraDir[uiIdx << 2];
     }
     UChar getLumaIntraDirnp0111(UInt uiIdx)
     {
-        return m_puhLumaIntraDirnp0111[uiIdx << 4];
+        return m_puhLumaIntraDirnp0111[uiIdx << 2];
     }
     UChar getLumaIntraDirnp1011(UInt uiIdx)
     {
-        return m_puhLumaIntraDirnp1011[uiIdx << 4];
+        return m_puhLumaIntraDirnp1011[uiIdx << 2];
     }
     UChar getLumaIntraDirnp1101(UInt uiIdx)
     {
-        return m_puhLumaIntraDirnp1101[uiIdx << 4];
+        return m_puhLumaIntraDirnp1101[uiIdx << 2];
     }
     UChar getLumaIntraDirnp1110(UInt uiIdx)
     {
-        return m_puhLumaIntraDirnp1110[uiIdx << 4];
+        return m_puhLumaIntraDirnp1110[uiIdx << 2];
     }
     // TODO: 不进入 不处理
     Void setLumaIntraDir(UInt uiIdx, UChar uh)
     {
-        m_puhLumaIntraDir[uiIdx << 4] = uh;
+        m_puhLumaIntraDir[uiIdx << 2] = uh;
     }
     Void setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
     // 增加
@@ -543,28 +543,28 @@ public:
     // }
     UChar getChromaIntraDir(UInt uiIdx)
     {
-        return m_puhChromaIntraDir[uiIdx << 4];
+        return m_puhChromaIntraDir[uiIdx << 2];
     }
     UChar getChromaIntraDirnp0111(UInt uiIdx)
     {
-        return m_puhChromaIntraDirnp0111[uiIdx << 4];
+        return m_puhChromaIntraDirnp0111[uiIdx << 2];
     }
     UChar getChromaIntraDirnp1011(UInt uiIdx)
     {
-        return m_puhChromaIntraDirnp1011[uiIdx << 4];
+        return m_puhChromaIntraDirnp1011[uiIdx << 2];
     }
     UChar getChromaIntraDirnp1101(UInt uiIdx)
     {
-        return m_puhChromaIntraDirnp1101[uiIdx << 4];
+        return m_puhChromaIntraDirnp1101[uiIdx << 2];
     }
     UChar getChromaIntraDirnp1110(UInt uiIdx)
     {
-        return m_puhChromaIntraDirnp1110[uiIdx << 4];
+        return m_puhChromaIntraDirnp1110[uiIdx << 2];
     }
     // TODO: 不进入 不处理
     Void setChromaIntraDir(UInt uiIdx, UChar uh)
     {
-        m_puhChromaIntraDir[uiIdx << 4] = uh;
+        m_puhChromaIntraDir[uiIdx << 2] = uh;
     }
     Void setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
     // 增加
