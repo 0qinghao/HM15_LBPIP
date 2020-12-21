@@ -593,6 +593,7 @@ Void TEncEntropy::encodeCoeff(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth,
         //DTRACE_CABAC_V(uiDepth)
         //DTRACE_CABAC_T("\n")
     }
+    // 不会进入
     else
     {
         if (!(pcCU->getMergeFlag(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N))

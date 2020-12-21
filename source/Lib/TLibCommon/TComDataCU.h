@@ -368,7 +368,7 @@ public:
     Pel *&getPCMSampleCb() { return m_pcIPCMSampleCb; }
     Pel *&getPCMSampleCr() { return m_pcIPCMSampleCr; }
 
-    // 新分块方法的 getcbf 看情况实现 可选择直接取公有成员变量的方式
+    // 新分块方法的 getCbf 看情况实现 可选择直接取公有成员变量的方式
     UChar getCbf(UInt uiIdx, TextType eType)
     {
         return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx];

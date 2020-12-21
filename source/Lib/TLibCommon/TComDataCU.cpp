@@ -1345,6 +1345,7 @@ Void TComDataCU::copyInterPredInfoFrom(TComDataCU *pcCU, UInt uiAbsPartIdx, RefP
 // Copy small CU to bigger CU.
 // One of quarter parts overwritten by predicted sub part.
 // 累加 4 个划分的代价
+// 累加这边不需要考虑新分块方法存放的方向等数据 因为在 checkbestmode 的时候已经把最优结果转移到了正常的变量里面
 Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth)
 {
     assert(uiPartUnitIdx < 4);
@@ -1369,16 +1370,16 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     // memcpy(m_puhMergeIndex + uiOffset, pcCU->getMergeIndex(), iSizeInUchar);
     // memcpy(m_puhLumaIntraDir + uiOffset, pcCU->getLumaIntraDir(), iSizeInUchar);
     memcpy(m_puhLumaIntraDir + (uiOffset << 2), pcCU->getLumaIntraDir(), iSizeInUchar << 2);
-    memcpy(m_puhLumaIntraDirnp0111 + (uiOffset << 2), pcCU->getLumaIntraDirnp0111(), iSizeInUchar << 2);
-    memcpy(m_puhLumaIntraDirnp1011 + (uiOffset << 2), pcCU->getLumaIntraDirnp1011(), iSizeInUchar << 2);
-    memcpy(m_puhLumaIntraDirnp1101 + (uiOffset << 2), pcCU->getLumaIntraDirnp1101(), iSizeInUchar << 2);
-    memcpy(m_puhLumaIntraDirnp1110 + (uiOffset << 2), pcCU->getLumaIntraDirnp1110(), iSizeInUchar << 2);
+    // memcpy(m_puhLumaIntraDirnp0111 + (uiOffset << 2), pcCU->getLumaIntraDirnp0111(), iSizeInUchar << 2);
+    // memcpy(m_puhLumaIntraDirnp1011 + (uiOffset << 2), pcCU->getLumaIntraDirnp1011(), iSizeInUchar << 2);
+    // memcpy(m_puhLumaIntraDirnp1101 + (uiOffset << 2), pcCU->getLumaIntraDirnp1101(), iSizeInUchar << 2);
+    // memcpy(m_puhLumaIntraDirnp1110 + (uiOffset << 2), pcCU->getLumaIntraDirnp1110(), iSizeInUchar << 2);
     // memcpy(m_puhChromaIntraDir + uiOffset, pcCU->getChromaIntraDir(), iSizeInUchar);
     memcpy(m_puhChromaIntraDir + (uiOffset << 2), pcCU->getChromaIntraDir(), (iSizeInUchar << 2));
-    memcpy(m_puhChromaIntraDirnp0111 + (uiOffset << 2), pcCU->getChromaIntraDirnp0111(), (iSizeInUchar << 2));
-    memcpy(m_puhChromaIntraDirnp1011 + (uiOffset << 2), pcCU->getChromaIntraDirnp1011(), (iSizeInUchar << 2));
-    memcpy(m_puhChromaIntraDirnp1101 + (uiOffset << 2), pcCU->getChromaIntraDirnp1101(), (iSizeInUchar << 2));
-    memcpy(m_puhChromaIntraDirnp1110 + (uiOffset << 2), pcCU->getChromaIntraDirnp1110(), (iSizeInUchar << 2));
+    // memcpy(m_puhChromaIntraDirnp0111 + (uiOffset << 2), pcCU->getChromaIntraDirnp0111(), (iSizeInUchar << 2));
+    // memcpy(m_puhChromaIntraDirnp1011 + (uiOffset << 2), pcCU->getChromaIntraDirnp1011(), (iSizeInUchar << 2));
+    // memcpy(m_puhChromaIntraDirnp1101 + (uiOffset << 2), pcCU->getChromaIntraDirnp1101(), (iSizeInUchar << 2));
+    // memcpy(m_puhChromaIntraDirnp1110 + (uiOffset << 2), pcCU->getChromaIntraDirnp1110(), (iSizeInUchar << 2));
     // memcpy(m_puhInterDir + uiOffset, pcCU->getInterDir(), iSizeInUchar);
     memcpy(m_puhTrIdx + uiOffset, pcCU->getTransformIdx(), iSizeInUchar);
     // memcpy(m_puhTransformSkip[0] + uiOffset, pcCU->getTransformSkip(TEXT_LUMA), iSizeInUchar);

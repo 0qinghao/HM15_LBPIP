@@ -3147,8 +3147,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     Double dBestCostnp1101 = MAX_DOUBLE;
     Double dBestCostnp1110 = MAX_DOUBLE;
     // TODO: 改逻辑 NxN 才右移, 新分块方式可能会产生误解
-    // UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
-    UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0);
+    UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
+    // UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0);
 
     //----- init mode list -----
     UInt uiMinMode = 0;
