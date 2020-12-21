@@ -1212,6 +1212,7 @@ Void TComTrQuant::transformNxN(TComDataCU *pcCU,
 {
     // bypass 模式, 直接 return, 不再做变换量化, 直接按照行-列的顺序存残差, 扫描顺序交由后面的编码模块处理
     // 注意 pcResidual 和 rpcCoeff 的存储地址差别, residual 一行的个数和 coeff 一行的个数不同(只 4x4 层), 另外数据类型也不同, residual 是 halfword, coeff 是 word
+    // FIXIT: 要获取准确的新分块方法 CBF 必须在这里统计特定 L 部分的 uiAbsSum
     if (pcCU->getCUTransquantBypass(uiAbsPartIdx))
     {
         uiAbsSum = 0;
