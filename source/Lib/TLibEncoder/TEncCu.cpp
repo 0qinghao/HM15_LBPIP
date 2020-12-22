@@ -1541,6 +1541,8 @@ Void TEncCu::xCheckIntraPCM(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU)
  */
 Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt uiDepth)
 {
+    // 区分 保持大块部分/L0111/L1011/L1101/L1110 需要一个新标志, 根据频率分配bits 3 3 2 2 2
+
     // 向下计算时 Status=0, 向上回归时 Status=1
     Bool bStatus = rpcBestCU->getTotalCost() != MAX_DOUBLE;
 
@@ -1548,27 +1550,28 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     {
         if (bStatus == 0) // 表示在向下搜索的过程中
         {
-            rpcTempCU->getTotalBits() += 1; // 模拟编码分块标志 0
+            rpcTempCU->getTotalBits() += (1 + 3); // 模拟编码分块标志 0 和切块方式保持大块
         }
         else
         {
-            rpcTempCU->getTotalBits() += (0 + 1);              // 模拟编码分块标志 1 和切块方式(正常四分)
-            rpcBestCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-            rpcBestCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-            rpcBestCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-            rpcBestCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+            rpcTempCU->getTotalBits() += (1);                  // 模拟编码分块标志 1
+            rpcBestCU->getTotalCostnpLpart(0b0111) += (1 + 3); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1011) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1101) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1110) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
         }
     }                                                    // FIXIT: 向上回归的时候是不是重复计算了?
     else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况, 和标准不同, 需要记录怎么切 四分还是L
     {
-        rpcTempCU->getTotalBits() += (0 + 1);              // 模拟编码分块标志 1 和切块方式(正常四分)
-        rpcBestCU->getTotalCostnpLpart(0b0111) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-        rpcBestCU->getTotalCostnpLpart(0b1011) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-        rpcBestCU->getTotalCostnpLpart(0b1101) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
-        rpcBestCU->getTotalCostnpLpart(0b1110) += (0 + 3); // 模拟编码分块标志 1 和切块方式(L)
+        rpcTempCU->getTotalBits() += (1);              // 模拟编码搜索过程中没有计算的SIZE_NXN partsize (如果 part size == nxn 肯定是正常四分, 因为我们将 3个4x4的L+1个4x4块 定义为 8x8 层 也就是使用了 partsize == 2nx2n 的编码体积)
+        rpcBestCU->getTotalCostnpLpart(0b0111) += (3); // 模拟编码切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1011) += (2); // 模拟编码切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1101) += (2); // 模拟编码切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1110) += (2); // 模拟编码切块方式(L)
     }
     else // 8x8 块不往下分的情况
     {
+        rpcTempCU->getTotalBits() += 3; // 模拟编码切块方式保持大块
     }
     rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
 

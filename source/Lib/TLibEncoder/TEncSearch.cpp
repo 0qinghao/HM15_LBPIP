@@ -912,7 +912,7 @@ Void TEncSearch::xEncCoeffQT(TComDataCU *pcCU,
     m_pcEntropyCoder->encodeCoeffNxN(pcCU, pcCoeff, uiAbsPartIdx, uiWidth, uiHeight, uiFullDepth, eTextType);
 }
 
-// 编码头部信息, 包括: 模式号/PU分割类型/PCM标志
+// 编码头部信息, 包括: 模式号/PU分割类型/PCM标志 (RD搜索过程中用 编码时是另一个函数)
 Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
                                  UInt uiTrDepth,
                                  UInt uiAbsPartIdx,
