@@ -406,7 +406,9 @@ Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     {
         if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth)
         {
-            m_pcBinIf->encodeBin(eSize == SIZE_2Nx2N ? 1 : 0, m_cCUPartSizeSCModel.get(0, 0, 0));
+            // 新分块L视作大块 因此编码partsize时修改逻辑 仅当==NXN时才编码0
+            // m_pcBinIf->encodeBin(eSize == SIZE_2Nx2N ? 1 : 0, m_cCUPartSizeSCModel.get(0, 0, 0));
+            m_pcBinIf->encodeBin(eSize == SIZE_NxN ? 0 : 1, m_cCUPartSizeSCModel.get(0, 0, 0));
         }
         return;
     }

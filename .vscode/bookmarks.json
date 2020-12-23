@@ -23,12 +23,12 @@
 				"label": ""
 			},
 			{
-				"line": 1475,
+				"line": 1481,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 1562,
+				"line": 1568,
 				"column": 26,
 				"label": ""
 			}
@@ -103,52 +103,52 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
 		"bookmarks": [
 			{
-				"line": 487,
+				"line": 489,
 				"column": 16,
 				"label": ""
 			},
 			{
-				"line": 582,
+				"line": 584,
 				"column": 24,
 				"label": ""
 			},
 			{
-				"line": 609,
+				"line": 611,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 667,
+				"line": 669,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 1047,
+				"line": 1049,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1140,
+				"line": 1142,
 				"column": 18,
 				"label": ""
 			},
 			{
-				"line": 1172,
+				"line": 1174,
 				"column": 11,
 				"label": ""
 			},
 			{
-				"line": 1190,
+				"line": 1192,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1221,
+				"line": 1223,
 				"column": 12,
 				"label": ""
 			},
 			{
-				"line": 1346,
+				"line": 1348,
 				"column": 13,
 				"label": ""
 			}

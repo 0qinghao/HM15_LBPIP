@@ -1102,7 +1102,9 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     {
         setdQPFlag(true);
     }
-    if (pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
+    // 项目不涉及该标志 强制跳过
+    // if (pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
+    if (false && pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
     {
         // （3）调用encodeCUTransquantBypassFlag，对变换量化跳过标志进行编码（最终调用的是TEncSbac::codeCUTransquantBypassFlag）
         m_pcEntropyCoder->encodeCUTransquantBypassFlag(pcCU, uiAbsPartIdx);
@@ -1120,14 +1122,20 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
         finishCU(pcCU, uiAbsPartIdx, uiDepth);
         return;
     }
+    // 项目不涉及该标志 强制跳过
     // （6）调用encodePredMode，对预测的模式(帧间还是帧内)进行编码（最后调用TEncSbac::codePredMode）
     // 实际上不会编码任何东西 直接 return 出来了
-    m_pcEntropyCoder->encodePredMode(pcCU, uiAbsPartIdx);
+    if (false)
+    {
+        m_pcEntropyCoder->encodePredMode(pcCU, uiAbsPartIdx);
+    }
 
     // （7）调用encodePartSize，对分割的尺寸进行编码（最后调用TEncSbac::codePartSize）
     m_pcEntropyCoder->encodePartSize(pcCU, uiAbsPartIdx, uiDepth);
 
-    if (pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
+    // 项目不涉及该标志 强制跳过
+    // if (pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
+    if (false && pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
     {
         // （8）如果是帧内预测，并且划分的方式是SIZE_2Nx2N，那么调用encodeIPCMInfo对IPCM的信息进行编码（最后调用TEncSbac::codeIPCMInfo），如果确实使用了IPCM，那么结束编码，返回
         m_pcEntropyCoder->encodeIPCMInfo(pcCU, uiAbsPartIdx);
@@ -2004,23 +2012,23 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
     }
     // 处理 PartSize 部分
     {
-        // Char *pePartSizeBest = rpcBestCU->getPartitionSize();
-        // UInt uiQuarSizePartSize = (uiWidth * uiWidth) >> 6;
-        // switch (mask)
-        // {
-        // case 0b0111:
-        //     memset(pePartSizeBest + (uiQuarSizePartSize * 1), SIZE_B_0111, uiQuarSizePartSize * 3);
-        //     break;
-        // case 0b1011:
-        //     memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1011, uiQuarSizePartSize * 1);
-        //     memset(pePartSizeBest + (uiQuarSizePartSize * 2), SIZE_B_1011, uiQuarSizePartSize * 2);
-        // case 0b1101:
-        //     memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1101, uiQuarSizePartSize * 2);
-        //     memset(pePartSizeBest + (uiQuarSizePartSize * 3), SIZE_B_1101, uiQuarSizePartSize * 1);
-        // case 0b1110:
-        //     memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1110, uiQuarSizePartSize * 3);
-        // }
-        // pePartSizeBest = NULL;
+        Char *pePartSizeBest = rpcBestCU->getPartitionSize();
+        UInt uiQuarSizePartSize = (uiWidth * uiWidth) >> 6;
+        switch (mask)
+        {
+        case 0b0111:
+            memset(pePartSizeBest + (uiQuarSizePartSize * 1), SIZE_B_0111, uiQuarSizePartSize * 3);
+            break;
+        case 0b1011:
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1011, uiQuarSizePartSize * 1);
+            memset(pePartSizeBest + (uiQuarSizePartSize * 2), SIZE_B_1011, uiQuarSizePartSize * 2);
+        case 0b1101:
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1101, uiQuarSizePartSize * 2);
+            memset(pePartSizeBest + (uiQuarSizePartSize * 3), SIZE_B_1101, uiQuarSizePartSize * 1);
+        case 0b1110:
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1110, uiQuarSizePartSize * 3);
+        }
+        pePartSizeBest = NULL;
     }
 }
 
