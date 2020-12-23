@@ -58,6 +58,7 @@ Void ContextModel::init(Int qp, Int initValue)
     qp = Clip3(0, 51, qp);
 
     // 上下文模型的初始化
+    // 无损时 QP 的设置会及其细微地影响压缩结果, 原因就在这 影响了上下文模型的初始化
     Int slope = (initValue >> 4) * 5 - 45;
     Int offset = ((initValue & 15) << 3) - 16;
     Int initState = min(max(1, (((slope * qp) >> 4) + offset)), 126);
