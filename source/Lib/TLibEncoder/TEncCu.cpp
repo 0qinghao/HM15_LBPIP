@@ -1890,143 +1890,74 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
     // 注意新方法的 CBF 其实是不准确的, RD过程中 CBF 还是看整个块是否为0 并没有区分出 L 部分来看
     // 需要同步处理完 L 编码逻辑才能启用
     {
-        // 想法: 自己重新算
-        //     UInt uiQuarSizeCbf = ((uiWidth >> 2) * (uiWidth >> 2)) >> 2;
-        //     UInt setcbfY;
-        //     UInt setcbfU;
-        //     UInt setcbfV;
-        //     switch (mask)
-        //     {
-        //     case 0b0111:
-        //         if (*(rpcTempCU->getCbf(TEXT_LUMA)) == 0 && *(rpcBestCU->getCbfnp(TEXT_LUMA, 0b0111)) == 0)
-        //         {
-        //             setcbfY = 0;
-        //         }
-        //         else
-        //         {
-        //             setcbfY = *(rpcTempCU->getCbf(TEXT_LUMA));
-        //         }
-        //     }
-        //     // memset(rpcTempCU->getCbf(TEXT_LUMA))
+        // 重新算. cbf 是针对整个块来说的, 不需要考虑存储顺序只要算好像素点数量遍历看是否全零, 就能给 cbf 赋值了
+        UInt uiPelNum = uiWidth * uiWidth;
+        Bool bCbfY = 0;
+        Bool bCbfU = 0;
+        Bool bCbfV = 0;
+        TCoeff *pcCoeffBestY = rpcBestCU->getCoeffY();
+        TCoeff *pcCoeffBestU = rpcBestCU->getCoeffCb();
+        TCoeff *pcCoeffBestV = rpcBestCU->getCoeffCr();
+        UInt uiSizeCbf = ((uiWidth >> 2) * (uiWidth >> 2));
 
-        // 想法: 直接复制对应 Tempnp 结果
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_LUMA), rpcBestCU->getCbfnp(TEXT_LUMA, 0b0111), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_U), rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b0111), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_V), rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b0111), sizeof(UChar) * uiSizeCbf);
-        //     break;
-        // case 0b1011:
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_LUMA), rpcBestCU->getCbfnp(TEXT_LUMA, 0b1011), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_U), rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b1011), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_V), rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b1011), sizeof(UChar) * uiSizeCbf);
-        //     break;
-        // case 0b1101:
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_LUMA), rpcBestCU->getCbfnp(TEXT_LUMA, 0b1101), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_U), rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b1101), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_V), rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b1101), sizeof(UChar) * uiSizeCbf);
-        //     break;
-        // case 0b1110:
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_LUMA), rpcBestCU->getCbfnp(TEXT_LUMA, 0b1110), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_U), rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b1110), sizeof(UChar) * uiSizeCbf);
-        //     ::memcpy(rpcTempCU->getCbf(TEXT_CHROMA_V), rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b1110), sizeof(UChar) * uiSizeCbf);
-        //     break;
+        for (UInt i = 0; i < uiPelNum; i++, pcCoeffBestY++)
+        {
+            if (*pcCoeffBestY != 0)
+            {
+                bCbfY = 1;
+                break;
+            }
+        }
+        for (UInt i = 0; i < (uiPelNum >> 2); i++, pcCoeffBestU++)
+        {
+            if (*pcCoeffBestU != 0)
+            {
+                bCbfU = 1;
+                break;
+            }
+        }
+        for (UInt i = 0; i < (uiPelNum >> 2); i++, pcCoeffBestV++)
+        {
+            if (*pcCoeffBestV != 0)
+            {
+                bCbfV = 1;
+                break;
+            }
+        }
 
-        // 想法: 同其他 保留 BEST L 和 TEMP QUAR
-        // UChar *puhCbfTempY = rpcTempCU->getCbf(TEXT_LUMA);
-        // UChar *puhCbfTempYQuarpart = puhCbfTempY;
-        // UChar *puhCbfBestYLpart;
-        // UChar *puhCbfMergeY;
-        // UChar *puhCbfTempU = rpcTempCU->getCbf(TEXT_CHROMA_U);
-        // UChar *puhCbfTempUQuarpart = puhCbfTempU;
-        // UChar *puhCbfBestULpart;
-        // UChar *puhCbfMergeU;
-        // UChar *puhCbfTempV = rpcTempCU->getCbf(TEXT_CHROMA_V);
-        // UChar *puhCbfTempVQuarpart = puhCbfTempV;
-        // UChar *puhCbfBestVLpart;
-        // UChar *puhCbfMergeV;
-        // UInt uiQuarSizeCbf = (uiWidth * uiWidth) >> 6;
-        // switch (mask)
-        // {
-        // case 0b0111:
-        //     puhCbfBestYLpart = rpcBestCU->getCbfnp(TEXT_LUMA, 0b0111);
-        //     puhCbfMergeY = puhCbfBestYLpart;
-        //     puhCbfBestULpart = rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b0111);
-        //     puhCbfMergeU = puhCbfBestULpart;
-        //     puhCbfBestVLpart = rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b0111);
-        //     puhCbfMergeV = puhCbfBestVLpart;
-        //     break;
-        // case 0b1011:
-        //     puhCbfBestYLpart = rpcBestCU->getCbfnp(TEXT_LUMA, 0b1011);
-        //     puhCbfMergeY = puhCbfBestYLpart + 1 * uiQuarSizeCbf;
-        //     puhCbfTempYQuarpart += 1 * uiQuarSizeCbf;
-        //     puhCbfBestULpart = rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b1011);
-        //     puhCbfMergeU = puhCbfBestULpart + 1 * uiQuarSizeCbf;
-        //     puhCbfTempUQuarpart += 1 * uiQuarSizeCbf;
-        //     puhCbfBestVLpart = rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b1011);
-        //     puhCbfMergeV = puhCbfBestVLpart + 1 * uiQuarSizeCbf;
-        //     puhCbfTempVQuarpart += 1 * uiQuarSizeCbf;
-        //     break;
-        // case 0b1101:
-        //     puhCbfBestYLpart = rpcBestCU->getCbfnp(TEXT_LUMA, 0b1101);
-        //     puhCbfMergeY = puhCbfBestYLpart + 2 * uiQuarSizeCbf;
-        //     puhCbfTempYQuarpart += 2 * uiQuarSizeCbf;
-        //     puhCbfBestULpart = rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b1101);
-        //     puhCbfMergeU = puhCbfBestULpart + 2 * uiQuarSizeCbf;
-        //     puhCbfTempUQuarpart += 2 * uiQuarSizeCbf;
-        //     puhCbfBestVLpart = rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b1101);
-        //     puhCbfMergeV = puhCbfBestVLpart + 2 * uiQuarSizeCbf;
-        //     puhCbfTempVQuarpart += 2 * uiQuarSizeCbf;
-        //     break;
-        // case 0b1110:
-        //     puhCbfBestYLpart = rpcBestCU->getCbfnp(TEXT_LUMA, 0b1110);
-        //     puhCbfMergeY = puhCbfBestYLpart + 3 * uiQuarSizeCbf;
-        //     puhCbfTempYQuarpart += 3 * uiQuarSizeCbf;
-        //     puhCbfBestULpart = rpcBestCU->getCbfnp(TEXT_CHROMA_U, 0b1110);
-        //     puhCbfMergeU = puhCbfBestULpart + 3 * uiQuarSizeCbf;
-        //     puhCbfTempUQuarpart += 3 * uiQuarSizeCbf;
-        //     puhCbfBestVLpart = rpcBestCU->getCbfnp(TEXT_CHROMA_V, 0b1110);
-        //     puhCbfMergeV = puhCbfBestVLpart + 3 * uiQuarSizeCbf;
-        //     puhCbfTempVQuarpart += 3 * uiQuarSizeCbf;
-        //     break;
-        // }
-        // ::memcpy(puhCbfMergeY, puhCbfTempYQuarpart, sizeof(UChar) * uiQuarSizeCbf);
-        // // ::memcpy(puhCbfTempY, puhCbfBestYLpart, sizeof(UChar) * uiQuarSizeCbf * 4);
-        // ::memcpy(rpcBestCU->getCbf(TEXT_LUMA), puhCbfBestYLpart, sizeof(UChar) * uiQuarSizeCbf * 4);
-        // ::memcpy(puhCbfMergeU, puhCbfTempUQuarpart, sizeof(UChar) * uiQuarSizeCbf);
-        // // ::memcpy(puhCbfTempU, puhCbfBestULpart, sizeof(UChar) * uiQuarSizeCbf * 4);
-        // ::memcpy(rpcBestCU->getCbf(TEXT_CHROMA_U), puhCbfBestULpart, sizeof(UChar) * uiQuarSizeCbf * 4);
-        // ::memcpy(puhCbfMergeV, puhCbfTempVQuarpart, sizeof(UChar) * uiQuarSizeCbf);
-        // // ::memcpy(puhCbfTempV, puhCbfBestVLpart, sizeof(UChar) * uiQuarSizeCbf * 4);
-        // ::memcpy(rpcBestCU->getCbf(TEXT_CHROMA_V), puhCbfBestVLpart, sizeof(UChar) * uiQuarSizeCbf * 4);
-        // puhCbfTempY = NULL;
-        // puhCbfTempYQuarpart = NULL;
-        // puhCbfBestYLpart = NULL;
-        // puhCbfMergeY = NULL;
-        // puhCbfTempU = NULL;
-        // puhCbfTempUQuarpart = NULL;
-        // puhCbfBestULpart = NULL;
-        // puhCbfMergeU = NULL;
-        // puhCbfTempV = NULL;
-        // puhCbfTempVQuarpart = NULL;
-        // puhCbfBestVLpart = NULL;
-        // puhCbfMergeV = NULL;
+        memset(rpcBestCU->getCbf(TEXT_LUMA), bCbfY, uiSizeCbf * sizeof(UChar));
+        memset(rpcBestCU->getCbf(TEXT_CHROMA_U), bCbfU, uiSizeCbf * sizeof(UChar));
+        memset(rpcBestCU->getCbf(TEXT_CHROMA_V), bCbfV, uiSizeCbf * sizeof(UChar));
+
+        pcCoeffBestY = NULL;
+        pcCoeffBestU = NULL;
+        pcCoeffBestV = NULL;
     }
+
     // 处理 PartSize 部分
     {
         Char *pePartSizeBest = rpcBestCU->getPartitionSize();
         UInt uiQuarSizePartSize = (uiWidth * uiWidth) >> 6;
+        if (uiWidth != 8)
+        {
+            ::memcpy(rpcBestCU->getPartitionSize(), rpcTempCU->getPartitionSize(), uiQuarSizePartSize * 4 * sizeof(Char));
+        }
         switch (mask)
         {
         case 0b0111:
-            memset(pePartSizeBest + (uiQuarSizePartSize * 1), SIZE_B_0111, uiQuarSizePartSize * 3);
+            memset(pePartSizeBest + (uiQuarSizePartSize * 1), SIZE_B_0111, uiQuarSizePartSize * 3 * sizeof(Char));
             break;
         case 0b1011:
-            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1011, uiQuarSizePartSize * 1);
-            memset(pePartSizeBest + (uiQuarSizePartSize * 2), SIZE_B_1011, uiQuarSizePartSize * 2);
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1011, uiQuarSizePartSize * 1 * sizeof(Char));
+            memset(pePartSizeBest + (uiQuarSizePartSize * 2), SIZE_B_1011, uiQuarSizePartSize * 2 * sizeof(Char));
+            break;
         case 0b1101:
-            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1101, uiQuarSizePartSize * 2);
-            memset(pePartSizeBest + (uiQuarSizePartSize * 3), SIZE_B_1101, uiQuarSizePartSize * 1);
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1101, uiQuarSizePartSize * 2 * sizeof(Char));
+            memset(pePartSizeBest + (uiQuarSizePartSize * 3), SIZE_B_1101, uiQuarSizePartSize * 1 * sizeof(Char));
+            break;
         case 0b1110:
-            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1110, uiQuarSizePartSize * 3);
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1110, uiQuarSizePartSize * 3 * sizeof(Char));
+            break;
         }
         pePartSizeBest = NULL;
     }

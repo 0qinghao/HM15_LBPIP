@@ -238,7 +238,9 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
         }
     }
 
-    if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
+    // 修改过 Partsize 判断是 subdiv 的条件更严格
+    // if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
+    if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && pcCU->getPartitionSize(uiAbsPartIdx + width / 4) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
     {
         assert(uiSubdiv);
     }
