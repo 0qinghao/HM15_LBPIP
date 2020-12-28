@@ -239,10 +239,18 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
     }
 
     // 修改过 Partsize 判断是 subdiv 的条件更严格
-    // if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
-    if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && pcCU->getPartitionSize(uiAbsPartIdx + width / 4) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
+    // 但还是必须让他进来 否则会跳到 else 编码一个 flag
+    if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
+    // if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && pcCU->getPartitionSize(uiAbsPartIdx + width / 4) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
     {
-        assert(uiSubdiv);
+        if (pcCU->getPartitionSize(uiAbsPartIdx + (width / 8) * (width / 8)) == SIZE_B_0111)
+        {
+            assert(!uiSubdiv);
+        }
+        else
+        {
+            assert(uiSubdiv);
+        }
     }
     else if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTER && (pcCU->getPartitionSize(uiAbsPartIdx) != SIZE_2Nx2N) && uiDepth == pcCU->getDepth(uiAbsPartIdx) && (pcCU->getSlice()->getSPS()->getQuadtreeTUMaxDepthInter() == 1))
     {

@@ -955,7 +955,7 @@ Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
             }
         }
         // luma prediction mode
-        if (pcCU->getPartitionSize(0) == SIZE_2Nx2N)
+        if (pcCU->getPartitionSize(0) != SIZE_NxN)
         {
             if (uiAbsPartIdx == 0)
             {
@@ -2643,8 +2643,8 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
     // 当前 CU 的分割模式下, PU 的个数. 只有在处理细分的 4x4 块时才为 4, 注意在处理 8x8 块的时候仍然为 1.
     UInt uiNumPU = pcCU->getNumPartitions();
     // 改逻辑 因为新的 L 形分块模式看成不改变 CU 尺寸, 正常的四分不受影响
-    UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
-    // UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0;
+    // UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1;
+    UInt uiInitTrDepth = pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0;
     UInt uiWidth = pcCU->getWidth(0) >> uiInitTrDepth;
     UInt uiHeight = pcCU->getHeight(0) >> uiInitTrDepth;
     UInt uiQNumParts = pcCU->getTotalNumPart() >> 2;
@@ -2672,9 +2672,10 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         //===== init pattern for luma prediction =====
         Bool bAboveAvail = false;
         Bool bLeftAvail = false;
-        pcCU->getPattern()->initPattern(pcCU, uiInitTrDepth, uiPartOffset);
+        // 这次获取参考像素是为了算预测值进行粗筛, 没有粗筛过程也就不需要多做一次获取参考像素了
+        // pcCU->getPattern()->initPattern(pcCU, uiInitTrDepth, uiPartOffset);
         // 得到参考像素及滤波后的参考像素
-        pcCU->getPattern()->initAdiPattern(pcCU, uiPartOffset, uiInitTrDepth, m_piYuvExt, m_iYuvExtStride, m_iYuvExtHeight, bAboveAvail, bLeftAvail);
+        // pcCU->getPattern()->initAdiPattern(pcCU, uiPartOffset, uiInitTrDepth, m_piYuvExt, m_iYuvExtStride, m_iYuvExtHeight, bAboveAvail, bLeftAvail);
 
         //===== determine set of modes to be tested (using prediction signal only) =====
         Int numModesAvailable = 35; //total number of Intra modes
@@ -3147,8 +3148,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     Double dBestCostnp1101 = MAX_DOUBLE;
     Double dBestCostnp1110 = MAX_DOUBLE;
     // TODO: 改逻辑 NxN 才右移, 新分块方式可能会产生误解
-    UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
-    // UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0);
+    // UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
+    UInt uiWidth = pcCU->getWidth(0) >> (pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0);
 
     //----- init mode list -----
     UInt uiMinMode = 0;

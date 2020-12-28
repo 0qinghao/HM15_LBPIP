@@ -1568,8 +1568,8 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
             rpcBestCU->getTotalCostnpLpart(0b1101) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
             rpcBestCU->getTotalCostnpLpart(0b1110) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
         }
-    }                                                    // FIXIT: 向上回归的时候是不是重复计算了?
-    else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况, 和标准不同, 需要记录怎么切 四分还是L
+    }
+    else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况
     {
         rpcTempCU->getTotalBits() += (1);              // 模拟编码搜索过程中没有计算的SIZE_NXN partsize (如果 part size == nxn 肯定是正常四分, 因为我们将 3个4x4的L+1个4x4块 定义为 8x8 层 也就是使用了 partsize == 2nx2n 的编码体积)
         rpcBestCU->getTotalCostnpLpart(0b0111) += (3); // 模拟编码切块方式(L)
@@ -1604,7 +1604,8 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     {
         Double CostList[6] = {rpcBestCU->getTotalCost(),
                               rpcTempCU->getTotalCost(),
-                              rpcBestCU->m_dTotalCostnp0111,
+                              //   rpcBestCU->m_dTotalCostnp0111,
+                              MAX_DOUBLE,
                               rpcBestCU->m_dTotalCostnp1011,
                               rpcBestCU->m_dTotalCostnp1101,
                               rpcBestCU->m_dTotalCostnp1110};
@@ -1624,6 +1625,8 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         case 1:
             rpcBestCU = rpcTempCU;
             rpcTempCU = pcCU;
+            // 不知道为什么把上下文模型存储限定在 temp 最好时更新会得到更好的压缩结果 ~0.1%
+            m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
             break;
         case 2:
             MergeLnQuar(rpcBestCU, rpcTempCU, 0b0111);
@@ -1643,8 +1646,6 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         // 其实没有意义 对于无损来说哪次的重建结果都一样
         m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
         m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
-
-        m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
     }
     else
     {
@@ -1657,7 +1658,6 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     //     // {
     //     // case 1:
     //     //     break;
-
     //     // }
     //     TComYuv *pcYuv;
     //     // Change Information data
@@ -1666,21 +1666,17 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     //     rpcTempCU = pcCU;
     //     rpcBestCU->getTotalCost() = dMin;
     //     rpcBestCU->getTotalBits() = dMin;
-
     //     // Change Prediction data
     //     // 此时的预测值地址存放的东西已经名不副实了, 是重建值. 而且已经不会再使用预测值了, 不用把 Temp 换过去也没事
     //     // pcYuv = m_ppcPredYuvBest[uiDepth];
     //     m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
     //     // m_ppcPredYuvTemp[uiDepth] = pcYuv;
-
     //     // Change Reconstruction data
     //     // pcYuv = m_ppcRecoYuvBest[uiDepth];
     //     m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
     //     // m_ppcRecoYuvTemp[uiDepth] = pcYuv;
-
     //     pcYuv = NULL;
     //     pcCU = NULL;
-
     //     // store temp best CI for next CU coding
     //     m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
     // }
@@ -1892,9 +1888,9 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
     {
         // 重新算. cbf 是针对整个块来说的, 不需要考虑存储顺序只要算好像素点数量遍历看是否全零, 就能给 cbf 赋值了
         UInt uiPelNum = uiWidth * uiWidth;
-        Bool bCbfY = 0;
-        Bool bCbfU = 0;
-        Bool bCbfV = 0;
+        UInt uiCbfY = 0;
+        UInt uiCbfU = 0;
+        UInt uiCbfV = 0;
         TCoeff *pcCoeffBestY = rpcBestCU->getCoeffY();
         TCoeff *pcCoeffBestU = rpcBestCU->getCoeffCb();
         TCoeff *pcCoeffBestV = rpcBestCU->getCoeffCr();
@@ -1904,7 +1900,7 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
         {
             if (*pcCoeffBestY != 0)
             {
-                bCbfY = 1;
+                uiCbfY = 1;
                 break;
             }
         }
@@ -1912,7 +1908,7 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
         {
             if (*pcCoeffBestU != 0)
             {
-                bCbfU = 1;
+                uiCbfU = 1;
                 break;
             }
         }
@@ -1920,14 +1916,14 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
         {
             if (*pcCoeffBestV != 0)
             {
-                bCbfV = 1;
+                uiCbfV = 1;
                 break;
             }
         }
 
-        memset(rpcBestCU->getCbf(TEXT_LUMA), bCbfY, uiSizeCbf * sizeof(UChar));
-        memset(rpcBestCU->getCbf(TEXT_CHROMA_U), bCbfU, uiSizeCbf * sizeof(UChar));
-        memset(rpcBestCU->getCbf(TEXT_CHROMA_V), bCbfV, uiSizeCbf * sizeof(UChar));
+        memset(rpcBestCU->getCbf(TEXT_LUMA), uiCbfY, uiSizeCbf * sizeof(UChar));
+        memset(rpcBestCU->getCbf(TEXT_CHROMA_U), uiCbfU, uiSizeCbf * sizeof(UChar));
+        memset(rpcBestCU->getCbf(TEXT_CHROMA_V), uiCbfV, uiSizeCbf * sizeof(UChar));
 
         pcCoeffBestY = NULL;
         pcCoeffBestU = NULL;
@@ -1938,10 +1934,10 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
     {
         Char *pePartSizeBest = rpcBestCU->getPartitionSize();
         UInt uiQuarSizePartSize = (uiWidth * uiWidth) >> 6;
-        if (uiWidth != 8)
-        {
-            ::memcpy(rpcBestCU->getPartitionSize(), rpcTempCU->getPartitionSize(), uiQuarSizePartSize * 4 * sizeof(Char));
-        }
+        // if (uiWidth != 8)
+        // {
+        ::memcpy(rpcBestCU->getPartitionSize(), rpcTempCU->getPartitionSize(), uiQuarSizePartSize * 4 * sizeof(Char));
+        // }
         switch (mask)
         {
         case 0b0111:

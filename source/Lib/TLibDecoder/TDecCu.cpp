@@ -645,7 +645,9 @@ Void TDecCu::xIntraRecChromaBlk(TComDataCU *pcCU,
 
 Void TDecCu::xReconIntraQT(TComDataCU *pcCU, UInt uiDepth)
 {
-    UInt uiInitTrDepth = (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
+    // UInt uiInitTrDepth = (pcCU->getPartitionSize(0) == SIZE_2Nx2N ? 0 : 1);
+    // 修改判断是否为 2NX2N 为 判断是否为 NXN
+    UInt uiInitTrDepth = (pcCU->getPartitionSize(0) == SIZE_NxN ? 1 : 0);
     UInt uiNumPart = pcCU->getNumPartitions();
     UInt uiNumQParts = pcCU->getTotalNumPart() >> 2;
 
