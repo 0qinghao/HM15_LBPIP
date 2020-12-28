@@ -2800,6 +2800,10 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 #else
             // 编码 intra CU, 还包括预测变换量化等
             xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
+            xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
+            xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
+            xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
+            xRecurIntraCodingQT(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
             // 用 L-based 分块方法计算得到 cost
             if (uiWidth != 4)
             {
@@ -3185,6 +3189,10 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
             pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1101, uiDepth);
             pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1110, uiDepth);
         }
+        xRecurIntraChromaCodingQT(pcCU, 0, 0, pcOrgYuv, pcPredYuv, pcResiYuv, uiDist);
+        xRecurIntraChromaCodingQT(pcCU, 0, 0, pcOrgYuv, pcPredYuv, pcResiYuv, uiDist);
+        xRecurIntraChromaCodingQT(pcCU, 0, 0, pcOrgYuv, pcPredYuv, pcResiYuv, uiDist);
+        xRecurIntraChromaCodingQT(pcCU, 0, 0, pcOrgYuv, pcPredYuv, pcResiYuv, uiDist);
         xRecurIntraChromaCodingQT(pcCU, 0, 0, pcOrgYuv, pcPredYuv, pcResiYuv, uiDist);
         if (pcCU->getSlice()->getPPS()->getUseTransformSkip())
         {
