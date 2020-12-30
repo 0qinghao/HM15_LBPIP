@@ -1062,6 +1062,10 @@ Void TEncCavlc::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
     assert(0);
 }
+Void TEncCavlc::codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    assert(0);
+}
 
 Void TEncCavlc::codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
@@ -1094,6 +1098,10 @@ Void TEncCavlc::codeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
 }
 
 Void TEncCavlc::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    assert(0);
+}
+Void TEncCavlc::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
     assert(0);
 }

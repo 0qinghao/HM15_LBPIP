@@ -84,8 +84,10 @@ public:
     virtual Void codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
+    virtual Void codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
 
     virtual Void codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
+    virtual Void codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
     virtual Void codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
 
     virtual Void codeIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
@@ -173,6 +175,9 @@ public:
     Void updateContextTables(SliceType eSliceType, Int iQp) { m_pcEntropyCoderIf->updateContextTables(eSliceType, iQp, true); }
 
     Void encodeScalingList(TComScalingList *scalingList);
+    // 增加
+    Void encodeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    Void encodeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
 
 private:
     Void xEncodeTransform(TComDataCU *pcCU, UInt offsetLumaOffset, UInt offsetChroma, UInt uiAbsPartIdx, UInt uiDepth, UInt width, UInt height, UInt uiTrIdx, Bool &bCodeDQP);

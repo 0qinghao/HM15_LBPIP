@@ -23,12 +23,17 @@
 				"label": ""
 			},
 			{
-				"line": 1481,
+				"line": 1136,
+				"column": 6,
+				"label": ""
+			},
+			{
+				"line": 1486,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 1568,
+				"line": 1573,
 				"column": 26,
 				"label": ""
 			}
@@ -103,52 +108,57 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
 		"bookmarks": [
 			{
-				"line": 489,
+				"line": 516,
 				"column": 16,
 				"label": ""
 			},
 			{
-				"line": 584,
+				"line": 611,
 				"column": 24,
 				"label": ""
 			},
 			{
-				"line": 611,
+				"line": 652,
+				"column": 40,
+				"label": ""
+			},
+			{
+				"line": 717,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 669,
+				"line": 775,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 1050,
+				"line": 1156,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1143,
+				"line": 1249,
 				"column": 18,
 				"label": ""
 			},
 			{
-				"line": 1175,
+				"line": 1281,
 				"column": 11,
 				"label": ""
 			},
 			{
-				"line": 1193,
+				"line": 1299,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1224,
+				"line": 1330,
 				"column": 12,
 				"label": ""
 			},
 			{
-				"line": 1349,
+				"line": 1455,
 				"column": 13,
 				"label": ""
 			}
@@ -173,22 +183,22 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncEntropy.cpp",
 		"bookmarks": [
 			{
-				"line": 181,
+				"line": 188,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 197,
+				"line": 210,
 				"column": 13,
 				"label": ""
 			},
 			{
-				"line": 240,
+				"line": 253,
 				"column": 23,
 				"label": ""
 			},
 			{
-				"line": 322,
+				"line": 335,
 				"column": 31,
 				"label": ""
 			}

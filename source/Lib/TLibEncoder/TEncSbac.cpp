@@ -482,6 +482,33 @@ Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     }
 }
 
+// 增加. 8x8 层如果不是 4 分 4x4 块, 就要增加编码信息指示 1111 (0111舍弃) 1011 1101 1110
+Void TEncSbac::codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);
+    if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth && eSize != SIZE_NxN)
+    {
+        switch (eSize)
+        {
+        case SIZE_2Nx2N:
+            m_pcBinIf->encodeBinsEP(0b00, 2);
+            break;
+        case SIZE_B_1011:
+            m_pcBinIf->encodeBinsEP(0b01, 2);
+            break;
+        case SIZE_B_1101:
+            m_pcBinIf->encodeBinsEP(0b10, 2);
+            break;
+        case SIZE_B_1110:
+            m_pcBinIf->encodeBinsEP(0b11, 2);
+            break;
+        default:
+            assert(0);
+        }
+    }
+    return;
+}
+
 /** code prediction mode
  * \param pcCU
  * \param uiAbsPartIdx  
@@ -587,14 +614,94 @@ Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
     assert(uiCtx < 3);
     m_pcBinIf->encodeBin(uiCurrSplitFlag, m_cCUSplitFlagSCModel.get(0, 0, uiCtx));
-    // // 需要替换为新方法的分块标志
-    // if (uiCurrSplitFlag)
-    // {
-    //     m_pcBinIf->encodeBinsEP(uiCurrSplitFlag, 2);
-    // }
     //DTRACE_CABAC_VL(g_nSymbolCounter++)
     //DTRACE_CABAC_T("\tSplitFlag\n")
     return;
+}
+
+Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    // 递归到 8x8 层了
+    if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth)
+    {
+        codePartSize(pcCU, uiAbsPartIdx, uiDepth);
+        codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
+        codeIntraDirLumaAng(pcCU, uiAbsPartIdx, true);
+        codeIntraDirChroma(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
+        PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
+        switch (eSize8x8)
+        {
+        case SIZE_B_1011:
+            codeIntraDirLumaAng(pcCU, uiAbsPartIdx + 1, false);
+            break;
+        case SIZE_B_1101:
+            codeIntraDirLumaAng(pcCU, uiAbsPartIdx + 2, false);
+            break;
+        case SIZE_B_1110:
+            codeIntraDirLumaAng(pcCU, uiAbsPartIdx + 3, false);
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    UInt uiCurrSplitFlag = (pcCU->getDepth(uiAbsPartIdx) > uiDepth) ? 1 : 0;
+    UInt uiQNumParts = (16 >> (uiDepth << 1));
+
+    // 如果前面编码过一个 SF=0, 这里要编码额外信息
+
+    // 写死 16 不是一个好主意, 最大 CU 是 32 的时候才是 16
+    PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);
+    switch (eSize)
+    {
+    case SIZE_2Nx2N:
+        m_pcBinIf->encodeBinsEP(0b00, 2);
+        break;
+    case SIZE_B_1011:
+        m_pcBinIf->encodeBinsEP(0b01, 2);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        break;
+    case SIZE_B_1101:
+        m_pcBinIf->encodeBinsEP(0b10, 2);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        break;
+    case SIZE_B_1110:
+        m_pcBinIf->encodeBinsEP(0b11, 2);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        break;
+    // case SIZE_NxN:
+    //     codeSplitFlag(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
+    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1); // 第一部分不用编方向了
+    //     codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+    //     codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+    //     codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+    //     break;
+    default:
+        break;
+    }
+
+    if (uiCurrSplitFlag)
+    {
+        codeSplitFlag(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+    }
+    else
+    {
+        codeIntraDirLumaAng(pcCU, uiAbsPartIdx, true);
+        codeIntraDirChroma(pcCU, uiAbsPartIdx);
+    }
 }
 
 Void TEncSbac::codeTransformSubdivFlag(UInt uiSymbol, UInt uiCtx)

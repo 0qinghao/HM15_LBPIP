@@ -155,9 +155,12 @@ public:
     Void codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    Void codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
     Void codeMVPIdx(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList);
 
     Void codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    // 增加
+    Void codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
     Void codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeTransformSubdivFlag(UInt uiSymbol, UInt uiCtx);

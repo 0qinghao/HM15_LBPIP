@@ -1071,6 +1071,8 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     {
         // （1）调用encodeSplitFlag对分割标志进行编码（最终调用TEncSbac::codeSplitFlag）
         m_pcEntropyCoder->encodeSplitFlag(pcCU, uiAbsPartIdx, uiDepth);
+        // 增加. 一旦编码了一个不分块标志 0, 即表明该分块可能是 不分/1011/1101/1110, 需要额外编码一个标志说明. 另外特别注意要递归完成
+        m_pcEntropyCoder->encodeNpSplitFlagNpType(pcCU, uiAbsPartIdx, uiDepth);
     }
     else
     {
@@ -1131,8 +1133,9 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     }
 
     // （7）调用encodePartSize，对分割的尺寸进行编码（最后调用TEncSbac::codePartSize）
-    m_pcEntropyCoder->encodePartSize(pcCU, uiAbsPartIdx, uiDepth);
-
+    // m_pcEntropyCoder->encodePartSize(pcCU, uiAbsPartIdx, uiDepth);
+    // 增加. 8x8 层如果不是 4 分 4x4 块, 就要增加编码信息指示 1111 (0111舍弃) 1011 1101 1110
+    // m_pcEntropyCoder->encodeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
     // 项目不涉及该标志 强制跳过
     // if (pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
     if (false && pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
@@ -1150,7 +1153,9 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
     // prediction Info ( Intra : direction mode, Inter : Mv, reference idx )
     // （9）调用encodePredInfo，对预测的信息(35种模式)进行编码
-    m_pcEntropyCoder->encodePredInfo(pcCU, uiAbsPartIdx);
+    // m_pcEntropyCoder->encodePredInfo(pcCU, uiAbsPartIdx);
+    // 增加. 编码 L 分块中剩下的 1/4 部分的模式信息
+    // m_pcEntropyCoder->encodeNpPredInfo(pcCU, uiAbsPartIdx);
 
     // Encode Coefficients
     Bool bCodeDQP = getdQPFlag();
@@ -1647,10 +1652,6 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
         m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
     }
-    else
-    {
-        // 填不切分时 CU 的 L 分块标记 // 需要吗?
-    }
 
     // {
     //     // 如果 L 分块更好,要处理coeff dir cbf,还要记得把totalcost(bits)换成对应的totalcostnp
@@ -1956,6 +1957,27 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
             break;
         }
         pePartSizeBest = NULL;
+    }
+
+    // 处理 depth 部分
+    {
+        UChar *puhDepth = rpcBestCU->getDepth();
+        UInt uiQuarSizeDepth = (uiWidth * uiWidth) >> 6;
+
+        switch (mask)
+        {
+        case 0b1011:
+            ::memcpy(puhDepth + uiQuarSizeDepth * 1, rpcTempCU->getDepth() + uiQuarSizeDepth * 1, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        case 0b1101:
+            ::memcpy(puhDepth + uiQuarSizeDepth * 2, rpcTempCU->getDepth() + uiQuarSizeDepth * 2, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        case 0b1110:
+            ::memcpy(puhDepth + uiQuarSizeDepth * 3, rpcTempCU->getDepth() + uiQuarSizeDepth * 3, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
     }
 }
 

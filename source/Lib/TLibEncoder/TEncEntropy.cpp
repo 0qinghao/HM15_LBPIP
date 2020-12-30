@@ -172,6 +172,15 @@ Void TEncEntropy::encodeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDe
     m_pcEntropyCoderIf->codeSplitFlag(pcCU, uiAbsPartIdx, uiDepth);
 }
 
+Void TEncEntropy::encodeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    UInt uiCurrSplitFlag = (pcCU->getDepth(uiAbsPartIdx) > uiDepth) ? 1 : 0;
+    // SF 是 1 也不用另作处理
+    if (uiCurrSplitFlag)
+        return;
+    m_pcEntropyCoderIf->codeNpSplitFlagNpType(pcCU, uiAbsPartIdx, uiDepth);
+}
+
 /** encode partition size
  * \param pcCU
  * \param uiAbsPartIdx
@@ -187,6 +196,12 @@ Void TEncEntropy::encodePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDep
         uiAbsPartIdx = 0;
     }
     m_pcEntropyCoderIf->codePartSize(pcCU, uiAbsPartIdx, uiDepth);
+}
+
+// 增加. 8x8 层如果不是 4 分 4x4 块, 就要增加编码信息指示 1111 (0111舍弃) 1011 1101 1110
+Void TEncEntropy::encodeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    m_pcEntropyCoderIf->codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
 }
 
 /** Encode I_PCM information. 

@@ -107,8 +107,10 @@ public:
 
     Void codeInterModeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, UInt uiEncMode);
     Void codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    Void codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
 
     Void codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    Void codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
     Void codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx);
 
     Void codeIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx);
