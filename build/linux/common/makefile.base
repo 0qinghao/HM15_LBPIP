@@ -49,7 +49,7 @@ endif
 #CPPFLAGS          = -Wall -fPIC $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS)
 CPPFLAGS          = -fPIC $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS) -Wall -Wshadow -Wno-sign-compare -Werror
 # WSL 上添加的选项
-CPPFLAGS += -Wno-comment -Wno-unused-but-set-variable -Wno-unused-variable
+CPPFLAGS += -Wno-comment -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized
 
 ########## 
 # enforce 32-bit build : 1=yes, 0=no
