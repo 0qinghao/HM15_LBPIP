@@ -184,13 +184,15 @@ public:
                         TComYuv *pcResiYuv,
                         TComYuv *pcRecoYuv,
                         UInt &ruiDistC,
-                        Bool bLumaOnly);
+                        Bool bLumaOnly,
+                        Double *dBestPUCostLog);
     Void estIntraPredChromaQT(TComDataCU *pcCU,
                               TComYuv *pcOrgYuv,
                               TComYuv *pcPredYuv,
                               TComYuv *pcResiYuv,
                               TComYuv *pcRecoYuv,
-                              UInt uiPreCalcDistC);
+                              UInt uiPreCalcDistC,
+                              Double &dBestCost);
 
     /// encoder estimation - inter prediction (non-skip)
     Void predInterSearch(TComDataCU *pcCU,

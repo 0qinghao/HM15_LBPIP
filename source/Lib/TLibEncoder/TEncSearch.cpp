@@ -2637,7 +2637,8 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                                 TComYuv *pcResiYuv,
                                 TComYuv *pcRecoYuv,
                                 UInt &ruiDistC,
-                                Bool bLumaOnly)
+                                Bool bLumaOnly,
+                                Double *dBestPUCostLog)
 {
     UInt uiDepth = pcCU->getDepth(0);
     // 当前 CU 的分割模式下, PU 的个数. 只有在处理细分的 4x4 块时才为 4, 注意在处理 8x8 块的时候仍然为 1.
@@ -3097,6 +3098,8 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
                 assert(0);
             }
         }
+
+        dBestPUCostLog[uiPU] = dBestPUCost;
     } // PU loop
 
     if (uiNumPU > 1)
@@ -3133,7 +3136,8 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
                                       TComYuv *pcPredYuv,
                                       TComYuv *pcResiYuv,
                                       TComYuv *pcRecoYuv,
-                                      UInt uiPreCalcDistC)
+                                      UInt uiPreCalcDistC,
+                                      Double &dBestCost)
 {
     UInt uiDepth = pcCU->getDepth(0);
     UInt uiBestMode = 0;
@@ -3142,7 +3146,7 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     UInt uiBestModenp1101 = 0;
     UInt uiBestModenp1110 = 0;
     UInt uiBestDist = 0;
-    Double dBestCost = MAX_DOUBLE;
+    dBestCost = MAX_DOUBLE;
     Double dBestCostnp0111 = MAX_DOUBLE;
     Double dBestCostnp1011 = MAX_DOUBLE;
     Double dBestCostnp1101 = MAX_DOUBLE;
