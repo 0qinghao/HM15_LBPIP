@@ -147,6 +147,9 @@ public:
               TComRdCost *pcRdCost,
               TEncSbac ***pppcRDSbacCoder,
               TEncSbac *pcRDGoOnSbacCoder);
+    //   在 RDO 过程中预测角度的暂存
+    UChar *m_puhTempLumaIntraDir;   ///< array of intra directions (luma)
+    UChar *m_puhTempChromaIntraDir; ///< array of intra directions (chroma)
 
 protected:
     /// sub-function for motion vector refinement used in fractional-pel accuracy
@@ -186,6 +189,14 @@ public:
                         UInt &ruiDistC,
                         Bool bLumaOnly,
                         Double *dBestPUCostLog);
+    Void estIntraPredQTLP(TComDataCU *pcCU,
+                          TComYuv *pcOrgYuv,
+                          TComYuv *pcPredYuv,
+                          TComYuv *pcResiYuv,
+                          TComYuv *pcRecoYuv,
+                          UInt &ruiDistC,
+                          Bool bLumaOnly,
+                          Double *dBestPUCostLog);
     Void estIntraPredChromaQT(TComDataCU *pcCU,
                               TComYuv *pcOrgYuv,
                               TComYuv *pcPredYuv,
@@ -286,6 +297,16 @@ protected:
                              Bool bCheckFirst,
 #endif
                              Double &dRDCost);
+    Void xRecurIntraCodingQTLP(TComDataCU *pcCU,
+                               UInt uiTrDepth,
+                               UInt uiAbsPartIdx,
+                               Bool bLumaOnly,
+                               TComYuv *pcOrgYuv,
+                               TComYuv *pcPredYuv,
+                               TComYuv *pcResiYuv,
+                               UInt &ruiDistY,
+                               UInt &ruiDistC,
+                               Double &dRDCost);
     Void xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
     Void xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
 

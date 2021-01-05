@@ -1458,6 +1458,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     }
     // 亮度部分 帧内编码
     m_pcPredSearch->estIntraPredQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma);
+    m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma);
 
     // 在 estIntraPredQT 里面就已经对 rpcTempCU 重建过了, 这里有啥必要?
     // m_ppcRecoYuvTemp[uiDepth]->copyToPicLuma(rpcTempCU->getPic()->getPicYuvRec(), rpcTempCU->getAddr(), rpcTempCU->getZorderIdxInCU());
@@ -1474,7 +1475,7 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // 搜索过程中没有加上 bypass flag, 这里加上
     if (eSize != SIZE_NxN)
     {
-        rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_0111;
+        // rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_0111;
         rpcTempCU->getTotalCostnpLpart(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1011;
         rpcTempCU->getTotalCostnpLpart(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1101;
         rpcTempCU->getTotalCostnpLpart(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1110;
@@ -1569,8 +1570,8 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         }
         else
         {
-            rpcTempCU->getTotalBits() += (1);                  // 模拟编码分块标志 1
-            rpcBestCU->getTotalCostnpLpart(0b0111) += (1 + 3); // 模拟编码分块标志 0 和切块方式(L)
+            rpcTempCU->getTotalBits() += (1); // 模拟编码分块标志 1
+            // rpcBestCU->getTotalCostnpLpart(0b0111) += (1 + 3); // 模拟编码分块标志 0 和切块方式(L)
             rpcBestCU->getTotalCostnpLpart(0b1011) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
             rpcBestCU->getTotalCostnpLpart(0b1101) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
             rpcBestCU->getTotalCostnpLpart(0b1110) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
@@ -1578,8 +1579,8 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     }
     else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况
     {
-        rpcTempCU->getTotalBits() += (1);              // 模拟编码搜索过程中没有计算的SIZE_NXN partsize (如果 part size == nxn 肯定是正常四分, 因为我们将 3个4x4的L+1个4x4块 定义为 8x8 层 也就是使用了 partsize == 2nx2n 的编码体积)
-        rpcBestCU->getTotalCostnpLpart(0b0111) += (3); // 模拟编码切块方式(L)
+        rpcTempCU->getTotalBits() += (1); // 模拟编码搜索过程中没有计算的SIZE_NXN partsize (如果 part size == nxn 肯定是正常四分, 因为我们将 3个4x4的L+1个4x4块 定义为 8x8 层 也就是使用了 partsize == 2nx2n 的编码体积)
+        // rpcBestCU->getTotalCostnpLpart(0b0111) += (3); // 模拟编码切块方式(L)
         rpcBestCU->getTotalCostnpLpart(0b1011) += (2); // 模拟编码切块方式(L)
         rpcBestCU->getTotalCostnpLpart(0b1101) += (2); // 模拟编码切块方式(L)
         rpcBestCU->getTotalCostnpLpart(0b1110) += (2); // 模拟编码切块方式(L)
@@ -1593,7 +1594,7 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     // 新方法 Cost 计算: Best L + Temp 1/4
     if (bStatus == 1) // 向上回归时计算新方法的 Cost
     {
-        rpcBestCU->m_dTotalCostnp0111 = rpcBestCU->getTotalCostnpLpart(0b0111) + rpcTempCU->dBestCostQuarPartLT;
+        // rpcBestCU->m_dTotalCostnp0111 = rpcBestCU->getTotalCostnpLpart(0b0111) + rpcTempCU->dBestCostQuarPartLT;
         rpcBestCU->m_dTotalCostnp1011 = rpcBestCU->getTotalCostnpLpart(0b1011) + rpcTempCU->dBestCostQuarPartRT;
         rpcBestCU->m_dTotalCostnp1101 = rpcBestCU->getTotalCostnpLpart(0b1101) + rpcTempCU->dBestCostQuarPartLB;
         rpcBestCU->m_dTotalCostnp1110 = rpcBestCU->getTotalCostnpLpart(0b1110) + rpcTempCU->dBestCostQuarPartRB;
@@ -1635,9 +1636,9 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
             // 不知道为什么把上下文模型存储限定在 temp 最好时更新会得到更好的压缩结果 ~0.1%
             m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
             break;
-        case 2:
-            MergeLnQuar(rpcBestCU, rpcTempCU, 0b0111);
-            break;
+        // case 2:
+        //     MergeLnQuar(rpcBestCU, rpcTempCU, 0b0111);
+        //     break;
         case 3:
             MergeLnQuar(rpcBestCU, rpcTempCU, 0b1011);
             break;
@@ -1647,6 +1648,8 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
         case 5:
             MergeLnQuar(rpcBestCU, rpcTempCU, 0b1110);
             break;
+        default:
+            assert(0);
         }
 
         pcCU = NULL;
