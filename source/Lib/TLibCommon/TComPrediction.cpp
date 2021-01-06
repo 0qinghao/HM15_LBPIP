@@ -181,7 +181,8 @@ Pel TComPrediction::predIntraGetPredValDC(Int *pSrc, Int iSrcStride, UInt iWidth
  * the predicted value for the pixel is linearly interpolated from the reference samples. All reference samples are taken
  * from the extended main reference.
  */
-Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *&rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter)
+// TODO: 原来这个 rpDst 是引用指针, 引用导致没法在调用的时候操作该参数, 改完发现没影响. 是真的没影响吗
+Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter)
 {
     Int k, l;
     Int blkSize = width;
@@ -329,7 +330,154 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
         }
     }
 }
+Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter)
+{
+    Int k, l;
+    Int blkSize = width;
+    Pel *pDst = rpDst;
 
+    // Map the mode index to main prediction direction and angle
+    assert(dirMode > 0); //no planar
+    Bool modeDC = dirMode < 2;
+    Bool modeHor = !modeDC && (dirMode < 18);
+    Bool modeVer = !modeDC && !modeHor;
+    // intraPredAngle 记录当前模式同水平/垂直模式之间的差
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int absAng = abs(intraPredAngle);
+    Int signAng = intraPredAngle < 0 ? -1 : 1;
+
+    // Set bitshifts and scale the angle parameter to block size
+    Int angTable[9] = {0, 2, 5, 9, 13, 17, 21, 26, 32};
+    Int invAngTable[9] = {0, 4096, 1638, 910, 630, 482, 390, 315, 256}; // (256 * 32) / Angle
+    Int invAngle = invAngTable[absAng];
+    absAng = angTable[absAng];
+    intraPredAngle = signAng * absAng;
+
+    // Do the DC prediction
+    if (modeDC)
+    {
+        Pel dcval = predIntraGetPredValDC(pSrc, srcStride, width, height, blkAboveAvailable, blkLeftAvailable);
+
+        for (k = 0; k < blkSize; k++)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                pDst[k * dstStride + l] = dcval;
+            }
+        }
+    }
+
+    // Do angular predictions
+    else
+    {
+        Pel *refMain;
+        Pel *refSide;
+        Pel refAbove[2 * MAX_CU_SIZE + 1];
+        Pel refLeft[2 * MAX_CU_SIZE + 1];
+
+        // Initialise the Main and Left reference array.
+        if (intraPredAngle < 0)
+        {
+            for (k = 0; k < blkSize + 1; k++)
+            {
+                refAbove[k + blkSize - 1] = pSrc[k - srcStride - 1];
+            }
+            for (k = 0; k < blkSize + 1; k++)
+            {
+                refLeft[k + blkSize - 1] = pSrc[(k - 1) * srcStride - 1];
+            }
+            refMain = (modeVer ? refAbove : refLeft) + (blkSize - 1);
+            refSide = (modeVer ? refLeft : refAbove) + (blkSize - 1);
+
+            // Extend the Main reference to the left.
+            Int invAngleSum = 128; // rounding for (shift by 8)
+            for (k = -1; k > blkSize * intraPredAngle >> 5; k--)
+            {
+                invAngleSum += invAngle;
+                refMain[k] = refSide[invAngleSum >> 8];
+            }
+        }
+        else
+        {
+            for (k = 0; k < 2 * blkSize + 1; k++)
+            {
+                refAbove[k] = pSrc[k - srcStride - 1];
+            }
+            for (k = 0; k < 2 * blkSize + 1; k++)
+            {
+                refLeft[k] = pSrc[(k - 1) * srcStride - 1];
+            }
+            refMain = modeVer ? refAbove : refLeft;
+            refSide = modeVer ? refLeft : refAbove;
+        }
+
+        if (intraPredAngle == 0)
+        {
+            for (k = 0; k < blkSize; k++)
+            {
+                for (l = 0; l < blkSize; l++)
+                {
+                    pDst[k * dstStride + l] = refMain[l + 1];
+                }
+            }
+
+            if (bFilter)
+            {
+                for (k = 0; k < blkSize; k++)
+                {
+                    pDst[k * dstStride] = Clip3(0, (1 << bitDepth) - 1, pDst[k * dstStride] + ((refSide[k + 1] - refSide[0]) >> 1));
+                }
+            }
+        }
+        else
+        {
+            Int deltaPos = 0;
+            Int deltaInt;
+            Int deltaFract;
+            Int refMainIndex;
+
+            for (k = 0; k < blkSize; k++)
+            {
+                deltaPos += intraPredAngle;
+                deltaInt = deltaPos >> 5;
+                deltaFract = deltaPos & (32 - 1);
+
+                if (deltaFract)
+                {
+                    // Do linear filtering
+                    for (l = 0; l < blkSize; l++)
+                    {
+                        refMainIndex = l + deltaInt + 1;
+                        pDst[k * dstStride + l] = (Pel)(((32 - deltaFract) * refMain[refMainIndex] + deltaFract * refMain[refMainIndex + 1] + 16) >> 5);
+                    }
+                }
+                else
+                {
+                    // Just copy the integer samples
+                    for (l = 0; l < blkSize; l++)
+                    {
+                        pDst[k * dstStride + l] = refMain[l + deltaInt + 1];
+                    }
+                }
+            }
+        }
+
+        // Flip the block if this is the horizontal mode
+        if (modeHor)
+        {
+            Pel tmp;
+            for (k = 0; k < blkSize - 1; k++)
+            {
+                for (l = k + 1; l < blkSize; l++)
+                {
+                    tmp = pDst[k * dstStride + l];
+                    pDst[k * dstStride + l] = pDst[l * dstStride + k];
+                    pDst[l * dstStride + k] = tmp;
+                }
+            }
+        }
+    }
+}
 Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft)
 {
     Pel *pDst = piPred;
@@ -370,7 +518,122 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
         }
     }
 }
+UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, Int iPredDstSize)
+{
+    Pel *pDst = piPred;
+    // ptrSrc 指向当前的参考像素
+    Int *ptrSrc;
 
+    // assert(g_aucConvertToBit[iWidth] >= 0); //   4x  4
+    // assert(g_aucConvertToBit[iWidth] <= 5); // 128x128
+    assert(iWidth == iHeight);
+
+    ptrSrc = pcTComPattern->getPredictorPtrLP(m_piYuvExt);
+
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+    Int srcoffset = sw * (iWidth - iPredDstSize) + (iWidth - iPredDstSize);
+    Int dstoffset = uiStride * (iWidth - iPredDstSize) + (iWidth - iPredDstSize);
+
+    // Create the prediction
+    if (uiDirMode == PLANAR_IDX)
+    {
+        // PLANAR 模式预测
+        xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
+    }
+    else
+    {
+        if ((iWidth > 16) || (iHeight > 16))
+        {
+            xPredIntraAngLP(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false);
+        }
+        else
+        {
+            // 角度模式预测(包括 DC 在内), 块小于 16 时需要滤波
+            xPredIntraAngLP(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, true);
+
+            // DC 模式下预测结果的滤波
+            if ((uiDirMode == DC_IDX) && bAbove && bLeft)
+            {
+                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
+            }
+        }
+    }
+    return 0;
+}
+UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, Int iPredDstSize)
+{
+    Pel *pDst = piPred;
+    // ptrSrc 指向当前的参考像素
+    Int *ptrSrc;
+
+    // assert(g_aucConvertToBit[iWidth] >= 0); //   4x  4
+    // assert(g_aucConvertToBit[iWidth] <= 5); // 128x128
+    assert(iWidth == iHeight);
+
+    ptrSrc = pcTComPattern->getPredictorPtrLP(m_piYuvExt);
+
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+
+    // Create the prediction
+    if (uiDirMode == PLANAR_IDX)
+    {
+        // PLANAR 模式预测
+        xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+    }
+    else
+    {
+        if ((iWidth > 16) || (iHeight > 16))
+        {
+            xPredIntraAng(g_bitDepthY, ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false);
+        }
+        else
+        {
+            // 角度模式预测(包括 DC 在内), 块小于 16 时需要滤波
+            xPredIntraAng(g_bitDepthY, ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, true);
+
+            // DC 模式下预测结果的滤波
+            if ((uiDirMode == DC_IDX) && bAbove && bLeft)
+            {
+                xDCPredFiltering(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+            }
+        }
+    }
+    return 0;
+}
+Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
+{
+    UInt uiStrideRef = uiWidth * 2 + 1;
+    UInt uistrideOrg = uiWidth;
+    piRef += uiStrideRef + 1;
+    Int i, j, k;
+
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        piRef[j] = piOrg[j - 1];
+
+        piRef += uiStrideRef;
+        piOrg += uistrideOrg;
+    }
+    piOrg -= uistrideOrg;
+    for (k = 0; k < uiWidth; k++)
+    {
+        piRef[k] = piOrg[k];
+    }
+
+    switch (mask)
+    {
+    case 0b1111:
+        break;
+    default:
+        break;
+    }
+}
 // Angular chroma
 Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft)
 {
@@ -732,6 +995,64 @@ Void TComPrediction::xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int 
         }
     }
 }
+Void TComPrediction::xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height)
+{
+    assert(width == height);
+
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    UInt blkSize = width;
+    UInt offset2D = width;
+    // UInt shift1D = g_aucConvertToBit[width] + 2;
+    // UInt shift2D = shift1D + 1;
+
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+    for (k = 0; k < blkSize; k++)
+    {
+        bottomRow[k] = bottomLeft - topRow[k];
+        rightColumn[k] = topRight - leftColumn[k];
+        topRow[k] = topRow[k] * width;
+        leftColumn[k] = leftColumn[k] * width;
+        // topRow[k] <<= shift1D;
+        // leftColumn[k] <<= shift1D;
+    }
+
+    horPred = leftColumn[0] + offset2D;
+    for (l = 0; l < blkSize; l++)
+    {
+        horPred += rightColumn[0];
+        topRow[l] += bottomRow[l];
+        rpDst[l] = ((horPred + topRow[l]) / (2 * width));
+    }
+    for (k = 1; k < blkSize; k++)
+    {
+        horPred = leftColumn[k] + offset2D;
+        horPred += rightColumn[k];
+        topRow[0] += bottomRow[0];
+        rpDst[k * dstStride] = ((horPred + topRow[0]) / (2 * width));
+    }
+    // Generate prediction signal
+    // for (k = 0; k < blkSize; k++)
+    // {
+    //     horPred = leftColumn[k] + offset2D;
+    //     for (l = 0; l < blkSize; l++)
+    //     {
+    //         horPred += rightColumn[k];
+    //         topRow[l] += bottomRow[l];
+    //         rpDst[k * dstStride + l] = ((horPred + topRow[l]) >> shift2D);
+    //     }
+    // }
+}
 
 /** Function for filtering intra DC predictor.
  * \param pSrc pointer to reconstructed sample array
@@ -743,7 +1064,7 @@ Void TComPrediction::xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int 
  *
  * This function performs filtering left and top edges of the prediction samples for DC mode (intra coding).
  */
-Void TComPrediction::xDCPredFiltering(Int *pSrc, Int iSrcStride, Pel *&rpDst, Int iDstStride, Int iWidth, Int iHeight)
+Void TComPrediction::xDCPredFiltering(Int *pSrc, Int iSrcStride, Pel *rpDst, Int iDstStride, Int iWidth, Int iHeight)
 {
     Pel *pDst = rpDst;
     Int x, y, iDstStride2, iSrcStride2;

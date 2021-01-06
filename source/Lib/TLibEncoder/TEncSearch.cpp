@@ -1207,6 +1207,214 @@ Void TEncSearch::xIntraCodingLumaBlk(TComDataCU *pcCU,
     //===== update distortion =====
     ruiDist += m_pcRdCost->getDistPart(g_bitDepthY, piReco, uiStride, piOrg, uiStride, uiWidth, uiHeight);
 }
+Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
+                                       UInt uiTrDepth,
+                                       UInt uiAbsPartIdx,
+                                       TComYuv *pcOrgYuv,
+                                       TComYuv *pcPredYuv,
+                                       TComYuv *pcResiYuv,
+                                       UInt &ruiDist,
+                                       UInt mask,
+                                       //  恒为 0
+                                       Int default0Save1Load2)
+{
+    UInt uiLumaPredMode = pcCU->getLumaIntraDir(uiAbsPartIdx);
+    UInt uiFullDepth = pcCU->getDepth(0) + uiTrDepth;
+    UInt uiWidth = pcCU->getWidth(0) >> uiTrDepth;
+    UInt uiHeight = pcCU->getHeight(0) >> uiTrDepth;
+    UInt uiStride = pcOrgYuv->getStride();
+    Pel *piOrg = pcOrgYuv->getLumaAddr(uiAbsPartIdx);
+    Pel *piPred = pcPredYuv->getLumaAddr(uiAbsPartIdx);
+    Pel *piResi = pcResiYuv->getLumaAddr(uiAbsPartIdx);
+    Pel *piReco = pcPredYuv->getLumaAddr(uiAbsPartIdx);
+
+    UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> uiFullDepth] + 2;
+    UInt uiQTLayer = pcCU->getSlice()->getSPS()->getQuadtreeTULog2MaxSize() - uiLog2TrSize;
+    UInt uiNumCoeffPerInc = pcCU->getSlice()->getSPS()->getMaxCUWidth() * pcCU->getSlice()->getSPS()->getMaxCUHeight() >> (pcCU->getSlice()->getSPS()->getMaxCUDepth() << 1);
+    TCoeff *pcCoeff = m_ppcQTTempCoeffY[uiQTLayer] + uiNumCoeffPerInc * uiAbsPartIdx;
+#if ADAPTIVE_QP_SELECTION
+    Int *pcArlCoeff = m_ppcQTTempArlCoeffY[uiQTLayer] + uiNumCoeffPerInc * uiAbsPartIdx;
+#endif
+    Pel *piRecQt = m_pcQTTempTComYuv[uiQTLayer].getLumaAddr(uiAbsPartIdx);
+    UInt uiRecQtStride = m_pcQTTempTComYuv[uiQTLayer].getStride();
+
+    UInt uiZOrder = pcCU->getZorderIdxInCU() + uiAbsPartIdx;
+    Pel *piRecIPred = pcCU->getPic()->getPicYuvRec()->getLumaAddr(pcCU->getAddr(), uiZOrder);
+    UInt uiRecIPredStride = pcCU->getPic()->getPicYuvRec()->getStride();
+    Bool useTransformSkip = pcCU->getTransformSkip(uiAbsPartIdx, TEXT_LUMA);
+    //===== init availability pattern =====
+    Bool bAboveAvail = false;
+    Bool bLeftAvail = false;
+    UInt uiModeAll[uiWidth - 3 + 1];
+    if (default0Save1Load2 != 2)
+    {
+        pcCU->getPattern()->initPattern(pcCU, uiTrDepth, uiAbsPartIdx);
+        // 处理参考像素
+        pcCU->getPattern()->initAdiPattern(pcCU, uiAbsPartIdx, uiTrDepth, m_piYuvExt, m_iYuvExtStride, m_iYuvExtHeight, bAboveAvail, bLeftAvail);
+        FillRefLP(m_piYuvExt, piOrg, uiWidth, mask);
+        //===== get prediction signal =====
+        // 针对给定模式进行帧内预测, 获取预测值
+        // predIntraLumaAng(pcCU->getPattern(), uiLumaPredMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail);
+        UInt uiBestSAE = MAX_UINT;
+        UInt uiSAE;
+        UInt uiPredDstSize = uiWidth;
+        UInt uiMode;
+        TComPattern *pcCUgetPattern = pcCU->getPattern();
+        for (uiMode = 0; uiMode < 35; uiMode++)
+        {
+            uiSAE = predIntraLumaAngLP(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            if (uiSAE < uiBestSAE)
+            {
+                uiBestSAE = uiSAE;
+                uiModeAll[0] = uiMode;
+            }
+        }
+        predIntraLumaAngLP(pcCUgetPattern, uiModeAll[0], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+        uiBestSAE = MAX_UINT;
+        for (uiPredDstSize -= 1; uiPredDstSize >= 4; uiPredDstSize--)
+        {
+            for (uiMode = 0; uiMode < 35; uiMode++)
+            {
+                uiSAE = predIntraLumaAngLP(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+                if (uiSAE < uiBestSAE)
+                {
+                    uiBestSAE = uiSAE;
+                    uiModeAll[uiWidth - uiPredDstSize] = uiMode;
+                }
+            }
+            predIntraLumaAngLP(pcCUgetPattern, uiModeAll[uiWidth - uiPredDstSize], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            uiBestSAE = MAX_UINT;
+        }
+        for (uiMode = 0; uiMode < 35; uiMode++)
+        {
+            uiSAE = predIntraLumaAng3x3(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            if (uiSAE < uiBestSAE)
+            {
+                uiBestSAE = uiSAE;
+                uiModeAll[uiWidth - 3] = uiMode;
+            }
+        }
+        predIntraLumaAng3x3(pcCUgetPattern, uiModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+
+        // save prediction
+        // if (default0Save1Load2 == 1)
+        // {
+        //     Pel *pPred = piPred;
+        //     Pel *pPredBuf = m_pSharedPredTransformSkip[0];
+        //     Int k = 0;
+        //     for (UInt uiY = 0; uiY < uiHeight; uiY++)
+        //     {
+        //         for (UInt uiX = 0; uiX < uiWidth; uiX++)
+        //         {
+        //             pPredBuf[k++] = pPred[uiX];
+        //         }
+        //         pPred += uiStride;
+        //     }
+        // }
+    }
+    // else
+    // {
+    //     // load prediction
+    //     Pel *pPred = piPred;
+    //     Pel *pPredBuf = m_pSharedPredTransformSkip[0];
+    //     Int k = 0;
+    //     for (UInt uiY = 0; uiY < uiHeight; uiY++)
+    //     {
+    //         for (UInt uiX = 0; uiX < uiWidth; uiX++)
+    //         {
+    //             pPred[uiX] = pPredBuf[k++];
+    //         }
+    //         pPred += uiStride;
+    //     }
+    // }
+    //===== get residual signal =====
+    {
+        // get residual
+        Pel *pOrg = piOrg;
+        Pel *pPred = piPred;
+        Pel *pResi = piResi;
+        for (UInt uiY = 0; uiY < uiHeight; uiY++)
+        {
+            for (UInt uiX = 0; uiX < uiWidth; uiX++)
+            {
+                pResi[uiX] = pOrg[uiX] - pPred[uiX];
+            }
+            pOrg += uiStride;
+            pResi += uiStride;
+            pPred += uiStride;
+        }
+    }
+
+    //===== transform and quantization =====
+    //--- init rate estimation arrays for RDOQ ---
+    if (useTransformSkip ? m_pcEncCfg->getUseRDOQTS() : m_pcEncCfg->getUseRDOQ())
+    {
+        m_pcEntropyCoder->estimateBit(m_pcTrQuant->m_pcEstBitsSbac, uiWidth, uiWidth, TEXT_LUMA);
+    }
+    //--- transform and quantization ---
+    UInt uiAbsSum = 0;
+    pcCU->setTrIdxSubParts(uiTrDepth, uiAbsPartIdx, uiFullDepth);
+
+    m_pcTrQuant->setQPforQuant(pcCU->getQP(0), TEXT_LUMA, pcCU->getSlice()->getSPS()->getQpBDOffsetY(), 0);
+
+#if RDOQ_CHROMA_LAMBDA
+    m_pcTrQuant->selectLambda(TEXT_LUMA);
+#endif
+
+    // 对残差变换量化+编码
+    m_pcTrQuant->transformNxN(pcCU, piResi, uiStride, pcCoeff,
+#if ADAPTIVE_QP_SELECTION
+                              pcArlCoeff,
+#endif
+                              uiWidth, uiHeight, uiAbsSum, TEXT_LUMA, uiAbsPartIdx, useTransformSkip);
+
+    //--- set coded block flag ---
+    pcCU->setCbfSubParts((uiAbsSum ? 1 : 0) << uiTrDepth, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
+    //--- inverse transform ---
+    if (uiAbsSum)
+    {
+        Int scalingListType = 0 + g_eTTable[(Int)TEXT_LUMA];
+        assert(scalingListType < SCALING_LIST_NUM);
+        m_pcTrQuant->invtransformNxN(pcCU->getCUTransquantBypass(uiAbsPartIdx), TEXT_LUMA, pcCU->getLumaIntraDir(uiAbsPartIdx), piResi, uiStride, pcCoeff, uiWidth, uiHeight, scalingListType, useTransformSkip);
+    }
+    else
+    {
+        Pel *pResi = piResi;
+        memset(pcCoeff, 0, sizeof(TCoeff) * uiWidth * uiHeight);
+        for (UInt uiY = 0; uiY < uiHeight; uiY++)
+        {
+            memset(pResi, 0, sizeof(Pel) * uiWidth);
+            pResi += uiStride;
+        }
+    }
+
+    //===== reconstruction =====
+    {
+        Pel *pPred = piPred;
+        Pel *pResi = piResi;
+        // NOTE: 这里重建值的指针指向了 piReco, 而 piReco 恰好在最开头指向了和 piPred 相同的地址. 因此预测值在此处被覆盖掉了, 变成了完全准确的重建值, 完全不符合这个变量名的意思了. 但是这样做其实没有影响, 只是影响代码的阅读理解, 因为有用的东西是残差值, 事实上代码在这之后根本就用不上预测值了. (但是代码后面居然还把这个变量当作正常的在用, 尽管不会影响编解码结果, 很是迷惑)
+        Pel *pReco = piReco;
+        Pel *pRecQt = piRecQt;
+        Pel *pRecIPred = piRecIPred;
+        for (UInt uiY = 0; uiY < uiHeight; uiY++)
+        {
+            for (UInt uiX = 0; uiX < uiWidth; uiX++)
+            {
+                pReco[uiX] = ClipY(pPred[uiX] + pResi[uiX]);
+                pRecQt[uiX] = pReco[uiX];
+                pRecIPred[uiX] = pReco[uiX];
+            }
+            pPred += uiStride;
+            pResi += uiStride;
+            pReco += uiStride;
+            pRecQt += uiRecQtStride;
+            pRecIPred += uiRecIPredStride;
+        }
+    }
+
+    //===== update distortion =====
+    ruiDist += m_pcRdCost->getDistPart(g_bitDepthY, piReco, uiStride, piOrg, uiStride, uiWidth, uiHeight);
+}
 
 Void TEncSearch::xIntraCodingChromaBlk(TComDataCU *pcCU,
                                        UInt uiTrDepth,
@@ -1776,7 +1984,8 @@ Void TEncSearch::xRecurIntraCodingQTLP(TComDataCU *pcCU,
                                        TComYuv *pcResiYuv,
                                        UInt &ruiDistY,
                                        UInt &ruiDistC,
-                                       Double &dRDCost)
+                                       Double &dRDCost,
+                                       UInt mask)
 {
     UInt uiFullDepth = pcCU->getDepth(0) + uiTrDepth;
     UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> uiFullDepth] + 2;
@@ -1801,22 +2010,19 @@ Void TEncSearch::xRecurIntraCodingQTLP(TComDataCU *pcCU,
     Int bestModeIdUV[2] = {0, 0};
     checkTransformSkip &= (widthTransformSkip == 4 && heightTransformSkip == 4);
     checkTransformSkip &= (!pcCU->getCUTransquantBypass(0));
-    if (bCheckFull)
+    // if (bCheckFull)
     // 按照不划分 TU 的形式整个进行变换量化
-    {
-        pcCU->setTransformSkipSubParts(0, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
-        //----- code luma block with given intra prediction mode and store Cbf-----
-        dSingleCost = 0.0;
-        // 对亮度进行预测/求残差/变换/量化
-        for (int i = 0; i < 35; i++)
-        {
-            xIntraCodingLumaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY);
-        }
-        //----- determine rate and r-d cost -----
-        // 计算编码当前块需要的 bits
-        UInt uiSingleBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
-        dSingleCost = m_pcRdCost->calcRdCost(uiSingleBits, uiSingleDistY + uiSingleDistC);
-    }
+    // {
+    pcCU->setTransformSkipSubParts(0, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
+    //----- code luma block with given intra prediction mode and store Cbf-----
+    dSingleCost = 0.0;
+    // 对亮度进行预测/求残差/变换/量化
+    xIntraCodingLumaBlkLP(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY, mask);
+    //----- determine rate and r-d cost -----
+    // 计算编码当前块需要的 bits
+    UInt uiSingleBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
+    dSingleCost = m_pcRdCost->calcRdCost(uiSingleBits, uiSingleDistY + uiSingleDistC);
+    // }
 
     ruiDistY += uiSingleDistY;
     ruiDistC += uiSingleDistC;
@@ -3197,7 +3403,8 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
                                   TComYuv *pcRecoYuv,
                                   UInt &ruiDistC,
                                   Bool bLumaOnly,
-                                  Double *dBestPUCostLog)
+                                  Double *dBestPUCostLog,
+                                  UInt mask)
 {
     UInt uiDepth = pcCU->getDepth(0);
     // 当前 CU 的分割模式下, PU 的个数. 只有在处理细分的 4x4 块时才为 4, 注意在处理 8x8 块的时候仍然为 1.
@@ -3217,15 +3424,22 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
 
     // 把正常块状预测的结果暂存下来 如果环状的代价更大 需要利用这里还原回之前的结果
     UInt uiPartOffset = 0;
-    for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
+    switch (mask)
     {
-        // 变换层数 处理 8x8 细分到 4x4 时为 1, 其他时候均 0
-        // ::memcpy(m_puhQTTempTrIdx, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
-        ::memcpy(m_puhQTTempCbf[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
-        // ::memcpy(m_puhQTTempCbf[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
-        // ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
-        ::memcpy(m_pcQTTempCoeffY, pcCU->m_pcTrCoeffY + uiPartOffset * 16, uiQPartNum * 16 * sizeof(TCoeff));
-        ::memcpy(m_puhTempLumaIntraDir, pcCU->getLumaIntraDir() + uiPartOffset * 4, uiQPartNum * 4 * sizeof(UChar));
+    case 0b1111:
+        for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
+        {
+            // 变换层数 处理 8x8 细分到 4x4 时为 1, 其他时候均 0
+            // ::memcpy(m_puhQTTempTrIdx, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+            ::memcpy(m_puhQTTempCbf[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+            // ::memcpy(m_puhQTTempCbf[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+            // ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+            ::memcpy(m_pcQTTempCoeffY, pcCU->m_pcTrCoeffY + uiPartOffset * 16, uiQPartNum * 16 * sizeof(TCoeff));
+            ::memcpy(m_puhTempLumaIntraDir, pcCU->getLumaIntraDir() + uiPartOffset * 4, uiQPartNum * 4 * sizeof(UChar));
+        }
+        break;
+    default:
+        assert(0);
     }
 
     pcCU->setQPSubParts(pcCU->getSlice()->getSliceQp(), 0, uiDepth);
@@ -3283,7 +3497,7 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
         Double dPUCostnp1101 = 0.0;
         Double dPUCostnp1110 = 0.0;
         // 编码 intra CU, 还包括预测变换量化等
-        xRecurIntraCodingQTLP(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost);
+        xRecurIntraCodingQTLP(pcCU, uiInitTrDepth, uiPartOffset, bLumaOnly, pcOrgYuv, pcPredYuv, pcResiYuv, uiPUDistY, uiPUDistC, dPUCost, mask);
         // 用 L-based 分块方法计算得到 cost
         // if (uiWidth != 4)
         // {
@@ -3292,15 +3506,21 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
 
         // check r-d cost
         // 如果原来的更好 还原回备份的数据
-        if (dPUCost > dBestPUCostLog[uiPU])
+        switch (mask)
         {
-            // 变换层数 处理 8x8 细分到 4x4 时为 1, 其他时候均 0
-            // ::memcpy(m_puhQTTempTrIdx, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->getCbf(TEXT_LUMA) + uiPartOffset, m_puhQTTempCbf[0], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->m_pcTrCoeffY + uiPartOffset * 16, m_pcQTTempCoeffY, uiQPartNum * 16 * sizeof(TCoeff));
-            ::memcpy(pcCU->getLumaIntraDir() + uiPartOffset * 4, m_puhTempLumaIntraDir, uiQPartNum * 4 * sizeof(UChar));
-
-            continue;
+        case 0b1111:
+            if (dPUCost > dBestPUCostLog[uiPU])
+            {
+                // 变换层数 处理 8x8 细分到 4x4 时为 1, 其他时候均 0
+                // ::memcpy(m_puhQTTempTrIdx, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+                ::memcpy(pcCU->getCbf(TEXT_LUMA) + uiPartOffset, m_puhQTTempCbf[0], uiQPartNum * sizeof(UChar));
+                ::memcpy(pcCU->m_pcTrCoeffY + uiPartOffset * 16, m_pcQTTempCoeffY, uiQPartNum * 16 * sizeof(TCoeff));
+                ::memcpy(pcCU->getLumaIntraDir() + uiPartOffset * 4, m_puhTempLumaIntraDir, uiQPartNum * 4 * sizeof(UChar));
+                continue;
+            }
+            break;
+        default:
+            assert(0);
         }
 
         // uiBestPUMode = uiOrgMode;

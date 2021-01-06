@@ -652,6 +652,10 @@ Int *TComPattern::getPredictorPtr(UInt uiDirMode, UInt log2BlkSize, Int *piAdiBu
 
     return piSrc;
 }
+Int *TComPattern::getPredictorPtrLP(Int *piAdiBuf)
+{
+    return piAdiBuf;
+}
 
 Bool TComPattern::isAboveLeftAvailable(TComDataCU *pcCU, UInt uiPartIdxLT)
 {

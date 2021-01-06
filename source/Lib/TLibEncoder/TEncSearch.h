@@ -196,7 +196,8 @@ public:
                           TComYuv *pcRecoYuv,
                           UInt &ruiDistC,
                           Bool bLumaOnly,
-                          Double *dBestPUCostLog);
+                          Double *dBestPUCostLog,
+                          UInt mask);
     Void estIntraPredChromaQT(TComDataCU *pcCU,
                               TComYuv *pcOrgYuv,
                               TComYuv *pcPredYuv,
@@ -274,6 +275,15 @@ protected:
                              TComYuv *pcResiYuv,
                              UInt &ruiDist,
                              Int default0Save1Load2 = 0);
+    Void xIntraCodingLumaBlkLP(TComDataCU *pcCU,
+                               UInt uiTrDepth,
+                               UInt uiAbsPartIdx,
+                               TComYuv *pcOrgYuv,
+                               TComYuv *pcPredYuv,
+                               TComYuv *pcResiYuv,
+                               UInt &ruiDist,
+                               UInt mask,
+                               Int default0Save1Load2 = 0);
     Void xIntraCodingChromaBlk(TComDataCU *pcCU,
                                UInt uiTrDepth,
                                UInt uiAbsPartIdx,
@@ -306,7 +316,8 @@ protected:
                                TComYuv *pcResiYuv,
                                UInt &ruiDistY,
                                UInt &ruiDistC,
-                               Double &dRDCost);
+                               Double &dRDCost,
+                               UInt mask);
     Void xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
     Void xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
 
