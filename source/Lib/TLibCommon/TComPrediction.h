@@ -75,7 +75,7 @@ protected:
     Void xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter);
     Void xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter);
     Void xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height);
-    Void xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height);
+    Void xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
 
     // motion compensation functions
     Void xPredInterUni(TComDataCU *pcCU, UInt uiPartAddr, Int iWidth, Int iHeight, RefPicList eRefPicList, TComYuv *&rpcYuvPred, Bool bi = false);
@@ -103,8 +103,8 @@ public:
 
     // Angular Intra
     Void predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft);
-    UInt predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, Int iPredDstSize);
-    UInt predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, Int iPredDstSize);
+    UInt predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize);
+    UInt predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize);
     Void FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask);
     Void predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft);
 

@@ -358,12 +358,13 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
     {
         Pel dcval = predIntraGetPredValDC(pSrc, srcStride, width, height, blkAboveAvailable, blkLeftAvailable);
 
+        for (l = 0; l < blkSize; l++)
+        {
+            pDst[l] = dcval;
+        }
         for (k = 0; k < blkSize; k++)
         {
-            for (l = 0; l < blkSize; l++)
-            {
-                pDst[k * dstStride + l] = dcval;
-            }
+            pDst[k * dstStride] = dcval;
         }
     }
 
@@ -518,7 +519,7 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
         }
     }
 }
-UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, Int iPredDstSize)
+UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
 {
     Pel *pDst = piPred;
     // ptrSrc 指向当前的参考像素
@@ -532,14 +533,14 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
 
     // get starting pixel in block
     Int sw = 2 * iWidth + 1;
-    Int srcoffset = sw * (iWidth - iPredDstSize) + (iWidth - iPredDstSize);
-    Int dstoffset = uiStride * (iWidth - iPredDstSize) + (iWidth - iPredDstSize);
+    Int srcoffset = sw * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+    Int dstoffset = uiStride * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
 
     // Create the prediction
     if (uiDirMode == PLANAR_IDX)
     {
         // PLANAR 模式预测
-        xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
+        xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
     }
     else
     {
@@ -559,9 +560,30 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
             }
         }
     }
-    return 0;
+
+    // TODO: 可以尝试用误差平方和作为环状决定预测角度的依据
+    UInt uiSAE = 0;
+    Pel *pred = pDst + dstoffset;
+    Int *src = ptrSrc + sw + 1 + srcoffset;
+    switch (mask)
+    {
+    case 0b1111:
+        for (Int i = 0; i < uiPredDstSize; i++)
+        {
+            uiSAE += abs(src[i] - pred[i]);
+        }
+        for (Int j = 1; j < uiPredDstSize; j++)
+        {
+            uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+        }
+        break;
+    default:
+        break;
+    }
+
+    return uiSAE;
 }
-UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, Int iPredDstSize)
+UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
 {
     Pel *pDst = piPred;
     // ptrSrc 指向当前的参考像素
@@ -995,15 +1017,17 @@ Void TComPrediction::xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int 
         }
     }
 }
-Void TComPrediction::xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height)
+Void TComPrediction::xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
 {
     assert(width == height);
 
     Int k, l, bottomLeft, topRight;
     Int horPred;
     Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
-    UInt blkSize = width;
-    UInt offset2D = width;
+    // UInt blkSize = width;
+    // UInt offset2D = width;
+    UInt blkSize = uiPredDstSize;
+    UInt offset2D = uiPredDstSize;
     // UInt shift1D = g_aucConvertToBit[width] + 2;
     // UInt shift2D = shift1D + 1;
 
