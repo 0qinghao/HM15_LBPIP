@@ -254,8 +254,8 @@ void TEncSearch::init(TEncCfg *pcEncCfg,
     m_pcQTTempCoeffY = new TCoeff[g_uiMaxCUWidth * g_uiMaxCUHeight];
     m_pcQTTempCoeffCb = new TCoeff[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
     m_pcQTTempCoeffCr = new TCoeff[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
-    m_puhTempLumaIntraDir = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 4];
-    m_puhTempChromaIntraDir = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 4];
+    m_puhTempLumaIntraDir = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
+    m_puhTempChromaIntraDir = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
 #if ADAPTIVE_QP_SELECTION
     m_ppcQTTempArlCoeffY = new Int *[uiNumLayersToAllocate];
     m_ppcQTTempArlCoeffCb = new Int *[uiNumLayersToAllocate];
