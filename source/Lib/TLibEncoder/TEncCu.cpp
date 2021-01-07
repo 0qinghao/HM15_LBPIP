@@ -108,6 +108,10 @@ Void TEncCu::create(UChar uhTotalDepth, UInt uiMaxWidth, UInt uiMaxHeight)
     UInt *piTmp = &g_auiZscanToRaster[0];
     initZscanToRaster(m_uhTotalDepth, 1, 0, piTmp);
     initRasterToZscan(uiMaxWidth, uiMaxHeight, m_uhTotalDepth);
+    piTmp = &g_auiZscanToRaster4x4[0];
+    initZscanToRaster(3, 1, 0, piTmp);
+    initRasterToZscanFor4x4(16, 16, 3, g_auiRasterToZscan4x4, g_auiZscanToRaster4x4);
+    piTmp = &g_auiZscanToRaster4x4[0];
 
     // initialize conversion matrix from partition index to pel
     initRasterToPelXY(uiMaxWidth, uiMaxHeight, m_uhTotalDepth);
@@ -1979,6 +1983,31 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
             break;
         case 0b1110:
             ::memcpy(puhDepth + uiQuarSizeDepth * 3, rpcTempCU->getDepth() + uiQuarSizeDepth * 3, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+    }
+
+    // 处理 loopflag 部分 未验证
+    {
+        UChar *puhLumaLoopFlag = rpcBestCU->getLumaLoopFlag();
+        UChar *puhChromaLoopFlag = rpcBestCU->getChromaLoopFlag();
+        UInt uiQuarSizeDepth = (uiWidth * uiWidth) >> 6;
+
+        switch (mask)
+        {
+        case 0b1011:
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeDepth * 1, rpcTempCU->getLumaLoopFlag() + uiQuarSizeDepth * 1, uiQuarSizeDepth * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeDepth * 1, rpcTempCU->getChromaLoopFlag() + uiQuarSizeDepth * 1, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        case 0b1101:
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeDepth * 2, rpcTempCU->getLumaLoopFlag() + uiQuarSizeDepth * 2, uiQuarSizeDepth * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeDepth * 2, rpcTempCU->getChromaLoopFlag() + uiQuarSizeDepth * 2, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        case 0b1110:
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeDepth * 3, rpcTempCU->getLumaLoopFlag() + uiQuarSizeDepth * 3, uiQuarSizeDepth * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeDepth * 3, rpcTempCU->getChromaLoopFlag() + uiQuarSizeDepth * 3, uiQuarSizeDepth * sizeof(UChar));
             break;
         default:
             assert(0);

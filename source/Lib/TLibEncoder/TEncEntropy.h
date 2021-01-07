@@ -98,6 +98,7 @@ public:
     virtual Void codeQtCbfZero(TComDataCU *pcCU, TextType eType, UInt uiTrDepth) = 0;
     virtual Void codeQtRootCbfZero(TComDataCU *pcCU) = 0;
     virtual Void codeIntraDirLumaAng(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiplePU) = 0;
+    virtual Void codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiplePU) = 0;
 
     virtual Void codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;

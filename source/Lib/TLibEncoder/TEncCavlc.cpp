@@ -1150,6 +1150,10 @@ Void TEncCavlc::codeIntraDirLumaAng(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool is
     assert(0);
 }
 
+Void TEncCavlc::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiple)
+{
+    assert(0);
+}
 Void TEncCavlc::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     assert(0);

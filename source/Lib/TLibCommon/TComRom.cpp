@@ -93,9 +93,21 @@ UInt g_uiAddCUDepth = 0;
 UInt g_auiZscanToRaster[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
     0,
 };
+UInt g_auiZscanToRaster4x4[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
+UInt g_auiZscanToRaster2x2[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0, 1, 2, 3};
+UInt g_auiZscanToRaster1x1[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
 UInt g_auiRasterToZscan[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
     0,
 };
+UInt g_auiRasterToZscan4x4[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
+UInt g_auiRasterToZscan2x2[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0, 1, 2, 3};
+UInt g_auiRasterToZscan1x1[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
 UInt g_auiRasterToPelX[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
     0,
 };
@@ -135,6 +147,20 @@ Void initRasterToZscan(UInt uiMaxCUWidth, UInt uiMaxCUHeight, UInt uiMaxDepth)
     for (UInt i = 0; i < uiNumPartInWidth * uiNumPartInHeight; i++)
     {
         g_auiRasterToZscan[g_auiZscanToRaster[i]] = i;
+    }
+}
+
+Void initRasterToZscanFor4x4(UInt uiMaxCUWidth, UInt uiMaxCUHeight, UInt uiMaxDepth, UInt *puiCurrIdx, UInt *puiRefIdx)
+{
+    UInt uiMinCUWidth = uiMaxCUWidth >> (uiMaxDepth - 1);
+    UInt uiMinCUHeight = uiMaxCUHeight >> (uiMaxDepth - 1);
+
+    UInt uiNumPartInWidth = (UInt)uiMaxCUWidth / uiMinCUWidth;
+    UInt uiNumPartInHeight = (UInt)uiMaxCUHeight / uiMinCUHeight;
+
+    for (UInt i = 0; i < uiNumPartInWidth * uiNumPartInHeight; i++)
+    {
+        puiCurrIdx[puiRefIdx[i]] = i;
     }
 }
 

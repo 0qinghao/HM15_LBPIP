@@ -62,7 +62,9 @@ TComYuv::~TComYuv()
 Void TComYuv::create(UInt iWidth, UInt iHeight)
 {
     // memory allocation
-    m_apiBufY = (Pel *)xMalloc(Pel, iWidth * iHeight);
+    // WTF?? 居然是因为空间不够的问题
+    // m_apiBufY = (Pel *)xMalloc(Pel, iWidth * iHeight);
+    m_apiBufY = (Pel *)xMalloc(Pel, g_uiMaxCUWidth * g_uiMaxCUHeight);
     m_apiBufU = (Pel *)xMalloc(Pel, iWidth * iHeight >> 2);
     m_apiBufV = (Pel *)xMalloc(Pel, iWidth * iHeight >> 2);
 

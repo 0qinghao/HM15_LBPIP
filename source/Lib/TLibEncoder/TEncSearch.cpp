@@ -86,6 +86,8 @@ TEncSearch::TEncSearch()
     m_pcQTTempCoeffCr = NULL;
     m_puhTempLumaIntraDir = NULL;
     m_puhTempChromaIntraDir = NULL;
+    m_puhTempLumaLoopFlag = NULL;
+    m_puhTempChromaLoopFlag = NULL;
 #if ADAPTIVE_QP_SELECTION
     m_ppcQTTempArlCoeffY = NULL;
     m_ppcQTTempArlCoeffCb = NULL;
@@ -151,6 +153,8 @@ TEncSearch::~TEncSearch()
     delete[] m_pcQTTempCoeffCr;
     delete[] m_puhTempLumaIntraDir;
     delete[] m_puhTempChromaIntraDir;
+    delete[] m_puhTempLumaLoopFlag;
+    delete[] m_puhTempChromaLoopFlag;
 #if ADAPTIVE_QP_SELECTION
     delete[] m_ppcQTTempArlCoeffY;
     delete[] m_ppcQTTempArlCoeffCb;
@@ -256,6 +260,8 @@ void TEncSearch::init(TEncCfg *pcEncCfg,
     m_pcQTTempCoeffCr = new TCoeff[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
     m_puhTempLumaIntraDir = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
     m_puhTempChromaIntraDir = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
+    m_puhTempLumaLoopFlag = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
+    m_puhTempChromaLoopFlag = new UChar[g_uiMaxCUWidth * g_uiMaxCUHeight >> 2];
 #if ADAPTIVE_QP_SELECTION
     m_ppcQTTempArlCoeffY = new Int *[uiNumLayersToAllocate];
     m_ppcQTTempArlCoeffCb = new Int *[uiNumLayersToAllocate];
@@ -1215,9 +1221,11 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
                                        TComYuv *pcResiYuv,
                                        UInt &ruiDist,
                                        UInt mask,
+                                       UChar *puhModeAll,
                                        //  恒为 0
                                        Int default0Save1Load2)
 {
+    UInt uiDirNum = 35;
     UInt uiLumaPredMode = pcCU->getLumaIntraDir(uiAbsPartIdx);
     UInt uiFullDepth = pcCU->getDepth(0) + uiTrDepth;
     UInt uiWidth = pcCU->getWidth(0) >> uiTrDepth;
@@ -1245,7 +1253,7 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
     //===== init availability pattern =====
     Bool bAboveAvail = false;
     Bool bLeftAvail = false;
-    UInt uiModeAll[uiWidth - 3 + 1];
+    // UInt uiModeAll[uiWidth - 3 + 1];
     if (default0Save1Load2 != 2)
     {
         pcCU->getPattern()->initPattern(pcCU, uiTrDepth, uiAbsPartIdx);
@@ -1260,41 +1268,43 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
         UInt uiPredDstSize = uiWidth;
         UInt uiMode;
         TComPattern *pcCUgetPattern = pcCU->getPattern();
-        for (uiMode = 0; uiMode < 35; uiMode++)
+        for (uiMode = 0; uiMode < uiDirNum; uiMode++)
         {
             uiSAE = predIntraLumaAngLP(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
             if (uiSAE < uiBestSAE)
             {
                 uiBestSAE = uiSAE;
-                uiModeAll[0] = uiMode;
+                puhModeAll[0] = uiMode;
             }
         }
-        predIntraLumaAngLP(pcCUgetPattern, uiModeAll[0], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+        predIntraLumaAngLP(pcCUgetPattern, puhModeAll[0], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
         uiBestSAE = MAX_UINT;
         for (uiPredDstSize -= 1; uiPredDstSize >= 4; uiPredDstSize--)
         {
-            for (uiMode = 0; uiMode < 35; uiMode++)
+            for (uiMode = 0; uiMode < uiDirNum; uiMode++)
             {
                 uiSAE = predIntraLumaAngLP(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
                 if (uiSAE < uiBestSAE)
                 {
                     uiBestSAE = uiSAE;
-                    uiModeAll[uiWidth - uiPredDstSize] = uiMode;
+                    puhModeAll[uiWidth - uiPredDstSize] = uiMode;
                 }
             }
-            predIntraLumaAngLP(pcCUgetPattern, uiModeAll[uiWidth - uiPredDstSize], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            predIntraLumaAngLP(pcCUgetPattern, puhModeAll[uiWidth - uiPredDstSize], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
             uiBestSAE = MAX_UINT;
         }
-        for (uiMode = 0; uiMode < 35; uiMode++)
+        for (uiMode = 0; uiMode < uiDirNum; uiMode++)
         {
             uiSAE = predIntraLumaAng3x3(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
             if (uiSAE < uiBestSAE)
             {
                 uiBestSAE = uiSAE;
-                uiModeAll[uiWidth - 3] = uiMode;
+                puhModeAll[uiWidth - 3] = uiMode;
             }
         }
-        predIntraLumaAng3x3(pcCUgetPattern, uiModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+        predIntraLumaAng3x3(pcCUgetPattern, puhModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+
+        pcCU->setLumaIntraDirSubPartsLP(puhModeAll, uiAbsPartIdx, uiWidth);
 
         // save prediction
         // if (default0Save1Load2 == 1)
@@ -2016,8 +2026,10 @@ Void TEncSearch::xRecurIntraCodingQTLP(TComDataCU *pcCU,
     pcCU->setTransformSkipSubParts(0, TEXT_LUMA, uiAbsPartIdx, uiFullDepth);
     //----- code luma block with given intra prediction mode and store Cbf-----
     dSingleCost = 0.0;
+    UInt uiWidth = pcCU->getWidth(0) >> uiTrDepth;
+    UChar puhModeAll[uiWidth - 3 + 1];
     // 对亮度进行预测/求残差/变换/量化
-    xIntraCodingLumaBlkLP(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY, mask);
+    xIntraCodingLumaBlkLP(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY, mask, puhModeAll);
     //----- determine rate and r-d cost -----
     // 计算编码当前块需要的 bits
     UInt uiSingleBits = xGetIntraBitsQT(pcCU, uiTrDepth, uiAbsPartIdx, true, !bLumaOnly, false);
@@ -3421,9 +3433,13 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
     UInt CandNum;
     Double CandCostList[FAST_UDI_MAX_RDMODE_NUM];
     UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+    UInt uiPartOffset = 0;
+    // for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
+    // {
+    //     pcCU->setLumaLoopFlag(1, uiPartOffset, uiDepth + uiInitTrDepth);
+    // }
 
     // 把正常块状预测的结果暂存下来 如果环状的代价更大 需要利用这里还原回之前的结果
-    UInt uiPartOffset = 0;
     switch (mask)
     {
     case 0b1111:
@@ -3436,6 +3452,7 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
             // ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
             ::memcpy(m_pcQTTempCoeffY, pcCU->m_pcTrCoeffY + uiPartOffset * 16, uiQPartNum * 16 * sizeof(TCoeff));
             ::memcpy(m_puhTempLumaIntraDir, pcCU->getLumaIntraDir() + uiPartOffset * 4, uiQPartNum * 4 * sizeof(UChar));
+            ::memcpy(m_puhTempLumaLoopFlag, pcCU->getLumaLoopFlag() + uiPartOffset, uiQPartNum * sizeof(UChar));
         }
         break;
     default:
@@ -3448,12 +3465,13 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
     uiPartOffset = 0;
     for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
     {
+        pcCU->setLumaLoopFlag(1, uiPartOffset, uiDepth + uiInitTrDepth);
         //===== init pattern for luma prediction =====
         Bool bAboveAvail = false;
         Bool bLeftAvail = false;
 
         //===== determine set of modes to be tested (using prediction signal only) =====
-        Int numModesAvailable = 35; //total number of Intra modes
+        // Int numModesAvailable = 35; //total number of Intra modes
         Pel *piOrg = pcOrgYuv->getLumaAddr(uiPU, uiWidth);
         Pel *piPred = pcPredYuv->getLumaAddr(uiPU, uiWidth);
         UInt uiStride = pcPredYuv->getStride();
@@ -3516,6 +3534,7 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
                 ::memcpy(pcCU->getCbf(TEXT_LUMA) + uiPartOffset, m_puhQTTempCbf[0], uiQPartNum * sizeof(UChar));
                 ::memcpy(pcCU->m_pcTrCoeffY + uiPartOffset * 16, m_pcQTTempCoeffY, uiQPartNum * 16 * sizeof(TCoeff));
                 ::memcpy(pcCU->getLumaIntraDir() + uiPartOffset * 4, m_puhTempLumaIntraDir, uiQPartNum * 4 * sizeof(UChar));
+                ::memcpy(pcCU->getLumaLoopFlag() + uiPartOffset, m_puhTempLumaLoopFlag, uiQPartNum * sizeof(UChar));
                 continue;
             }
             break;

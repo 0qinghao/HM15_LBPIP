@@ -151,6 +151,8 @@ private:
     Char *m_apiMVPIdx[2];       ///< array of motion vector predictor candidates
     Char *m_apiMVPNum[2];       ///< array of number of possible motion vectors predictors
     Bool *m_pbIPCMFlag;         ///< array of intra_pcm flags
+    UChar *m_puhLumaLoopFlag;
+    UChar *m_puhChromaLoopFlag;
 
     // -------------------------------------------------------------------------------------------------------------------
     // misc. variables
@@ -464,6 +466,14 @@ public:
     Bool getMergeAMP() { return m_bIsMergeAMP; }
 #endif
 
+    UChar *getLumaLoopFlag()
+    {
+        return m_puhLumaLoopFlag;
+    }
+    UChar *getChromaLoopFlag()
+    {
+        return m_puhChromaLoopFlag;
+    }
     UChar *getLumaIntraDir()
     {
         return m_puhLumaIntraDir;
@@ -514,6 +524,7 @@ public:
         m_puhLumaIntraDir[uiIdx << 2] = uh;
     }
     Void setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
+    Void setLumaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx, UInt uiWidth);
     // 增加
     Void setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
 
@@ -569,6 +580,8 @@ public:
     Void setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
     // 增加
     Void setChromIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
+    Void setChromLoopFlag(UInt flag, UInt uiAbsPartIdx, UInt uiDepth);
+    Void setLumaLoopFlag(UInt flag, UInt uiAbsPartIdx, UInt uiDepth);
 
     UChar *getInterDir() { return m_puhInterDir; }
     UChar getInterDir(UInt uiIdx) { return m_puhInterDir[uiIdx]; }

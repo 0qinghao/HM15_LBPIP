@@ -773,7 +773,40 @@ Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMul
     }
     return;
 }
+Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple)
+{
+    UInt uiWidth = pcCU->getWidth(absPartIdx);
+    UChar puhModeAll[uiWidth - 3 + 1];
+    Int iModeAllDiff[uiWidth - 3 + 1];
+    for (Int i = 0; i < uiWidth - 3 + 1; i++)
+    {
+        puhModeAll[i] = *(pcCU->getLumaIntraDir() + i);
+    }
+    UInt dir[4], j;
+    Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+    Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+    PartSize mode = pcCU->getPartitionSize(absPartIdx);
+    UInt partNum = isMultiple ? (mode == SIZE_NxN ? 4 : 1) : 1;
+    UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    for (j = 0; j < partNum; j++)
+    {
+        dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+        predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+    }
+    for (j = 0; j < uiWidth - 3 + 1; j++)
+    {
+        iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+    }
+    iModeAllDiff[0] = puhModeAll[0] - 0;
 
+    // 干脆直接编码得了
+    for (j = 0; j < uiWidth - 3 + 1; j++)
+    {
+        m_pcBinIf->encodeBinsEP(puhModeAll[j], 6);
+    }
+
+    return;
+}
 // 编码色差预测模式(角度)
 Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {

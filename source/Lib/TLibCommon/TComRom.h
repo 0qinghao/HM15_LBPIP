@@ -69,9 +69,16 @@ Void initSigLastScan(UInt *pBuffD, UInt *pBuffH, UInt *pBuffV, Int iWidth, Int i
 // flexible conversion from relative to absolute index
 extern UInt g_auiZscanToRaster[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
 extern UInt g_auiRasterToZscan[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
+extern UInt g_auiZscanToRaster4x4[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
+extern UInt g_auiRasterToZscan4x4[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
+extern UInt g_auiZscanToRaster2x2[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
+extern UInt g_auiRasterToZscan2x2[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
+extern UInt g_auiZscanToRaster1x1[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
+extern UInt g_auiRasterToZscan1x1[MAX_NUM_SPU_W * MAX_NUM_SPU_W];
 
 Void initZscanToRaster(Int iMaxDepth, Int iDepth, UInt uiStartVal, UInt *&rpuiCurrIdx);
 Void initRasterToZscan(UInt uiMaxCUWidth, UInt uiMaxCUHeight, UInt uiMaxDepth);
+Void initRasterToZscanFor4x4(UInt uiMaxCUWidth, UInt uiMaxCUHeight, UInt uiMaxDepth, UInt *puiCurrIdx, UInt *puiRefIdx);
 
 // conversion of partition index to picture pel position
 extern UInt g_auiRasterToPelX[MAX_NUM_SPU_W * MAX_NUM_SPU_W];

@@ -3,37 +3,37 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncCu.cpp",
 		"bookmarks": [
 			{
-				"line": 261,
+				"line": 265,
 				"column": 16,
 				"label": ""
 			},
 			{
-				"line": 660,
+				"line": 664,
 				"column": 25,
 				"label": ""
 			},
 			{
-				"line": 664,
+				"line": 668,
 				"column": 15,
 				"label": ""
 			},
 			{
-				"line": 910,
+				"line": 914,
 				"column": 61,
 				"label": ""
 			},
 			{
-				"line": 1136,
+				"line": 1140,
 				"column": 6,
 				"label": ""
 			},
 			{
-				"line": 1489,
+				"line": 1493,
 				"column": 17,
 				"label": ""
 			},
 			{
-				"line": 1576,
+				"line": 1580,
 				"column": 26,
 				"label": ""
 			}
@@ -128,37 +128,37 @@
 				"label": ""
 			},
 			{
-				"line": 775,
+				"line": 806,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 1156,
+				"line": 1187,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1249,
+				"line": 1280,
 				"column": 18,
 				"label": ""
 			},
 			{
-				"line": 1281,
+				"line": 1312,
 				"column": 11,
 				"label": ""
 			},
 			{
-				"line": 1299,
+				"line": 1330,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1330,
+				"line": 1361,
 				"column": 12,
 				"label": ""
 			},
 			{
-				"line": 1455,
+				"line": 1486,
 				"column": 13,
 				"label": ""
 			}
@@ -168,12 +168,12 @@
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComRom.cpp",
 		"bookmarks": [
 			{
-				"line": 349,
+				"line": 380,
 				"column": 13,
 				"label": ""
 			},
 			{
-				"line": 477,
+				"line": 508,
 				"column": 29,
 				"label": ""
 			}
@@ -248,7 +248,7 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
 		"bookmarks": [
 			{
-				"line": 1186,
+				"line": 1192,
 				"column": 21,
 				"label": ""
 			}

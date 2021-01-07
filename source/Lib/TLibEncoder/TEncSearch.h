@@ -150,6 +150,8 @@ public:
     //   在 RDO 过程中预测角度的暂存
     UChar *m_puhTempLumaIntraDir;   ///< array of intra directions (luma)
     UChar *m_puhTempChromaIntraDir; ///< array of intra directions (chroma)
+    UChar *m_puhTempLumaLoopFlag;   ///< array of intra directions (luma)
+    UChar *m_puhTempChromaLoopFlag; ///< array of intra directions (luma)
 
 protected:
     /// sub-function for motion vector refinement used in fractional-pel accuracy
@@ -283,6 +285,7 @@ protected:
                                TComYuv *pcResiYuv,
                                UInt &ruiDist,
                                UInt mask,
+                               UChar *puhModeAll,
                                Int default0Save1Load2 = 0);
     Void xIntraCodingChromaBlk(TComDataCU *pcCU,
                                UInt uiTrDepth,

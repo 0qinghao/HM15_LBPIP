@@ -810,23 +810,23 @@ UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirM
     if (uiDirMode == PLANAR_IDX)
     {
         // PLANAR 模式预测
-        xPredIntraPlanar3x3(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiPredDstSize);
+        xPredIntraPlanar3x3(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
     }
     else
     {
         if ((iWidth > 16) || (iHeight > 16))
         {
-            xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+            xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
         }
         else
         {
             // 角度模式预测(包括 DC 在内), 块小于 16 时需要滤波
-            xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, true, uiPredDstSize);
+            xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, true, uiPredDstSize);
 
             // DC 模式下预测结果的滤波
             if ((uiDirMode == DC_IDX) && bAbove && bLeft)
             {
-                xDCPredFiltering(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
             }
         }
     }
