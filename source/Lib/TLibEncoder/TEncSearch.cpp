@@ -1287,14 +1287,14 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
         }
         for (uiMode = 0; uiMode < 35; uiMode++)
         {
-            uiSAE = predIntraLumaAng3x3(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            uiSAE = predIntraLumaAng3x3(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
             if (uiSAE < uiBestSAE)
             {
                 uiBestSAE = uiSAE;
                 uiModeAll[uiWidth - 3] = uiMode;
             }
         }
-        predIntraLumaAng3x3(pcCUgetPattern, uiModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+        predIntraLumaAng3x3(pcCUgetPattern, uiModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
 
         // save prediction
         // if (default0Save1Load2 == 1)

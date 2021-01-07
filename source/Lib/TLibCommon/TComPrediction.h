@@ -73,9 +73,11 @@ protected:
     Int m_iLumaRecStride;  ///< stride of #m_pLumaRecBuffer array
 
     Void xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter);
-    Void xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter);
+    Void xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize);
+    Void xPredIntraAng3x3(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize);
     Void xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height);
     Void xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
+    Void xPredIntraPlanar3x3(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
 
     // motion compensation functions
     Void xPredInterUni(TComDataCU *pcCU, UInt uiPartAddr, Int iWidth, Int iHeight, RefPicList eRefPicList, TComYuv *&rpcYuvPred, Bool bi = false);
@@ -109,6 +111,7 @@ public:
     Void predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft);
 
     Pel predIntraGetPredValDC(Int *pSrc, Int iSrcStride, UInt iWidth, UInt iHeight, Bool bAbove, Bool bLeft);
+    Pel predIntraGetPredValDCLP(Int *pSrc, Int iSrcStride, UInt iWidth, UInt iHeight, Bool bAbove, Bool bLeft, UInt uiPredDstSize);
 
     Int *getPredicBuf() { return m_piYuvExt; }
     Int getPredicBufWidth() { return m_iYuvExtStride; }
