@@ -2084,7 +2084,7 @@ Void TComDataCU::getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList)
     }
 }
 // 色差全搜索 (选32比较合适 35需要编码的 bits 多而且没办法带来明显收益 最后结果更差(仅测试过模式信息不压缩的情况))
-Void TComDataCU::getAllowedChromaDir32(UInt uiAbsPartIdx, UInt *uiModeList)
+Void TComDataCU::getAllowedChromaDir35(UInt uiAbsPartIdx, UInt *uiModeList)
 {
     // uiModeList[0] = PLANAR_IDX;
     // uiModeList[1] = VER_IDX;
@@ -2104,7 +2104,7 @@ Void TComDataCU::getAllowedChromaDir32(UInt uiAbsPartIdx, UInt *uiModeList)
         // }
     }
 }
-Void TComDataCU::getAllowedChromaDir32np(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110)
+Void TComDataCU::getAllowedChromaDir35np(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110)
 {
     for (UInt i = 0; i < NUM_CHROMA_MODE; i++)
     {
