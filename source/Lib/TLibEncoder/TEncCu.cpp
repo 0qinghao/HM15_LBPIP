@@ -820,23 +820,15 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     {
                     case 0:
                         rpcTempCU->dBestCostQuarPartLT = pcSubBestPartCU->getTotalBits();
-                        // rpcTempCU->dBestCostQuarPartLT = rpcTempCU->getTotalBits();
-                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     case 1:
                         rpcTempCU->dBestCostQuarPartRT = pcSubBestPartCU->getTotalBits();
-                        // rpcTempCU->dBestCostQuarPartRT = rpcTempCU->getTotalBits() - dCostPre;
-                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     case 2:
                         rpcTempCU->dBestCostQuarPartLB = pcSubBestPartCU->getTotalBits();
-                        // rpcTempCU->dBestCostQuarPartLB = rpcTempCU->getTotalBits() - dCostPre;
-                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     case 3:
                         rpcTempCU->dBestCostQuarPartRB = pcSubBestPartCU->getTotalBits();
-                        // rpcTempCU->dBestCostQuarPartRB = rpcTempCU->getTotalBits() - dCostPre;
-                        // dCostPre = rpcTempCU->getTotalBits();
                         break;
                     default:
                         assert(0);
@@ -1463,11 +1455,16 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // 亮度部分 帧内编码
     m_pcPredSearch->estIntraPredQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma);
     m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1111);
+    if (eSize != SIZE_NxN)
+    {
+        // 1011 1101 1110
+    }
 
     // 在 estIntraPredQT 里面就已经对 rpcTempCU 重建过了, 这里有啥必要?
     // m_ppcRecoYuvTemp[uiDepth]->copyToPicLuma(rpcTempCU->getPic()->getPicYuvRec(), rpcTempCU->getAddr(), rpcTempCU->getZorderIdxInCU());
 
     m_pcPredSearch->estIntraPredChromaQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma);
+    
 
     m_pcEntropyCoder->resetBits();
     if (rpcTempCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
@@ -1710,10 +1707,10 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
         TCoeff *pcCoeffMergeY;
         switch (mask)
         {
-        case 0b0111:
-            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp0111;
-            pcCoeffMergeY = pcCoeffBestYLpart;
-            break;
+        // case 0b0111:
+        //     pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp0111;
+        //     pcCoeffMergeY = pcCoeffBestYLpart;
+        //     break;
         case 0b1011:
             pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1011;
             pcCoeffMergeY = pcCoeffBestYLpart + (uiWidth >> 1);

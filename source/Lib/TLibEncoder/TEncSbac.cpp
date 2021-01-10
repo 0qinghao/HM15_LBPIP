@@ -725,51 +725,56 @@ Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMul
     PartSize mode = pcCU->getPartitionSize(absPartIdx);
     UInt partNum = isMultiple ? (mode == SIZE_NxN ? 4 : 1) : 1;
     UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+    //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+    //     // 判断待编码模式信息是否在 MPM 里
+    //     for (UInt i = 0; i < predNum[j]; i++)
+    //     {
+    //         if (dir[j] == preds[j][i])
+    //         {
+    //             predIdx[j] = i;
+    //         }
+    //     }
+    //     // 编码 flag, 1 表示模式在 MPM 里
+    //     m_pcBinIf->encodeBin((predIdx[j] != -1) ? 1 : 0, m_cCUIntraPredSCModel.get(0, 0, 0));
+    // }
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     if (predIdx[j] != -1)
+    //     {
+    //         m_pcBinIf->encodeBinEP(predIdx[j] ? 1 : 0);
+    //         if (predIdx[j])
+    //         {
+    //             m_pcBinIf->encodeBinEP(predIdx[j] - 1);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if (preds[j][0] > preds[j][1])
+    //         {
+    //             std::swap(preds[j][0], preds[j][1]);
+    //         }
+    //         if (preds[j][0] > preds[j][2])
+    //         {
+    //             std::swap(preds[j][0], preds[j][2]);
+    //         }
+    //         if (preds[j][1] > preds[j][2])
+    //         {
+    //             std::swap(preds[j][1], preds[j][2]);
+    //         }
+    //         for (Int i = (predNum[j] - 1); i >= 0; i--)
+    //         {
+    //             dir[j] = dir[j] > preds[j][i] ? dir[j] - 1 : dir[j];
+    //         }
+    //         m_pcBinIf->encodeBinsEP(dir[j], 5);
+    //     }
+    // }
     for (j = 0; j < partNum; j++)
     {
         dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
-        predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
-        // 判断待编码模式信息是否在 MPM 里
-        for (UInt i = 0; i < predNum[j]; i++)
-        {
-            if (dir[j] == preds[j][i])
-            {
-                predIdx[j] = i;
-            }
-        }
-        // 编码 flag, 1 表示模式在 MPM 里
-        m_pcBinIf->encodeBin((predIdx[j] != -1) ? 1 : 0, m_cCUIntraPredSCModel.get(0, 0, 0));
-    }
-    for (j = 0; j < partNum; j++)
-    {
-        if (predIdx[j] != -1)
-        {
-            m_pcBinIf->encodeBinEP(predIdx[j] ? 1 : 0);
-            if (predIdx[j])
-            {
-                m_pcBinIf->encodeBinEP(predIdx[j] - 1);
-            }
-        }
-        else
-        {
-            if (preds[j][0] > preds[j][1])
-            {
-                std::swap(preds[j][0], preds[j][1]);
-            }
-            if (preds[j][0] > preds[j][2])
-            {
-                std::swap(preds[j][0], preds[j][2]);
-            }
-            if (preds[j][1] > preds[j][2])
-            {
-                std::swap(preds[j][1], preds[j][2]);
-            }
-            for (Int i = (predNum[j] - 1); i >= 0; i--)
-            {
-                dir[j] = dir[j] > preds[j][i] ? dir[j] - 1 : dir[j];
-            }
-            m_pcBinIf->encodeBinsEP(dir[j], 5);
-        }
+        m_pcBinIf->encodeBinsEP(dir[j], DIR_BITS);
     }
     return;
 }
@@ -831,9 +836,7 @@ Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
     //     }
     //     m_pcBinIf->encodeBin(1, m_cCUChromaPredSCModel.get(0, 0, 0));
 
-    //     // 用 2 bit 编码预测角度
-    // 用 5 bit 编码全搜索色差角度
-    m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 5);
+    m_pcBinIf->encodeBinsEP(uiIntraDirChroma, DIR_BITS);
     // }
     // return;
 }

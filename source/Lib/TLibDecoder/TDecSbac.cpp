@@ -567,7 +567,6 @@ Void TDecSbac::parsePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     pcCU->setPredModeSubParts((PredMode)iPredMode, uiAbsPartIdx, uiDepth);
 }
 
-// 项目中编码时不会涉及到这个函数
 Void TDecSbac::parseIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, UInt depth)
 {
     PartSize mode = pcCU->getPartitionSize(absPartIdx);
@@ -579,50 +578,57 @@ Void TDecSbac::parseIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, UInt dept
     {
         depth++;
     }
-    for (j = 0; j < partNum; j++)
-    {
-        m_pcTDecBinIf->decodeBin(symbol, m_cCUIntraPredSCModel.get(0, 0, 0));
-        mpmPred[j] = symbol;
-    }
-    for (j = 0; j < partNum; j++)
-    {
-        Int preds[3] = {-1, -1, -1};
-        Int predNum = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds);
-        if (mpmPred[j])
-        {
-            m_pcTDecBinIf->decodeBinEP(symbol);
-            if (symbol)
-            {
-                m_pcTDecBinIf->decodeBinEP(symbol);
-                symbol++;
-            }
-            intraPredMode = preds[symbol];
-        }
-        else
-        {
-            m_pcTDecBinIf->decodeBinsEP(symbol, 5);
-            intraPredMode = symbol;
 
-            //postponed sorting of MPMs (only in remaining branch)
-            if (preds[0] > preds[1])
-            {
-                std::swap(preds[0], preds[1]);
-            }
-            if (preds[0] > preds[2])
-            {
-                std::swap(preds[0], preds[2]);
-            }
-            if (preds[1] > preds[2])
-            {
-                std::swap(preds[1], preds[2]);
-            }
-            for (Int i = 0; i < predNum; i++)
-            {
-                intraPredMode += (intraPredMode >= preds[i]);
-            }
-        }
+    for (j = 0; j < partNum; j++)
+    {
+        m_pcTDecBinIf->decodeBinsEP(symbol, DIR_BITS);
+        intraPredMode = symbol;
         pcCU->setLumaIntraDirSubParts((UChar)intraPredMode, absPartIdx + partOffset * j, depth);
     }
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     m_pcTDecBinIf->decodeBin(symbol, m_cCUIntraPredSCModel.get(0, 0, 0));
+    //     mpmPred[j] = symbol;
+    // }
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     Int preds[3] = {-1, -1, -1};
+    //     Int predNum = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds);
+    //     if (mpmPred[j])
+    //     {
+    //         m_pcTDecBinIf->decodeBinEP(symbol);
+    //         if (symbol)
+    //         {
+    //             m_pcTDecBinIf->decodeBinEP(symbol);
+    //             symbol++;
+    //         }
+    //         intraPredMode = preds[symbol];
+    //     }
+    //     else
+    //     {
+    //         m_pcTDecBinIf->decodeBinsEP(symbol, 5);
+    //         intraPredMode = symbol;
+
+    //         //postponed sorting of MPMs (only in remaining branch)
+    //         if (preds[0] > preds[1])
+    //         {
+    //             std::swap(preds[0], preds[1]);
+    //         }
+    //         if (preds[0] > preds[2])
+    //         {
+    //             std::swap(preds[0], preds[2]);
+    //         }
+    //         if (preds[1] > preds[2])
+    //         {
+    //             std::swap(preds[1], preds[2]);
+    //         }
+    //         for (Int i = 0; i < predNum; i++)
+    //         {
+    //             intraPredMode += (intraPredMode >= preds[i]);
+    //         }
+    //     }
+    //     pcCU->setLumaIntraDirSubParts((UChar)intraPredMode, absPartIdx + partOffset * j, depth);
+    // }
 }
 
 // 解码色差预测角度
@@ -641,10 +647,10 @@ Void TDecSbac::parseIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiD
     {
         {
             UInt uiIPredMode;
-            m_pcTDecBinIf->decodeBinsEP(uiIPredMode, 5);
+            m_pcTDecBinIf->decodeBinsEP(uiIPredMode, DIR_BITS);
             UInt uiAllowedChromaDir[NUM_CHROMA_MODE];
             // pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
-            pcCU->getAllowedChromaDir32(uiAbsPartIdx, uiAllowedChromaDir);
+            pcCU->getAllowedChromaDir35(uiAbsPartIdx, uiAllowedChromaDir);
             uiSymbol = uiAllowedChromaDir[uiIPredMode];
         }
     }
