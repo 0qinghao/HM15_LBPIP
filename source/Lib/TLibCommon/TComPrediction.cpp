@@ -777,10 +777,12 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
         for (Int i = 0; i < uiPredDstSize; i++)
         {
             uiSAE += abs(src[i] - pred[i]);
+            // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
         }
         for (Int j = 1; j < uiPredDstSize; j++)
         {
             uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+            // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
         }
         break;
     default:
@@ -843,6 +845,7 @@ UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirM
             for (Int j = 0; j < uiPredDstSize; j++)
             {
                 uiSAE += abs(src[i * sw + j] - pred[i * uiStride + j]);
+                // uiSAE += (src[i * sw + j] - pred[i * uiStride + j]) * (src[i * sw + j] - pred[i * uiStride + j]);
             }
         }
         break;
@@ -855,7 +858,7 @@ UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirM
 Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
 {
     UInt uiStrideRef = uiWidth * 2 + 1;
-    UInt uiStrideOrg = uiWidth;
+    UInt uiStrideOrg = (uiWidth == 4) ? 8 : uiWidth;
     piRef += uiStrideRef + 1;
     Int i, j, k;
 

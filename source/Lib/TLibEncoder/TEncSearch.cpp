@@ -1402,6 +1402,7 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
     {
         Pel *pPred = piPred;
         Pel *pResi = piResi;
+        Pel *pOrg = piOrg;
         // NOTE: 这里重建值的指针指向了 piReco, 而 piReco 恰好在最开头指向了和 piPred 相同的地址. 因此预测值在此处被覆盖掉了, 变成了完全准确的重建值, 完全不符合这个变量名的意思了. 但是这样做其实没有影响, 只是影响代码的阅读理解, 因为有用的东西是残差值, 事实上代码在这之后根本就用不上预测值了. (但是代码后面居然还把这个变量当作正常的在用, 尽管不会影响编解码结果, 很是迷惑)
         Pel *pReco = piReco;
         Pel *pRecQt = piRecQt;
@@ -1411,6 +1412,7 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
             for (UInt uiX = 0; uiX < uiWidth; uiX++)
             {
                 pReco[uiX] = ClipY(pPred[uiX] + pResi[uiX]);
+                // pReco[uiX] = pOrg[uiX];
                 pRecQt[uiX] = pReco[uiX];
                 pRecIPred[uiX] = pReco[uiX];
             }
@@ -3433,38 +3435,27 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
     UInt CandNum;
     Double CandCostList[FAST_UDI_MAX_RDMODE_NUM];
     UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
-    UInt uiPartOffset = 0;
-    // for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
-    // {
-    //     pcCU->setLumaLoopFlag(1, uiPartOffset, uiDepth + uiInitTrDepth);
-    // }
-
-    // 把正常块状预测的结果暂存下来 如果环状的代价更大 需要利用这里还原回之前的结果
-    switch (mask)
-    {
-    case 0b1111:
-        for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
-        {
-            // 变换层数 处理 8x8 细分到 4x4 时为 1, 其他时候均 0
-            // ::memcpy(m_puhQTTempTrIdx, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
-            ::memcpy(m_puhQTTempCbf[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
-            // ::memcpy(m_puhQTTempCbf[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
-            // ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
-            ::memcpy(m_pcQTTempCoeffY, pcCU->m_pcTrCoeffY + uiPartOffset * 16, uiQPartNum * 16 * sizeof(TCoeff));
-            ::memcpy(m_puhTempLumaIntraDir, pcCU->getLumaIntraDir() + uiPartOffset * 4, uiQPartNum * 4 * sizeof(UChar));
-            ::memcpy(m_puhTempLumaLoopFlag, pcCU->getLumaLoopFlag() + uiPartOffset, uiQPartNum * sizeof(UChar));
-        }
-        break;
-    default:
-        assert(0);
-    }
-
     pcCU->setQPSubParts(pcCU->getSlice()->getSliceQp(), 0, uiDepth);
 
     //===== PU 循环 =====
-    uiPartOffset = 0;
+    UInt uiPartOffset = 0;
     for (UInt uiPU = 0; uiPU < uiNumPU; uiPU++, uiPartOffset += uiQNumParts)
     {
+        // 把正常块状预测的结果暂存下来 如果环状的代价更大 需要利用这里还原回之前的结果
+        switch (mask)
+        {
+        case 0b1111:
+            ::memcpy(m_puhQTTempCbf[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+            ::memcpy(m_puhQTTempCbf[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+            ::memcpy(m_puhQTTempCbf[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+            ::memcpy(m_pcQTTempCoeffY, pcCU->m_pcTrCoeffY + uiPartOffset * 16, uiQPartNum * 16 * sizeof(TCoeff));
+            ::memcpy(m_puhTempLumaIntraDir, pcCU->getLumaIntraDir() + uiPartOffset * 4, uiQPartNum * 4 * sizeof(UChar));
+            ::memcpy(m_puhTempLumaLoopFlag, pcCU->getLumaLoopFlag() + uiPartOffset, uiQPartNum * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+
         pcCU->setLumaLoopFlag(1, uiPartOffset, uiDepth + uiInitTrDepth);
         //===== init pattern for luma prediction =====
         Bool bAboveAvail = false;

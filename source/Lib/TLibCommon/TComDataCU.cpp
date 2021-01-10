@@ -2487,6 +2487,7 @@ Void TComDataCU::setLumaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx,
         uiRasterToZscan = g_auiRasterToZscan1x1;
         break;
     default:
+        assert(0);
         break;
     }
 
@@ -2502,31 +2503,6 @@ Void TComDataCU::setLumaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx,
     UInt uiOffset = uiRasterToZscan[(uiWidth / 4) * (uiWidth / 4) - 1] * 4;
     ::memset(puhLumaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 1);
     ::memset(puhLumaIntraDir + uiOffset + 1, puhModeAll[uiWidth - 3], 3);
-
-    // for (Int k = 0; k < uiWidth / 4; k++)
-    // {
-    //     for (Int i = k; i < uiWidth / 4 - k; i++)
-    //     {
-    //         iRasterIdx = (uiWidth / 4) * i + i;
-    //         uiOffset = uiRasterToZscan[iRasterIdx] * 4;
-    //         // assert(uiOffset2 == uiOffset * 2);
-    //         if (k == uiWidth / 4 - 1)
-    //         {
-    //             ::memset(puhLumaIntraDir + uiOffset, puhModeCurrLoop[0], 1);
-    //             ::memset(puhLumaIntraDir + uiOffset, puhModeCurrLoop[1], 3);
-    //         }
-    //         else
-    //         {
-    //             ::memcpy(puhLumaIntraDir + uiOffset, puhModeCurrLoop, 4 * sizeof(UChar));
-    //         }
-    //     }
-    //     puhModeCurrLoop += 4;
-    // }
-
-    // for (int i = 0; i < uiWidth - 3 + 1; i++)
-    // {
-    //     puhLumaIntraDir[i] = puhModeAll[i];
-    // }
 }
 
 Void TComDataCU::setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth)

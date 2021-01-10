@@ -1570,7 +1570,7 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     {
         if (bStatus == 0) // 表示在向下搜索的过程中
         {
-            rpcTempCU->getTotalBits() += (1 + 3); // 模拟编码分块标志 0 和切块方式保持大块
+            rpcTempCU->getTotalBits() += (1 + 2); // 模拟编码分块标志 0 和切块方式保持大块
         }
         else
         {
@@ -1591,7 +1591,7 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     }
     else // 8x8 块不往下分的情况
     {
-        rpcTempCU->getTotalBits() += 3; // 模拟编码切块方式保持大块
+        rpcTempCU->getTotalBits() += 2; // 模拟编码切块方式保持大块
     }
     rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
 
