@@ -800,7 +800,7 @@ Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 
     //     // 用 2 bit 编码预测角度
     // 用 5 bit 编码全搜索色差角度
-    m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 5);
+    m_pcBinIf->encodeBinsEP(uiIntraDirChroma, DIR_BITS);
     // }
     // return;
 }
