@@ -807,7 +807,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
     // 干脆直接编码得了
     for (j = 0; j < uiWidth - 3 + 1; j++)
     {
-        m_pcBinIf->encodeBinsEP(puhModeAll[j], 6);
+        m_pcBinIf->encodeBinsEP(puhModeAll[j], DIR_BITS);
     }
 
     return;

@@ -3523,7 +3523,7 @@ Void TEncSearch::estIntraPredQTLP(TComDataCU *pcCU,
         switch (mask)
         {
         case 0b1111:
-            if (dPUCost > dBestPUCostLog[uiPU])
+            // if (dPUCost > dBestPUCostLog[uiPU])
             {
                 // 变换层数 处理 8x8 细分到 4x4 时为 1, 其他时候均 0
                 // ::memcpy(m_puhQTTempTrIdx, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
