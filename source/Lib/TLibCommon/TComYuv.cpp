@@ -307,6 +307,9 @@ Void TComYuv::copyPartToPartLuma(TComYuv *pcYuvDst, UInt uiPartIdx, UInt iWidth,
     UInt iDstStride = pcYuvDst->getStride();
     for (UInt y = iHeight; y != 0; y--)
     {
+        // 无损情况下重建值应该和真实值完全一样, 上个保险
+        // assert(*pDst == *pSrc);
+
         ::memcpy(pDst, pSrc, iWidth * sizeof(Pel));
         pSrc += iSrcStride;
         pDst += iDstStride;

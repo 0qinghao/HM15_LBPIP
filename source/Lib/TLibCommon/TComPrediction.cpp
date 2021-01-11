@@ -785,6 +785,62 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
             // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
         }
         break;
+    case 0b1011:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize - iWidth / 2; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
+    case 0b1101:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize - iWidth / 2; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
     default:
         break;
     }
@@ -837,29 +893,33 @@ UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirM
     UInt uiSAE = 0;
     Pel *pred = pDst + dstoffset;
     Int *src = ptrSrc + sw + 1 + srcoffset;
-    switch (mask)
+    // switch (mask)
+    // {
+    // case 0b1111:
+    for (Int i = 0; i < uiPredDstSize; i++)
     {
-    case 0b1111:
-        for (Int i = 0; i < uiPredDstSize; i++)
+        for (Int j = 0; j < uiPredDstSize; j++)
         {
-            for (Int j = 0; j < uiPredDstSize; j++)
-            {
-                uiSAE += abs(src[i * sw + j] - pred[i * uiStride + j]);
-                // uiSAE += (src[i * sw + j] - pred[i * uiStride + j]) * (src[i * sw + j] - pred[i * uiStride + j]);
-            }
+            uiSAE += abs(src[i * sw + j] - pred[i * uiStride + j]);
+            // uiSAE += (src[i * sw + j] - pred[i * uiStride + j]) * (src[i * sw + j] - pred[i * uiStride + j]);
         }
-        break;
-    default:
-        break;
     }
+    //     break;
+    // default:
+    //     break;
+    // }
 
     return uiSAE;
 }
 Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
 {
+
     UInt uiStrideRef = uiWidth * 2 + 1;
     UInt uiStrideOrg = (uiWidth == 4) ? 8 : uiWidth;
     piRef += uiStrideRef + 1;
+
+    Int *piRefbak = piRef;
+    Pel *piOrgbak = piOrg;
     Int i, j, k;
 
     for (i = 0; i < uiWidth; i++)
@@ -886,9 +946,34 @@ Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
         piRef += uiStrideRef;
     }
 
+    piRef = piRefbak;
+    piOrg = piOrgbak;
     switch (mask)
     {
-    case 0b1111:
+    case 0b1011:
+        piRef += uiWidth / 2;
+        piOrg += uiWidth / 2;
+        for (i = 0; i < uiWidth / 2 - 1; i++)
+        {
+            for (j = 0; j < uiWidth / 2 * 3; j++)
+            {
+                piRef[j] = piOrg[-1];
+            }
+            piRef += uiStrideRef;
+            piOrg += uiStrideOrg;
+        }
+        break;
+    case 0b1101:
+        piRef += uiWidth / 2 * uiStrideRef;
+        piOrg += uiWidth / 2 * uiStrideOrg;
+        for (i = 0; i < uiWidth / 2 * 3; i++)
+        {
+            for (j = 0; j < uiWidth / 2 - 1; j++)
+            {
+                piRef[j] = *(piOrg + j - uiStrideOrg);
+            }
+            piRef += uiStrideRef;
+        }
         break;
     default:
         break;

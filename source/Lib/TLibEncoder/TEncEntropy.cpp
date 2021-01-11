@@ -420,14 +420,14 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
 // Intra direction for Luma
 Void TEncEntropy::encodeIntraDirModeLuma(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiplePU)
 {
-    // if (*(pcCU->getLumaLoopFlag()) == 0)
-    {
-        m_pcEntropyCoderIf->codeIntraDirLumaAng(pcCU, absPartIdx, isMultiplePU);
-    }
-    // else
+    // if (*(pcCU->getLumaLoopFlag() + absPartIdx) == 0)
     // {
-    //     m_pcEntropyCoderIf->codeIntraDirLumaAngLP(pcCU, absPartIdx, isMultiplePU);
+    //     m_pcEntropyCoderIf->codeIntraDirLumaAng(pcCU, absPartIdx, isMultiplePU);
     // }
+    // else
+    {
+        m_pcEntropyCoderIf->codeIntraDirLumaAngLP(pcCU, absPartIdx, isMultiplePU);
+    }
 }
 
 // Intra direction for Chroma

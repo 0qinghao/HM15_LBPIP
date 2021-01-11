@@ -210,6 +210,14 @@ public:
                               TComYuv *pcRecoYuv,
                               UInt uiPreCalcDistC,
                               Double &dBestCost);
+    Void estIntraPredChromaQTLP(TComDataCU *pcCU,
+                                TComYuv *pcOrgYuv,
+                                TComYuv *pcPredYuv,
+                                TComYuv *pcResiYuv,
+                                TComYuv *pcRecoYuv,
+                                UInt uiPreCalcDistC,
+                                Double &dBestCost,
+                                UInt mask);
 
     /// encoder estimation - inter prediction (non-skip)
     Void predInterSearch(TComDataCU *pcCU,
@@ -325,6 +333,7 @@ protected:
                                Double &dRDCost,
                                UInt mask);
     Void xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
+    Void xRecurIntraCodingQTnpLP(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
     Void xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
 
     Void xSetIntraResultQT(TComDataCU *pcCU,
@@ -334,6 +343,7 @@ protected:
                            TComYuv *pcRecoYuv);
     Void xSetIntraResultQTnp(TComDataCU *pcCU,
                              UInt uiTrDepth,
+                             UInt uiAbsPartIdx,
                              UInt mask);
     //  TComYuv *pcRecoYuv0111,
     //  TComYuv *pcRecoYuv1011,
@@ -347,6 +357,15 @@ protected:
                                    TComYuv *pcPredYuv,
                                    TComYuv *pcResiYuv,
                                    UInt &ruiDist);
+    Void xRecurIntraChromaCodingQTLP(TComDataCU *pcCU,
+                                     UInt uiTrDepth,
+                                     UInt uiAbsPartIdx,
+                                     TComYuv *pcOrgYuv,
+                                     TComYuv *pcPredYuv,
+                                     TComYuv *pcResiYuv,
+                                     UInt &ruiDist,
+                                     Double &dCost,
+                                     UInt mask);
     Void xSetIntraResultChromaQT(TComDataCU *pcCU,
                                  UInt uiTrDepth,
                                  UInt uiAbsPartIdx,

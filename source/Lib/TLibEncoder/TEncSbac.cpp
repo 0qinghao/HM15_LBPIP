@@ -626,19 +626,19 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     {
         codePartSize(pcCU, uiAbsPartIdx, uiDepth);
         codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
-        codeIntraDirLumaAng(pcCU, uiAbsPartIdx, true);
+        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChroma(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
         PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
         switch (eSize8x8)
         {
         case SIZE_B_1011:
-            codeIntraDirLumaAng(pcCU, uiAbsPartIdx + 1, false);
+            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
             break;
         case SIZE_B_1101:
-            codeIntraDirLumaAng(pcCU, uiAbsPartIdx + 2, false);
+            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
             break;
         case SIZE_B_1110:
-            codeIntraDirLumaAng(pcCU, uiAbsPartIdx + 3, false);
+            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
             break;
         default:
             break;
@@ -699,7 +699,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     }
     else
     {
-        codeIntraDirLumaAng(pcCU, uiAbsPartIdx, true);
+        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChroma(pcCU, uiAbsPartIdx);
     }
 }
@@ -780,35 +780,79 @@ Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMul
 }
 Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple)
 {
-    UInt uiWidth = pcCU->getWidth(absPartIdx);
-    UChar puhModeAll[uiWidth - 3 + 1];
-    Int iModeAllDiff[uiWidth - 3 + 1];
-    for (Int i = 0; i < uiWidth - 3 + 1; i++)
-    {
-        puhModeAll[i] = *(pcCU->getLumaIntraDir() + i);
-    }
-    UInt dir[4], j;
+    UInt dir[4], i, j, k;
     Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
     Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
     PartSize mode = pcCU->getPartitionSize(absPartIdx);
     UInt partNum = isMultiple ? (mode == SIZE_NxN ? 4 : 1) : 1;
     UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
-    for (j = 0; j < partNum; j++)
+    UInt uiWidth = pcCU->getWidth(absPartIdx);
+    if (mode == SIZE_NxN)
     {
-        dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
-        predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+        uiWidth = 4;
     }
-    for (j = 0; j < uiWidth - 3 + 1; j++)
+    UChar puhModeAll[uiWidth - 3 + 1];
+    for (k = 0; k < partNum; k++)
     {
-        iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+        if (*(pcCU->getLumaLoopFlag() + absPartIdx + k) == 0)
+        {
+            dir[k] = pcCU->getLumaIntraDir(absPartIdx + partOffset * k);
+            m_pcBinIf->encodeBinsEP(dir[k], DIR_BITS);
+            // if (dir[k] == 0)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b00, 2);
+            // }
+            // else if (dir[k] == 1)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b01, 2);
+            // }
+            // else
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b11, 2);
+            //     m_pcBinIf->encodeBinsEP(dir[k] - 2, DIR_BITS - 1);
+            // }
+        }
+        else
+        {
+            for (i = 0; i < uiWidth - 3 + 1; i++)
+            {
+                // FIXIT: 不是正确的角度信息 模拟出来编码
+                puhModeAll[i] = *(pcCU->getLumaIntraDir() + absPartIdx + partOffset * k + i);
+            }
+            // 干脆直接编码得了
+            for (j = 0; j < uiWidth - 3 + 1; j++)
+            {
+                m_pcBinIf->encodeBinsEP(puhModeAll[j], DIR_BITS);
+                // if (puhModeAll[j] == 0)
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b00, 2);
+                // }
+                // else if (puhModeAll[j] == 1)
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b01, 2);
+                // }
+                // else
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b11, 2);
+                //     m_pcBinIf->encodeBinsEP(puhModeAll[j] - 2, DIR_BITS - 1);
+                // }
+            }
+        }
     }
-    iModeAllDiff[0] = puhModeAll[0] - 0;
-
-    // 干脆直接编码得了
-    for (j = 0; j < uiWidth - 3 + 1; j++)
-    {
-        m_pcBinIf->encodeBinsEP(puhModeAll[j], DIR_BITS);
-    }
+    // Int iModeAllDiff[uiWidth - 3 + 1];
+    // Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+    // Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+    // UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+    //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+    // }
+    // for (j = 0; j < uiWidth - 3 + 1; j++)
+    // {
+    //     iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+    // }
+    // iModeAllDiff[0] = puhModeAll[0] - 0;
 
     return;
 }
