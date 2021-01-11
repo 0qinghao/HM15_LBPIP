@@ -1800,7 +1800,7 @@ Void TEncSearch::xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &d
         }
     }
 
-    dPUCostnp0111 = pcCU->uiBitsComm + uiBitsSumRT + uiBitsSumLB + uiBitsSumRB;
+    // dPUCostnp0111 = pcCU->uiBitsComm + uiBitsSumRT + uiBitsSumLB + uiBitsSumRB;
     dPUCostnp1011 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumLB + uiBitsSumRB;
     dPUCostnp1101 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumRB;
     dPUCostnp1110 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
@@ -2778,7 +2778,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             pcCU->setLumaIntraDirSubParts(uiOrgMode, uiPartOffset, uiDepth + uiInitTrDepth);
             if (uiWidth != 4)
             {
-                pcCU->setLumaIntraDirSubPartsnp(uiOrgMode, 0b0111, uiDepth + uiInitTrDepth);
+                // pcCU->setLumaIntraDirSubPartsnp(uiOrgMode, 0b0111, uiDepth + uiInitTrDepth);
                 pcCU->setLumaIntraDirSubPartsnp(uiOrgMode, 0b1011, uiDepth + uiInitTrDepth);
                 pcCU->setLumaIntraDirSubPartsnp(uiOrgMode, 0b1101, uiDepth + uiInitTrDepth);
                 pcCU->setLumaIntraDirSubPartsnp(uiOrgMode, 0b1110, uiDepth + uiInitTrDepth);
@@ -2848,22 +2848,22 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
             if (uiWidth != 4)
             {
                 // uiPartOffset 表示细分到 4x4 时的第几个, 在这里肯定为 0
-                if (dPUCostnp0111 < dBestPUCostnp0111)
-                {
-                    uiBestPUModenp0111 = uiOrgMode;
-                    dBestPUCostnp0111 = dPUCostnp0111;
+                // if (dPUCostnp0111 < dBestPUCostnp0111)
+                // {
+                //     uiBestPUModenp0111 = uiOrgMode;
+                //     dBestPUCostnp0111 = dPUCostnp0111;
 
-                    pcCU->dBestCostLpartY0111 = dBestPUCostnp0111;
+                //     pcCU->dBestCostLpartY0111 = dBestPUCostnp0111;
 
-                    xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b0111);
+                //     xSetIntraResultQTnp(pcCU, uiInitTrDepth, 0b0111);
 
-                    UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
-                    // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
-                    // ::memcpy(m_puhQTTempTrIdx0111, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    ::memcpy(m_puhQTTempCbfnp0111[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    ::memcpy(m_puhQTTempCbfnp0111[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                    ::memcpy(m_puhQTTempCbfnp0111[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
-                }
+                //     UInt uiQPartNum = pcCU->getPic()->getNumPartInCU() >> ((pcCU->getDepth(0) + uiInitTrDepth) << 1);
+                //     // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
+                //     // ::memcpy(m_puhQTTempTrIdx0111, pcCU->getTransformIdx() + uiPartOffset, uiQPartNum * sizeof(UChar));
+                //     ::memcpy(m_puhQTTempCbfnp0111[0], pcCU->getCbf(TEXT_LUMA) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                //     ::memcpy(m_puhQTTempCbfnp0111[1], pcCU->getCbf(TEXT_CHROMA_U) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                //     ::memcpy(m_puhQTTempCbfnp0111[2], pcCU->getCbf(TEXT_CHROMA_V) + uiPartOffset, uiQPartNum * sizeof(UChar));
+                // }
                 if (dPUCostnp1011 < dBestPUCostnp1011)
                 {
                     uiBestPUModenp1011 = uiOrgMode;
@@ -2986,9 +2986,9 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         {
             // TODO: TrIdx 这个标志在新分块方法里面肯定是 0, 先不填了, 注意观察后期是否有影响
             // ::memcpy(pcCU->getTransformIdx() + uiPartOffset, m_puhQTTempTrIdx, uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->getCbfnp(TEXT_LUMA, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[0], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[1], uiQPartNum * sizeof(UChar));
-            ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[2], uiQPartNum * sizeof(UChar));
+            // ::memcpy(pcCU->getCbfnp(TEXT_LUMA, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[0], uiQPartNum * sizeof(UChar));
+            // ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[1], uiQPartNum * sizeof(UChar));
+            // ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_V, 0b0111) + uiPartOffset, m_puhQTTempCbfnp0111[2], uiQPartNum * sizeof(UChar));
 
             ::memcpy(pcCU->getCbfnp(TEXT_LUMA, 0b1011) + uiPartOffset, m_puhQTTempCbfnp1011[0], uiQPartNum * sizeof(UChar));
             ::memcpy(pcCU->getCbfnp(TEXT_CHROMA_U, 0b1011) + uiPartOffset, m_puhQTTempCbfnp1011[1], uiQPartNum * sizeof(UChar));
@@ -3071,7 +3071,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
 
         if (uiWidth != 4)
         {
-            pcCU->setLumaIntraDirSubPartsnp(uiBestPUModenp0111, 0b0111, uiDepth + uiInitTrDepth);
+            // pcCU->setLumaIntraDirSubPartsnp(uiBestPUModenp0111, 0b0111, uiDepth + uiInitTrDepth);
             pcCU->setLumaIntraDirSubPartsnp(uiBestPUModenp1011, 0b1011, uiDepth + uiInitTrDepth);
             pcCU->setLumaIntraDirSubPartsnp(uiBestPUModenp1101, 0b1101, uiDepth + uiInitTrDepth);
             pcCU->setLumaIntraDirSubPartsnp(uiBestPUModenp1110, 0b1110, uiDepth + uiInitTrDepth);
@@ -3180,7 +3180,7 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
         pcCU->setChromIntraDirSubParts(uiModeList[uiMode], 0, uiDepth);
         if (uiWidth != 4)
         {
-            pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b0111, uiDepth);
+            // pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b0111, uiDepth);
             pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1011, uiDepth);
             pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1101, uiDepth);
             pcCU->setChromIntraDirSubPartsnp(uiModeList[uiMode], 0b1110, uiDepth);
