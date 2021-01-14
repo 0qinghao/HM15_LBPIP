@@ -504,6 +504,62 @@ public:
     }
     Void getLumaIntraDirLP(UInt uiIdx, UInt uiWidth, UChar *puhModeAll)
     {
+        UInt uiRasterIdx = 0;
+        UChar *puhLumaIntraDir = m_puhLumaIntraDir + (uiIdx << 2);
+        UInt *uiRasterToZscan;
+        switch (uiWidth)
+        {
+        case 32:
+            uiRasterToZscan = g_auiRasterToZscan;
+            break;
+        case 16:
+            uiRasterToZscan = g_auiRasterToZscan4x4;
+            break;
+        case 8:
+            uiRasterToZscan = g_auiRasterToZscan2x2;
+            break;
+        case 4:
+            uiRasterToZscan = g_auiRasterToZscan1x1;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+        for (Int i = 0; i < uiWidth / 4; i++)
+        {
+            ::memcpy(puhModeAll + i * 4, puhLumaIntraDir + uiRasterToZscan[uiRasterIdx] * 4, 4);
+            uiRasterIdx += (uiWidth / 4) + 1;
+        }
+    }
+    Void getChromaIntraDirLP(UInt uiIdx, UInt uiWidth, UChar *puhModeAll)
+    {
+        UInt uiRasterIdx = 0;
+        UChar *puhChromaIntraDir = m_puhChromaIntraDir + (uiIdx << 2);
+        UInt *uiRasterToZscan;
+        switch (uiWidth)
+        {
+        case 32:
+            assert(0);
+            uiRasterToZscan = g_auiRasterToZscan;
+            break;
+        case 16:
+            uiRasterToZscan = g_auiRasterToZscan4x4;
+            break;
+        case 8:
+            uiRasterToZscan = g_auiRasterToZscan2x2;
+            break;
+        case 4:
+            uiRasterToZscan = g_auiRasterToZscan1x1;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+        for (Int i = 0; i < uiWidth / 4; i++)
+        {
+            ::memcpy(puhModeAll + i * 4, puhChromaIntraDir + uiRasterToZscan[uiRasterIdx] * 4, 4);
+            uiRasterIdx += (uiWidth / 4) + 1;
+        }
     }
     UChar getLumaIntraDirnp0111(UInt uiIdx)
     {

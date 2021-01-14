@@ -2514,6 +2514,7 @@ Void TComDataCU::setChromaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartId
     switch (uiWidth)
     {
     case 32:
+        assert(0);
         uiRasterToZscan = g_auiRasterToZscan;
         break;
     case 16:

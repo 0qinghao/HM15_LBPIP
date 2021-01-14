@@ -885,9 +885,10 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
 
             // for (i = 0; i < uiWidth - 3 + 1; i++)
             // {
-            //     // FIXIT: 不是正确的角度信息 模拟出来编码
             //     puhModeAll[i] = *(pcCU->getLumaIntraDir() + absPartIdx * 4 + partOffset * k + i);
             // };
+            // FIXIT: 不是正确的角度信息 模拟出来编码
+            // 2021年1月14日 FIXED
             pcCU->getLumaIntraDirLP(absPartIdx + partOffset * k, uiWidth, puhModeAll);
             // 干脆直接编码得了
             for (j = 0; j < uiWidth - 3 + 1; j++)
@@ -944,11 +945,12 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // 环状还是块状
         // m_pcBinIf->encodeBinEP(1);
 
-        for (Int i = 0; i < uiWidth - 3 + 1; i++)
-        {
-            // FIXIT: 不是正确的角度信息 模拟出来编码
-            puhModeAll[i] = *(pcCU->getChromaIntraDir() + uiAbsPartIdx * 4 + i);
-        }
+        // for (Int i = 0; i < uiWidth - 3 + 1; i++)
+        // {
+        // FIXIT: 不是正确的角度信息 模拟出来编码
+        // 2021年1月14日 FIXED
+        pcCU->getChromaIntraDirLP(uiAbsPartIdx, uiWidth, puhModeAll);
+        // }
         // 干脆直接编码得了
         for (Int j = 0; j < uiWidth - 3 + 1; j++)
         {
