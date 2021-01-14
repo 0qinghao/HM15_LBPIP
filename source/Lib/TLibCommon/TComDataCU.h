@@ -502,6 +502,9 @@ public:
     {
         return m_puhLumaIntraDir[uiIdx << 2];
     }
+    Void getLumaIntraDirLP(UInt uiIdx, UInt uiWidth, UChar *puhModeAll)
+    {
+    }
     UChar getLumaIntraDirnp0111(UInt uiIdx)
     {
         return m_puhLumaIntraDirnp0111[uiIdx << 2];
@@ -525,6 +528,7 @@ public:
     }
     Void setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
     Void setLumaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx, UInt uiWidth);
+    Void setChromaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx, UInt uiWidth);
     // 增加
     Void setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
 

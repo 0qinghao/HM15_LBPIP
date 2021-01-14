@@ -101,6 +101,7 @@ public:
     virtual Void codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiplePU) = 0;
 
     virtual Void codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
+    virtual Void codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeRefFrmIdx(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList) = 0;
     virtual Void codeMvd(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList) = 0;

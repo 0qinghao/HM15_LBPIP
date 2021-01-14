@@ -1158,6 +1158,10 @@ Void TEncCavlc::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     assert(0);
 }
+Void TEncCavlc::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
+{
+    assert(0);
+}
 
 Void TEncCavlc::codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {

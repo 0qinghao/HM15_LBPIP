@@ -258,6 +258,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
     if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
     // if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && pcCU->getPartitionSize(uiAbsPartIdx + width / 4) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
     {
+        // 舍弃了 0111 其实可以不考虑这里的问题了
         if (pcCU->getPartitionSize(uiAbsPartIdx + (width / 8) * (width / 8)) == SIZE_B_0111)
         {
             assert(!uiSubdiv);
@@ -438,7 +439,8 @@ Void TEncEntropy::encodeIntraDirModeChroma(TComDataCU *pcCU, UInt uiAbsPartIdx, 
         uiAbsPartIdx = 0;
     }
 
-    m_pcEntropyCoderIf->codeIntraDirChroma(pcCU, uiAbsPartIdx);
+    // m_pcEntropyCoderIf->codeIntraDirChroma(pcCU, uiAbsPartIdx);
+    m_pcEntropyCoderIf->codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
 }
 
 // 帧内的话, 编码预测模式

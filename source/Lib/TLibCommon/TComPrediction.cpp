@@ -774,6 +774,7 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
     switch (mask)
     {
     case 0b1111:
+    case 0b1110:
         for (Int i = 0; i < uiPredDstSize; i++)
         {
             uiSAE += abs(src[i] - pred[i]);
@@ -842,7 +843,7 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
         }
         break;
     default:
-        break;
+        assert(0);
     }
 
     return uiSAE;
@@ -910,6 +911,79 @@ UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirM
     // }
 
     return uiSAE;
+}
+Void TComPrediction::FillRefChromaLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
+{
+
+    UInt uiStrideRef = uiWidth * 2 + 1;
+    // 色差部分不同的地方
+    // UInt uiStrideOrg = (uiWidth == 4) ? 8 : uiWidth;
+    UInt uiStrideOrg = uiWidth;
+    piRef += uiStrideRef + 1;
+
+    Int *piRefbak = piRef;
+    Pel *piOrgbak = piOrg;
+    Int i, j, k;
+
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        for (j = uiWidth; j < 2 * uiWidth; j++)
+        {
+            piRef[j] = piOrg[uiWidth - 1];
+        }
+
+        piRef += uiStrideRef;
+        piOrg += uiStrideOrg;
+    }
+    piOrg -= uiStrideOrg;
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        piRef += uiStrideRef;
+    }
+
+    piRef = piRefbak;
+    piOrg = piOrgbak;
+    if (uiWidth >= 8)
+    {
+        switch (mask)
+        {
+        case 0b1011:
+            piRef += uiWidth / 2;
+            piOrg += uiWidth / 2;
+            for (i = 0; i < uiWidth / 2 - 1; i++)
+            {
+                for (j = 0; j < uiWidth / 2 * 3; j++)
+                {
+                    piRef[j] = piOrg[-1];
+                }
+                piRef += uiStrideRef;
+                piOrg += uiStrideOrg;
+            }
+            break;
+        case 0b1101:
+            piRef += uiWidth / 2 * uiStrideRef;
+            piOrg += uiWidth / 2 * uiStrideOrg;
+            for (i = 0; i < uiWidth / 2 * 3; i++)
+            {
+                for (j = 0; j < uiWidth / 2 - 1; j++)
+                {
+                    piRef[j] = *(piOrg + j - uiStrideOrg);
+                }
+                piRef += uiStrideRef;
+            }
+            break;
+        default:
+            break;
+        }
+    }
 }
 Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
 {
@@ -998,7 +1072,141 @@ Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred,
         xPredIntraAng(g_bitDepthC, ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false);
     }
 }
+UInt TComPrediction::predIntraChromaAng3x3(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
+{
+    Pel *pDst = piPred;
+    Int *ptrSrc = piSrc;
 
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+    Int srcoffset = sw * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+    Int dstoffset = uiStride * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+
+    if (uiDirMode == PLANAR_IDX)
+    {
+        xPredIntraPlanar3x3(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+    }
+    else
+    {
+        // Create the prediction
+        xPredIntraAng3x3(g_bitDepthC, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+    }
+
+    // TODO: 可以尝试用误差平方和作为环状决定预测角度的依据
+    UInt uiSAE = 0;
+    Pel *pred = pDst + dstoffset;
+    Int *src = ptrSrc + sw + 1 + srcoffset;
+    for (Int i = 0; i < uiPredDstSize; i++)
+    {
+        for (Int j = 0; j < uiPredDstSize; j++)
+        {
+            uiSAE += abs(src[i * sw + j] - pred[i * uiStride + j]);
+            // uiSAE += (src[i * sw + j] - pred[i * uiStride + j]) * (src[i * sw + j] - pred[i * uiStride + j]);
+        }
+    }
+    return uiSAE;
+}
+UInt TComPrediction::predIntraChromaAngLP(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
+{
+    Pel *pDst = piPred;
+    Int *ptrSrc = piSrc;
+
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+    Int srcoffset = sw * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+    Int dstoffset = uiStride * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+
+    if (uiDirMode == PLANAR_IDX)
+    {
+        xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+    }
+    else
+    {
+        // Create the prediction
+        xPredIntraAngLP(g_bitDepthC, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+    }
+
+    // TODO: 可以尝试用误差平方和作为环状决定预测角度的依据
+    UInt uiSAE = 0;
+    Pel *pred = pDst + dstoffset;
+    Int *src = ptrSrc + sw + 1 + srcoffset;
+    switch (mask)
+    {
+    case 0b1111:
+    case 0b1110:
+        for (Int i = 0; i < uiPredDstSize; i++)
+        {
+            uiSAE += abs(src[i] - pred[i]);
+            // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+        }
+        for (Int j = 1; j < uiPredDstSize; j++)
+        {
+            uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+            // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+        }
+        break;
+    case 0b1011:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize - iWidth / 2; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
+    case 0b1101:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize - iWidth / 2; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    return uiSAE;
+}
 /** Function for checking identical motion.
  * \param TComDataCU* pcCU
  * \param UInt PartAddr

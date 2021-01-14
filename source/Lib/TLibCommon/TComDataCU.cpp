@@ -2504,7 +2504,45 @@ Void TComDataCU::setLumaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx,
     ::memset(puhLumaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 1);
     ::memset(puhLumaIntraDir + uiOffset + 1, puhModeAll[uiWidth - 3], 3);
 }
+Void TComDataCU::setChromaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx, UInt uiWidth)
+{
+    // UInt uiCurrPartNumb = m_pcPic->getNumPartInCU() >> (uiDepth << 1);
 
+    UChar *puhChromaIntraDir = m_puhChromaIntraDir + (uiAbsPartIdx << 2);
+    UChar *puhModeCurrLoop;
+    UInt *uiRasterToZscan;
+    switch (uiWidth)
+    {
+    case 32:
+        uiRasterToZscan = g_auiRasterToZscan;
+        break;
+    case 16:
+        uiRasterToZscan = g_auiRasterToZscan4x4;
+        break;
+    case 8:
+        uiRasterToZscan = g_auiRasterToZscan2x2;
+        break;
+    case 4:
+        uiRasterToZscan = g_auiRasterToZscan1x1;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    for (Int i = 0; i < (uiWidth / 4) * (uiWidth / 4) - 1; i++)
+    {
+        Int iRasterIdxR = i / (uiWidth / 4);
+        Int iRasterIdxC = i - (uiWidth / 4) * iRasterIdxR;
+        UInt uiOffset = uiRasterToZscan[i] * 4;
+        puhModeCurrLoop = puhModeAll + min(iRasterIdxR, iRasterIdxC) * 4;
+
+        ::memcpy(puhChromaIntraDir + uiOffset, puhModeCurrLoop, 4 * sizeof(UChar));
+    }
+    UInt uiOffset = uiRasterToZscan[(uiWidth / 4) * (uiWidth / 4) - 1] * 4;
+    ::memset(puhChromaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 1);
+    ::memset(puhChromaIntraDir + uiOffset + 1, puhModeAll[uiWidth - 3], 3);
+}
 Void TComDataCU::setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth)
 {
     UInt uiAbsPartIdx = 0;

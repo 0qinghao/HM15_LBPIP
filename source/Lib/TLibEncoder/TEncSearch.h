@@ -307,7 +307,17 @@ protected:
                                UInt &ruiDist,
                                UInt uiChromaId,
                                Int default0Save1Load2 = 0);
-
+    Void xIntraCodingChromaBlkLP(TComDataCU *pcCU,
+                                 UInt uiTrDepth,
+                                 UInt uiAbsPartIdx,
+                                 TComYuv *pcOrgYuv,
+                                 TComYuv *pcPredYuv,
+                                 TComYuv *pcResiYuv,
+                                 UInt &ruiDist,
+                                 UInt uiChromaId,
+                                 UInt mask,
+                                 UChar *puhModeAll,
+                                 Int default0Save1Load2 = 0);
     Void xRecurIntraCodingQT(TComDataCU *pcCU,
                              UInt uiTrDepth,
                              UInt uiAbsPartIdx,
@@ -335,6 +345,7 @@ protected:
     Void xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
     Void xRecurIntraCodingQTnpLP(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
     Void xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
+    Void xRecurIntraChromaCodingQTnpLP(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
 
     Void xSetIntraResultQT(TComDataCU *pcCU,
                            UInt uiTrDepth,
@@ -364,7 +375,6 @@ protected:
                                      TComYuv *pcPredYuv,
                                      TComYuv *pcResiYuv,
                                      UInt &ruiDist,
-                                     Double &dCost,
                                      UInt mask);
     Void xSetIntraResultChromaQT(TComDataCU *pcCU,
                                  UInt uiTrDepth,

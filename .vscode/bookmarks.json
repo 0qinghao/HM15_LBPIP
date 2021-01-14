@@ -26,16 +26,6 @@
 				"line": 1132,
 				"column": 6,
 				"label": ""
-			},
-			{
-				"line": 1491,
-				"column": 17,
-				"label": ""
-			},
-			{
-				"line": 1578,
-				"column": 26,
-				"label": ""
 			}
 		]
 	},
@@ -118,47 +108,47 @@
 				"label": ""
 			},
 			{
-				"line": 652,
+				"line": 697,
 				"column": 40,
 				"label": ""
 			},
 			{
-				"line": 717,
+				"line": 780,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 891,
+				"line": 1000,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 1270,
+				"line": 1379,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1363,
+				"line": 1472,
 				"column": 18,
 				"label": ""
 			},
 			{
-				"line": 1395,
+				"line": 1504,
 				"column": 11,
 				"label": ""
 			},
 			{
-				"line": 1413,
+				"line": 1522,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1444,
+				"line": 1553,
 				"column": 12,
 				"label": ""
 			},
 			{
-				"line": 1569,
+				"line": 1678,
 				"column": 13,
 				"label": ""
 			}
@@ -198,7 +188,7 @@
 				"label": ""
 			},
 			{
-				"line": 335,
+				"line": 336,
 				"column": 31,
 				"label": ""
 			}
@@ -248,7 +238,7 @@
 		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
 		"bookmarks": [
 			{
-				"line": 1201,
+				"line": 1209,
 				"column": 21,
 				"label": ""
 			}
