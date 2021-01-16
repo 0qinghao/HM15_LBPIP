@@ -2806,6 +2806,11 @@ UChar TComDataCU::getNumPartitions()
     case SIZE_nRx2N:
         iNumPart = 2;
         break;
+    case SIZE_B_1011:
+    case SIZE_B_1101:
+    case SIZE_B_1110:
+        iNumPart = 1;
+        break;
     default:
         assert(0);
         break;

@@ -2453,7 +2453,8 @@ Void TEncSearch::xRecurIntraCodingQTnpLP(TComDataCU *pcCU, UInt uiWidth, Double 
     // dPUCostnp0111 = pcCU->uiBitsComm + uiBitsSumRT + uiBitsSumLB + uiBitsSumRB;
     dPUCostnp1011 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumLB + uiBitsSumRB;
     dPUCostnp1101 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumRB;
-    dPUCostnp1110 = pcCU->uiBitsComm - (uiWidth / 2 - 2) * DIR_BITS + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
+    dPUCostnp1110 = pcCU->uiBitsComm + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
+    // dPUCostnp1110 = pcCU->uiBitsComm - (uiWidth / 2 - 2) * DIR_BITS + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
 }
 // L-based 模式下编码计算 RDcost (Chroma)
 Void TEncSearch::xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110)
@@ -2562,7 +2563,8 @@ Void TEncSearch::xRecurIntraChromaCodingQTnpLP(TComDataCU *pcCU, UInt uiWidth, D
     // dCostnp0111 = pcCU->uiBitsCommChroma + uiBitsSumRT + uiBitsSumLB + uiBitsSumRB;
     dCostnp1011 = pcCU->uiBitsCommChroma + uiBitsSumLT + uiBitsSumLB + uiBitsSumRB;
     dCostnp1101 = pcCU->uiBitsCommChroma + uiBitsSumLT + uiBitsSumRT + uiBitsSumRB;
-    dCostnp1110 = pcCU->uiBitsCommChroma - (uiWidth / 4 - 2) * DIR_BITS + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
+    dCostnp1110 = pcCU->uiBitsCommChroma + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
+    // dCostnp1110 = pcCU->uiBitsCommChroma - (uiWidth / 4 - 2) * DIR_BITS + uiBitsSumLT + uiBitsSumRT + uiBitsSumLB;
 }
 // uiAbsPartIdx 表示 8x8 块细分为 4 个 4x4 时, 当前处理的是第几个 4x4 块. 即在处理 4x4 块时 uiAbsPartIdx 才可能为 0 之外的值
 Void TEncSearch::xSetIntraResultQT(TComDataCU *pcCU,

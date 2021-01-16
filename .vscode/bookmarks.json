@@ -118,38 +118,33 @@
 				"label": ""
 			},
 			{
-				"line": 1002,
+				"line": 1035,
 				"column": 0,
 				"label": ""
 			},
 			{
-				"line": 1381,
+				"line": 1414,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1474,
+				"line": 1507,
 				"column": 18,
 				"label": ""
 			},
 			{
-				"line": 1506,
+				"line": 1539,
 				"column": 11,
 				"label": ""
 			},
 			{
-				"line": 1524,
+				"line": 1557,
 				"column": 9,
 				"label": ""
 			},
 			{
-				"line": 1555,
+				"line": 1588,
 				"column": 12,
-				"label": ""
-			},
-			{
-				"line": 1680,
-				"column": 13,
 				"label": ""
 			}
 		]
@@ -198,7 +193,7 @@
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TypeDef.h",
 		"bookmarks": [
 			{
-				"line": 379,
+				"line": 380,
 				"column": 9,
 				"label": ""
 			}

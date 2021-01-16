@@ -1194,7 +1194,10 @@ Void TEncCavlc::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
 {
     assert(0);
 }
-
+Void TEncCavlc::codeModeRes(Int *iModeAllDiff, Int iCnt)
+{
+    assert(0);
+}
 Void TEncCavlc::estBit(estBitsSbacStruct *pcEstBitsCabac, Int width, Int height, TextType eTType)
 {
     // printf("error : no VLC mode support in this version\n");

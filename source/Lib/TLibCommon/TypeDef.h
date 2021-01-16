@@ -164,6 +164,7 @@
 // #define NUM_CHROMA_MODE 5 // total number of chroma modes
 #define NUM_CHROMA_MODE 35 // total number of chroma modes
 #define DIR_BITS 6         // total number of chroma modes
+#define LOOP_DIR_BITS 5    // total number of chroma modes
 #define DM_CHROMA_IDX 36   // chroma mode index for derived from luma intra mode
 
 // 不粗筛, 强制计算所有模式的 RDCost, 该选项也就无意义了
@@ -391,10 +392,10 @@ enum PartSize
     SIZE_B_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形 （块状)
     SIZE_B_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形 （块状)
     SIZE_B_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形  (块状)
-    SIZE_L_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形 （环状)
-    SIZE_L_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形 （环状)
-    SIZE_L_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形 （环状)
-    SIZE_L_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形  (环状)
+    // SIZE_L_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形 （环状)
+    // SIZE_L_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形 （环状)
+    // SIZE_L_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形 （环状)
+    // SIZE_L_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形  (环状)
     SIZE_NONE = 31
 };
 // #define PartSizeCost_2Nx2N 4;

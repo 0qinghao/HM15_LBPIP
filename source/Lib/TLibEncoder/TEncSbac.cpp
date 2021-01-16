@@ -880,6 +880,14 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
         }
         else
         {
+            // Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+            // Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+            // UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+            // for (j = 0; j < partNum; j++)
+            // {
+            //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+            //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+            // }
             // 环状还是块状
             // m_pcBinIf->encodeBinEP(1);
 
@@ -889,12 +897,27 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
             // };
             // FIXIT: 不是正确的角度信息 模拟出来编码
             // 2021年1月14日 FIXED
+            // Int iModeAllDiff[uiWidth - 3 + 1];
             pcCU->getLumaIntraDirLP(absPartIdx + partOffset * k, uiWidth, puhModeAll);
+            // for (j = 0; j < uiWidth - 3 + 1; j++)
+            // {
+            //     iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+            // }
+            // iModeAllDiff[0] = puhModeAll[0] - 0;
+            Bool bIs1110 = pcCU->getPartitionSize(absPartIdx) == SIZE_B_1110;
+            Int iLoopCnt = uiWidth - 3 + 1;
+            if (bIs1110)
+            {
+                iLoopCnt -= (uiWidth / 2 - 2);
+                // 只在重新编码的过程里会进入这个操作
+            }
+
+            // this->codeModeRes(iModeAllDiff, iLoopCnt);
             // 干脆直接编码得了
-            for (j = 0; j < uiWidth - 3 + 1; j++)
+            for (j = 0; j < iLoopCnt; j++)
             {
                 m_pcBinIf->encodeBinsEP(puhModeAll[j], DIR_BITS);
-                // if (puhModeAll[j] == 0)
+                // if (puhModeAll[j] == 0) iLoopCnt);
                 // {
                 //     m_pcBinIf->encodeBinsEP(0b00, 2);
                 // }
@@ -950,9 +973,19 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // FIXIT: 不是正确的角度信息 模拟出来编码
         // 2021年1月14日 FIXED
         pcCU->getChromaIntraDirLP(uiAbsPartIdx, uiWidth, puhModeAll);
+        Bool bIs1110 = pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_B_1110;
+        Int iLoopCnt = uiWidth - 3 + 1;
+        if (bIs1110)
+        {
+            iLoopCnt -= (uiWidth / 2 - 2);
+            // 只在重新编码的过程里会进入这个操作
+        }
+
+        // 干脆直接编码得了
+        for (Int j = 0; j < iLoopCnt; j++)
         // }
         // 干脆直接编码得了
-        for (Int j = 0; j < uiWidth - 3 + 1; j++)
+        // for (Int j = 0; j < uiWidth - 3 + 1; j++)
         {
             m_pcBinIf->encodeBinsEP(puhModeAll[j], DIR_BITS);
             // if (puhModeAll[j] == 0)
@@ -1662,8 +1695,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     }
     return;
 }
-Void TEncSbac::codeModeRes(TComDataCU *pcCU)
+Void TEncSbac::codeModeRes(Int *iModeAllDiff, Int iCnt)
 {
+    /* #region   */
     // 编码内容包括
     // (熵编码)
     // significant coeff group flag
@@ -1796,30 +1830,30 @@ Void TEncSbac::codeModeRes(TComDataCU *pcCU)
     //         {
     //             m_pcBinIf->encodeBinsEP(coeffSigns, numNonZero);
     //         }
+    /* #endregion */
 
-    //         Int iFirstCoeff2 = 1;
-    //         if (c1 == 0 || numNonZero > C1FLAG_NUMBER)
-    //         {
-    //             for (Int idx = 0; idx < numNonZero; idx++)
-    //             {
-    //                 UInt baseLevel = (idx < C1FLAG_NUMBER) ? (2 + iFirstCoeff2) : 1;
-    //                 if (absCoeff[idx] >= baseLevel)
-    //                 {
-    //                     xWriteCoefRemainExGolomb(absCoeff[idx] - baseLevel, uiGoRiceParam);
-    //                     if (absCoeff[idx] > 3 * (1 << uiGoRiceParam))
-    //                     {
-    //                         uiGoRiceParam = min<UInt>(uiGoRiceParam + 1, 4);
-    //                     }
-    //                 }
-    //                 if (absCoeff[idx] >= 2)
-    //                 {
-    //                     iFirstCoeff2 = 0;
-    //                 }
-    //             }
-    //         }
-    //     }
+    Int coeffSigns = 0;
+    for (Int idx = 0; idx < iCnt; idx++)
+    {
+        coeffSigns = (coeffSigns << 1) + (iModeAllDiff[idx] < 0);
+    }
+    m_pcBinIf->encodeBinsEP(coeffSigns, iCnt);
+    // Int iFirstCoeff2 = 1;
+    // if (c1 == 0 || numNonZero > C1FLAG_NUMBER)
+    // {
+    UInt uiGoRiceParam = 0;
+    for (Int idx = 0; idx < iCnt; idx++)
+    {
+        xWriteCoefRemainExGolomb(abs(iModeAllDiff[idx]), uiGoRiceParam);
+        if (iModeAllDiff[idx] > 3 * (1 << uiGoRiceParam))
+        {
+            uiGoRiceParam = min<UInt>(uiGoRiceParam + 1, 4);
+        }
+    }
     // }
-    // return;
+    // }
+    // }
+    return;
 }
 
 /** code SAO offset sign

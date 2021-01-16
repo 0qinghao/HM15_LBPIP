@@ -49,32 +49,31 @@ class TEncBinCABAC;
 class TEncBinIf
 {
 public:
-  virtual Void  init              ( TComBitIf* pcTComBitIf )                  = 0;
-  virtual Void  uninit            ()                                          = 0;
+    virtual Void init(TComBitIf *pcTComBitIf) = 0;
+    virtual Void uninit() = 0;
 
-  virtual Void  start             ()                                          = 0;
-  virtual Void  finish            ()                                          = 0;
-  virtual Void  copyState         ( TEncBinIf* pcTEncBinIf )                  = 0;
-  virtual Void  flush            ()                                           = 0;
+    virtual Void start() = 0;
+    virtual Void finish() = 0;
+    virtual Void copyState(TEncBinIf *pcTEncBinIf) = 0;
+    virtual Void flush() = 0;
 
-  virtual Void  resetBac          ()                                          = 0;
-  virtual Void  encodePCMAlignBits()                                          = 0;
-  virtual Void  xWritePCMCode     ( UInt uiCode, UInt uiLength )              = 0;
+    virtual Void resetBac() = 0;
+    virtual Void encodePCMAlignBits() = 0;
+    virtual Void xWritePCMCode(UInt uiCode, UInt uiLength) = 0;
 
-  virtual Void  resetBits         ()                                          = 0;
-  virtual UInt  getNumWrittenBits ()                                          = 0;
+    virtual Void resetBits() = 0;
+    virtual UInt getNumWrittenBits() = 0;
 
-  virtual Void  encodeBin         ( UInt  uiBin,  ContextModel& rcCtxModel )  = 0;
-  virtual Void  encodeBinEP       ( UInt  uiBin                            )  = 0;
-  virtual Void  encodeBinsEP      ( UInt  uiBins, Int numBins              )  = 0;
-  virtual Void  encodeBinTrm      ( UInt  uiBin                            )  = 0;
+    virtual Void encodeBin(UInt uiBin, ContextModel &rcCtxModel) = 0;
+    virtual Void encodeBinEP(UInt uiBin) = 0;
+    virtual Void encodeBinsEP(UInt uiBins, Int numBins) = 0;
+    virtual Void encodeBinTrm(UInt uiBin) = 0;
 
-  virtual TEncBinCABAC*   getTEncBinCABAC   ()  { return 0; }
-  
-  virtual ~TEncBinIf() {}
+    virtual TEncBinCABAC *getTEncBinCABAC() { return 0; }
+
+    virtual ~TEncBinIf() {}
 };
 
 //! \}
 
 #endif
-

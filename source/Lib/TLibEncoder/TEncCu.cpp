@@ -1457,11 +1457,14 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1111);
     if (eSize != SIZE_NxN)
     {
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
         m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1011);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
         m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1101);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
         m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1110);
     }
-
+    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
     // 在 estIntraPredQT 里面就已经对 rpcTempCU 重建过了, 这里有啥必要?
     // m_ppcRecoYuvTemp[uiDepth]->copyToPicLuma(rpcTempCU->getPic()->getPicYuvRec(), rpcTempCU->getAddr(), rpcTempCU->getZorderIdxInCU());
 
@@ -1470,10 +1473,14 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1111);
     if (eSize != SIZE_NxN)
     {
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
         m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1011);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
         m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1101);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
         m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1110);
     }
+    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
 
     m_pcEntropyCoder->resetBits();
     if (rpcTempCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
@@ -1957,7 +1964,8 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
         switch (mask)
         {
         case 0b0111:
-            memset(pePartSizeBest + (uiQuarSizePartSize * 1), SIZE_B_0111, uiQuarSizePartSize * 3 * sizeof(Char));
+            assert(0);
+            // memset(pePartSizeBest + (uiQuarSizePartSize * 1), SIZE_B_0111, uiQuarSizePartSize * 3 * sizeof(Char));
             break;
         case 0b1011:
             memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1011, uiQuarSizePartSize * 1 * sizeof(Char));
