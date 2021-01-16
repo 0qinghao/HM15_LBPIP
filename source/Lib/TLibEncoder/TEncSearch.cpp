@@ -1241,7 +1241,7 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
                                        //  恒为 0
                                        Int default0Save1Load2)
 {
-    UInt uiDirNum = 35;
+    UInt uiDirNum = LOOP_DIR_NUM;
     UInt uiLumaPredMode = pcCU->getLumaIntraDir(uiAbsPartIdx);
     UInt uiFullDepth = pcCU->getDepth(0) + uiTrDepth;
     UInt uiWidth = pcCU->getWidth(0) >> uiTrDepth;
@@ -1455,7 +1455,7 @@ Void TEncSearch::xIntraCodingChromaBlkLP(TComDataCU *pcCU,
                                          UChar *puhModeAll,
                                          Int default0Save1Load2)
 {
-    UInt uiDirNum = 35;
+    UInt uiDirNum = LOOP_DIR_NUM;
     UInt uiOrgTrDepth = uiTrDepth;
     UInt uiFullDepth = pcCU->getDepth(0) + uiTrDepth;
     UInt uiLog2TrSize = g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth() >> uiFullDepth] + 2;

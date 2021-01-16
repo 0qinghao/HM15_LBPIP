@@ -916,7 +916,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
             // 干脆直接编码得了
             for (j = 0; j < iLoopCnt; j++)
             {
-                m_pcBinIf->encodeBinsEP(puhModeAll[j], DIR_BITS);
+                m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
                 // if (puhModeAll[j] == 0) iLoopCnt);
                 // {
                 //     m_pcBinIf->encodeBinsEP(0b00, 2);
@@ -987,7 +987,7 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // 干脆直接编码得了
         // for (Int j = 0; j < uiWidth - 3 + 1; j++)
         {
-            m_pcBinIf->encodeBinsEP(puhModeAll[j], DIR_BITS);
+            m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
             // if (puhModeAll[j] == 0)
             // {
             //     m_pcBinIf->encodeBinsEP(0b00, 2);
