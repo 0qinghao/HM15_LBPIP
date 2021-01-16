@@ -743,9 +743,9 @@ public:
     UInt getIntraSizeIdx(UInt uiAbsPartIdx);
 
     Void getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList);
-    Void getAllowedChromaDir35(UInt uiAbsPartIdx, UInt *uiModeList);
+    Void getAllowedChromaDir_DIR_NUM(UInt uiAbsPartIdx, UInt *uiModeList);
     Void getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110);
-    Void getAllowedChromaDir35np(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110);
+    Void getAllowedChromaDir_DIR_NUMnp(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110);
     Int getIntraDirLumaPredictor(UInt uiAbsPartIdx, Int *uiIntraDirPred, Int *piMode = NULL);
 
     // -------------------------------------------------------------------------------------------------------------------

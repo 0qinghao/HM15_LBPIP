@@ -319,12 +319,12 @@ const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
 // };
 const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
     {
-        35, //   2x2
-        35, //   4x4
-        35, //   8x8
-        35, //  16x16   33
-        35, //  32x32   33
-        35  //  64x64   33
+        DIR_NUM, //   2x2
+        DIR_NUM, //   4x4
+        DIR_NUM, //   8x8
+        DIR_NUM, //  16x16   33
+        DIR_NUM, //  32x32   33
+        DIR_NUM  //  64x64   33
 };
 #endif // FAST_UDI_USE_MPM
 

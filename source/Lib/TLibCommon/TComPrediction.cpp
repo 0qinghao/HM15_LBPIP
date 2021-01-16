@@ -224,7 +224,8 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
     // intraPredAngle 记录当前模式同水平/垂直模式之间的差
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX)
+                                                                    : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
@@ -372,7 +373,8 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
     // intraPredAngle 记录当前模式同水平/垂直模式之间的差
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX)
+                                                                    : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
@@ -548,7 +550,8 @@ Void TComPrediction::xPredIntraAng3x3(Int bitDepth, Int *pSrc, Int srcStride, Pe
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
     // intraPredAngle 记录当前模式同水平/垂直模式之间的差
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX)
+                                                                    : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
@@ -750,7 +753,8 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
     else
     {
         // TODO: 环状预测时 尺寸是连续变化的 可以尝试不设定 16 作为滤波的界限
-        if ((iWidth > 16) || (iHeight > 16))
+        // if ((iWidth > 16) || (iHeight > 16))
+        if (uiPredDstSize > 8)
         {
             xPredIntraAngLP(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
         }
@@ -762,7 +766,8 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
             // DC 模式下预测结果的滤波
             if ((uiDirMode == DC_IDX) && bAbove && bLeft)
             {
-                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
+                // xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
+                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, uiPredDstSize, uiPredDstSize);
             }
         }
     }
@@ -873,11 +878,12 @@ UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirM
     }
     else
     {
-        if ((iWidth > 16) || (iHeight > 16))
-        {
-            xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
-        }
-        else
+        // if ((iWidth > 16) || (iHeight > 16))
+        // if (uiPredDstSize > 8)
+        // {
+        //     xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+        // }
+        // else
         {
             // 角度模式预测(包括 DC 在内), 块小于 16 时需要滤波
             xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, true, uiPredDstSize);
@@ -885,7 +891,7 @@ UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirM
             // DC 模式下预测结果的滤波
             if ((uiDirMode == DC_IDX) && bAbove && bLeft)
             {
-                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
+                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, uiPredDstSize, uiPredDstSize);
             }
         }
     }

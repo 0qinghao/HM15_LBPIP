@@ -3452,7 +3452,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         // pcCU->getPattern()->initAdiPattern(pcCU, uiPartOffset, uiInitTrDepth, m_piYuvExt, m_iYuvExtStride, m_iYuvExtHeight, bAboveAvail, bLeftAvail);
 
         //===== determine set of modes to be tested (using prediction signal only) =====
-        Int numModesAvailable = 35; //total number of Intra modes
+        Int numModesAvailable = DIR_NUM; //total number of Intra modes
         Pel *piOrg = pcOrgYuv->getLumaAddr(uiPU, uiWidth);
         Pel *piPred = pcPredYuv->getLumaAddr(uiPU, uiWidth);
         UInt uiStride = pcPredYuv->getStride();
@@ -3461,7 +3461,7 @@ Void TEncSearch::estIntraPredQT(TComDataCU *pcCU,
         // 强制计算所有模式的 RDCost, 通过改 IntraModeNumFast 实现
         Int numModesForFullRD = g_aucIntraModeNumFast[uiWidthBit];
         Bool doFastSearch = (numModesForFullRD != numModesAvailable);
-        if (doFastSearch)
+        if (false)
         {
             assert(numModesForFullRD < numModesAvailable);
 
@@ -4280,10 +4280,10 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     // TODO: 暂时跳过这个问题, 色差不去参考亮度的模式了, 做全搜索, 而且这样对于环状应该是更有利的. 当然对比的标准对象需要也改成全搜索
     // TODO: 如果亮度那边也类似地不去看 MPMs, 也就解决了 rd 不准确的问题, 这样做是否可行?
     // pcCU->getAllowedChromaDir(0, uiModeList);
-    pcCU->getAllowedChromaDir35(0, uiModeList);
+    pcCU->getAllowedChromaDir_DIR_NUM(0, uiModeList);
     if (uiWidth != 4)
     {
-        pcCU->getAllowedChromaDir35np(uiModeListnp0111, uiModeListnp1011, uiModeListnp1101, uiModeListnp1110);
+        pcCU->getAllowedChromaDir_DIR_NUMnp(uiModeListnp0111, uiModeListnp1011, uiModeListnp1101, uiModeListnp1110);
     }
     UInt uiMaxMode = NUM_CHROMA_MODE;
 
