@@ -1,0 +1,19 @@
+objects/TDecBinCoderCABAC.r.o: \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibDecoder/TDecBinCoderCABAC.cpp \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibDecoder/TDecBinCoderCABAC.h \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/TComCABACTables.h \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/TypeDef.h \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibDecoder/TDecBinCoder.h \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/ContextModel.h \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/TComBitStream.h
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibDecoder/TDecBinCoderCABAC.cpp :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibDecoder/TDecBinCoderCABAC.h :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/TComCABACTables.h :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/TypeDef.h :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibDecoder/TDecBinCoder.h :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/ContextModel.h :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibDecoder/../../../../source/Lib/TLibCommon/TComBitStream.h :
