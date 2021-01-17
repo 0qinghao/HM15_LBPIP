@@ -1,9 +1,0 @@
-objects/TComRom.d.o: \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComRom.cpp \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComRom.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/CommonDef.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TypeDef.h
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComRom.cpp :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComRom.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/CommonDef.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TypeDef.h :
