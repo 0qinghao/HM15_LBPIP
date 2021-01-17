@@ -326,6 +326,7 @@ const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
         DIR_NUM, //  32x32   33
         DIR_NUM  //  64x64   33
 };
+const UChar g_uiMode16[16] = {0, 1, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
 #endif // FAST_UDI_USE_MPM
 
 // chroma

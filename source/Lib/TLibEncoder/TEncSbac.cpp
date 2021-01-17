@@ -854,7 +854,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
     {
         uiWidth = 4;
     }
-    UChar puhModeAll[uiWidth - 3 + 1];
+    UChar puhModeAll[uiWidth - LOOP_MIN_SIZE + 1];
     for (k = 0; k < partNum; k++)
     {
         if (*(pcCU->getLumaLoopFlag() + absPartIdx + k) == 0)
@@ -905,10 +905,10 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
             // }
             // iModeAllDiff[0] = puhModeAll[0] - 0;
             Bool bIs1110 = pcCU->getPartitionSize(absPartIdx) == SIZE_B_1110;
-            Int iLoopCnt = uiWidth - 3 + 1;
+            Int iLoopCnt = uiWidth - LOOP_MIN_SIZE + 1;
             if (bIs1110)
             {
-                iLoopCnt -= (uiWidth / 2 - 2);
+                iLoopCnt -= (uiWidth / 2 - LOOP_MIN_SIZE + 1);
                 // 只在重新编码的过程里会进入这个操作
             }
 
@@ -954,7 +954,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
 Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     UInt uiWidth = pcCU->getWidth(uiAbsPartIdx) >> 1;
-    UChar puhModeAll[uiWidth - 3 + 1];
+    UChar puhModeAll[uiWidth - LOOP_MIN_SIZE + 1];
     if (*(pcCU->getChromaLoopFlag() + uiAbsPartIdx) == 0)
     {
         // 环状还是块状
@@ -974,10 +974,10 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // 2021年1月14日 FIXED
         pcCU->getChromaIntraDirLP(uiAbsPartIdx, uiWidth, puhModeAll);
         Bool bIs1110 = pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_B_1110;
-        Int iLoopCnt = uiWidth - 3 + 1;
+        Int iLoopCnt = uiWidth - LOOP_MIN_SIZE + 1;
         if (bIs1110)
         {
-            iLoopCnt -= (uiWidth / 2 - 2);
+            iLoopCnt -= (uiWidth / 2 - LOOP_MIN_SIZE + 1);
             // 只在重新编码的过程里会进入这个操作
         }
 
