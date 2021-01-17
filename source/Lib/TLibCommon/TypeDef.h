@@ -164,10 +164,10 @@
 // #define NUM_CHROMA_MODE 5 // total number of chroma modes
 #define DIR_NUM 32      // total number of chroma modes
 #define DIR_BITS 5      // total number of chroma modes
-#define LOOP_DIR_NUM 32 // total number of chroma modes
-#define LOOP_DIR_BITS 5 // total number of chroma modes
+#define LOOP_DIR_NUM 16 // total number of chroma modes
+#define LOOP_DIR_BITS 4 // total number of chroma modes
 #define LOOP_MIN_SIZE 4
-#define NUM_CHROMA_MODE 32 // total number of chroma modes
+#define NUM_CHROMA_MODE 16 // total number of chroma modes
 #define DM_CHROMA_IDX 36   // chroma mode index for derived from luma intra mode
 
 // 不粗筛, 强制计算所有模式的 RDCost, 该选项也就无意义了
