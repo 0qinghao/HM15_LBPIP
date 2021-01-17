@@ -485,27 +485,27 @@ Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 // 增加. 8x8 层如果不是 4 分 4x4 块, 就要增加编码信息指示 1111 (0111舍弃) 1011 1101 1110
 Void TEncSbac::codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
-    PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);
-    if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth && eSize != SIZE_NxN)
-    {
-        switch (eSize)
-        {
-        case SIZE_2Nx2N:
-            m_pcBinIf->encodeBinsEP(0b00, 2);
-            break;
-        case SIZE_B_1011:
-            m_pcBinIf->encodeBinsEP(0b01, 2);
-            break;
-        case SIZE_B_1101:
-            m_pcBinIf->encodeBinsEP(0b10, 2);
-            break;
-        case SIZE_B_1110:
-            m_pcBinIf->encodeBinsEP(0b11, 2);
-            break;
-        default:
-            assert(0);
-        }
-    }
+    // PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);
+    // if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth && eSize != SIZE_NxN)
+    // {
+    //     switch (eSize)
+    //     {
+    //     case SIZE_2Nx2N:
+    //         m_pcBinIf->encodeBinsEP(0b00, 2);
+    //         break;
+    //     case SIZE_B_1011:
+    //         m_pcBinIf->encodeBinsEP(0b01, 2);
+    //         break;
+    //     case SIZE_B_1101:
+    //         m_pcBinIf->encodeBinsEP(0b10, 2);
+    //         break;
+    //     case SIZE_B_1110:
+    //         m_pcBinIf->encodeBinsEP(0b11, 2);
+    //         break;
+    //     default:
+    //         assert(0);
+    //     }
+    // }
     return;
 }
 
@@ -700,7 +700,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     switch (eSize)
     {
     case SIZE_2Nx2N:
-        m_pcBinIf->encodeBinsEP(0b00, 2);
+        // m_pcBinIf->encodeBinsEP(0b00, 2);
         break;
     case SIZE_B_1011:
         m_pcBinIf->encodeBinsEP(0b01, 2);
