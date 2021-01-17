@@ -1454,33 +1454,33 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     }
     // 亮度部分 帧内编码
     m_pcPredSearch->estIntraPredQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma);
-    m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1111);
-    if (eSize != SIZE_NxN)
-    {
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
-        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1011);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
-        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1101);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
-        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1110);
-    }
-    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
+    // m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1111);
+    // if (eSize != SIZE_NxN)
+    // {
+    // rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
+    // m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1011);
+    // rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
+    // m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1101);
+    // rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
+    // m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1110);
+    // }
+    // rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
     // 在 estIntraPredQT 里面就已经对 rpcTempCU 重建过了, 这里有啥必要?
     // m_ppcRecoYuvTemp[uiDepth]->copyToPicLuma(rpcTempCU->getPic()->getPicYuvRec(), rpcTempCU->getAddr(), rpcTempCU->getZorderIdxInCU());
 
     m_pcPredSearch->estIntraPredChromaQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma);
     // 在处理 4x4 时当作 8x8 层来处理 方便一些
-    m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1111);
-    if (eSize != SIZE_NxN)
-    {
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
-        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1011);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
-        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1101);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
-        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1110);
-    }
-    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
+    // m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1111);
+    // if (eSize != SIZE_NxN)
+    // {
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1011);
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1101);
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1110);
+    // }
+    // rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
 
     m_pcEntropyCoder->resetBits();
     if (rpcTempCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
