@@ -224,8 +224,7 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
     // intraPredAngle 记录当前模式同水平/垂直模式之间的差
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX)
-                                                                    : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
@@ -373,8 +372,7 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
     // intraPredAngle 记录当前模式同水平/垂直模式之间的差
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX)
-                                                                    : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
@@ -550,8 +548,7 @@ Void TComPrediction::xPredIntraAng3x3(Int bitDepth, Int *pSrc, Int srcStride, Pe
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
     // intraPredAngle 记录当前模式同水平/垂直模式之间的差
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX)
-                                                                    : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
@@ -1035,7 +1032,7 @@ Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
         piOrg += uiWidth / 2;
         for (i = 0; i < uiWidth / 2 - 1; i++)
         {
-            for (j = 0; j < uiWidth / 2 * 3; j++)
+            for (j = 0; j < (uiWidth / 2) * 3; j++)
             {
                 piRef[j] = piOrg[-1];
             }

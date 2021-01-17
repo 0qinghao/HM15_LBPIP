@@ -1295,7 +1295,7 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
         }
         predIntraLumaAngLP(pcCUgetPattern, puhModeAll[0], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
         uiBestSAE = MAX_UINT;
-        for (uiPredDstSize -= 1; uiPredDstSize >= 4; uiPredDstSize--)
+        for (uiPredDstSize = uiWidth - 1; uiPredDstSize >= 4; uiPredDstSize--)
         {
             for (uiMode = 0; uiMode < uiDirNum; uiMode++)
             {
@@ -1311,14 +1311,23 @@ Void TEncSearch::xIntraCodingLumaBlkLP(TComDataCU *pcCU,
         }
         for (uiMode = 0; uiMode < uiDirNum; uiMode++)
         {
-            uiSAE = predIntraLumaAng3x3(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+            // uiSAE = predIntraLumaAng3x3(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+            uiSAE = 0;
+            for (uiPredDstSize = 3; uiPredDstSize != 0; uiPredDstSize--)
+            {
+                uiSAE += predIntraLumaAngLP(pcCUgetPattern, uiMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            }
             if (uiSAE < uiBestSAE)
             {
                 uiBestSAE = uiSAE;
                 puhModeAll[uiWidth - 3] = uiMode;
             }
         }
-        predIntraLumaAng3x3(pcCUgetPattern, puhModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+        for (uiPredDstSize = 3; uiPredDstSize != 0; uiPredDstSize--)
+        {
+            predIntraLumaAngLP(pcCUgetPattern, puhModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+        }
+        // predIntraLumaAng3x3(pcCUgetPattern, puhModeAll[uiWidth - 3], piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
 
         pcCU->setLumaIntraDirSubPartsLP(puhModeAll, uiAbsPartIdx, uiWidth);
 
@@ -1563,16 +1572,27 @@ Void TEncSearch::xIntraCodingChromaBlkLP(TComDataCU *pcCU,
         }
         for (uiMode = 0; uiMode < uiDirNum; uiMode++)
         {
-            uiSAE = predIntraChromaAng3x3(pPatChromaU, uiMode, piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
-            uiSAE += predIntraChromaAng3x3(pPatChromaV, uiMode, piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+            // uiSAE = predIntraChromaAng3x3(pPatChromaU, uiMode, piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+            // uiSAE += predIntraChromaAng3x3(pPatChromaV, uiMode, piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+            uiSAE = 0;
+            for (uiPredDstSize = 3; uiPredDstSize != 0; uiPredDstSize--)
+            {
+                uiSAE += predIntraChromaAngLP(pPatChromaU, uiMode, piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+                uiSAE += predIntraChromaAngLP(pPatChromaV, uiMode, piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            }
             if (uiSAE < uiBestSAE)
             {
                 uiBestSAE = uiSAE;
                 puhModeAll[uiWidth - 3] = uiMode;
             }
         }
-        predIntraChromaAng3x3(pPatChromaU, puhModeAll[uiWidth - 3], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
-        predIntraChromaAng3x3(pPatChromaV, puhModeAll[uiWidth - 3], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+        for (uiPredDstSize = 3; uiPredDstSize != 0; uiPredDstSize--)
+        {
+            predIntraChromaAngLP(pPatChromaU, puhModeAll[uiWidth - 3], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            predIntraChromaAngLP(pPatChromaV, puhModeAll[uiWidth - 3], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+        }
+        // predIntraChromaAng3x3(pPatChromaU, puhModeAll[uiWidth - 3], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
+        // predIntraChromaAng3x3(pPatChromaV, puhModeAll[uiWidth - 3], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
 
         pcCU->setChromaIntraDirSubPartsLP(puhModeAll, uiAbsPartIdx, uiWidth);
         // }
