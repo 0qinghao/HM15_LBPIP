@@ -135,7 +135,8 @@ extern UInt g_sigLastScanCG32x32[64];
 // ====================================================================================================================
 
 extern const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH];
-extern const UChar g_uiMode16[16];
+extern const UChar g_uiMode8[8];
+// extern const UChar g_uiMode16[8];
 
 // ====================================================================================================================
 // Bit-depth
