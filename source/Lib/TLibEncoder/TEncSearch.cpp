@@ -854,11 +854,11 @@ Void TEncSearch::xEncSubdivCbfQT(TComDataCU *pcCU,
         {
             if (uiTrDepth == 0 || pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth - 1))
             {
-                m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth);
+                // m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth);
             }
             if (uiTrDepth == 0 || pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth - 1))
             {
-                m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
+                // m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
             }
         }
     }
@@ -1012,7 +1012,7 @@ Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
         // chroma prediction mode
         if (uiAbsPartIdx == 0)
         {
-            m_pcEntropyCoder->encodeIntraDirModeChroma(pcCU, 0, true);
+            // m_pcEntropyCoder->encodeIntraDirModeChroma(pcCU, 0, true);
         }
     }
 }
@@ -1037,8 +1037,8 @@ UInt TEncSearch::xGetIntraBitsQT(TComDataCU *pcCU,
     }
     if (bChroma)
     {
-        xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_U, bRealCoeff);
-        xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
+        // xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_U, bRealCoeff);
+        // xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
     }
     UInt uiBits = m_pcEntropyCoder->getNumberOfWrittenBits();
     return uiBits;
