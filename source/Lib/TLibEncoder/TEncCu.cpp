@@ -1743,13 +1743,22 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
             pcCoeffTempYQuarpart += 3 * uiQuarSize;
             break;
         }
+        // for (Int i4x4Part = 0; i4x4Part < ((uiWidth / 8) * (uiWidth / 8)); i4x4Part++)
+        // {
+        //     Int i4x4R = i4x4Part / (uiWidth / 8);
+        //     Int i4x4C = i4x4Part % (uiWidth / 8);
+        //     for (Int iLine = 0; iLine < 4; iLine++)
+        //     {
+        //         ::memcpy(pcCoeffMergeY + i4x4R * uiWidth + i4x4C * 4 + iLine * uiWidth, pcCoeffTempYQuarpart + i4x4R * (uiWidth / 2) + i4x4C * 4 + iLine * (uiWidth / 2), sizeof(TCoeff) * 4);
+        //     }
+        // }
         for (Int i = 0; i < (uiWidth >> 1); i++)
         {
             ::memcpy(pcCoeffMergeY, pcCoeffTempYQuarpart, sizeof(TCoeff) * (uiWidth >> 1));
             pcCoeffMergeY += uiWidth;
             pcCoeffTempYQuarpart += (uiWidth >> 1);
         }
-        // ::memcpy(pcCoeffTempY, pcCoeffBestYLpart, sizeof(TCoeff) * uiWidth * uiWidth);
+        ::memcpy(pcCoeffTempY, pcCoeffBestYLpart, sizeof(TCoeff) * uiWidth * uiWidth);
         ::memcpy(rpcBestCU->getCoeffY(), pcCoeffBestYLpart, sizeof(TCoeff) * uiWidth * uiWidth);
         pcCoeffTempY = NULL;
         pcCoeffTempYQuarpart = NULL;
