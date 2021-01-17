@@ -2377,7 +2377,7 @@ Void TEncSearch::xRecurIntraCodingQTLP(TComDataCU *pcCU,
     //----- code luma block with given intra prediction mode and store Cbf-----
     dSingleCost = 0.0;
     UInt uiWidth = pcCU->getWidth(0) >> uiTrDepth;
-    UChar puhModeAll[uiWidth - 3 + 1];
+    UChar puhModeAll[uiWidth - LOOP_MIN_SIZE + 1];
     // 对亮度进行预测/求残差/变换/量化
     xIntraCodingLumaBlkLP(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, uiSingleDistY, mask, puhModeAll);
     //----- determine rate and r-d cost -----
@@ -3093,7 +3093,7 @@ Void TEncSearch::xRecurIntraChromaCodingQTLP(TComDataCU *pcCU,
         // }
 
         // checkTransformSkip &= (uiLog2TrSize <= 3);
-        UChar puhModeAllC[uiWidth / 2 - 3 + 1];
+        UChar puhModeAllC[uiWidth / 2 - LOOP_MIN_SIZE + 1];
         xIntraCodingChromaBlkLP(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 0, mask, puhModeAllC);
         // xIntraCodingChromaBlkLP(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 0, mask, puhModeAllU);
         // xIntraCodingChromaBlkLP(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 1, mask, puhModeAllV);
@@ -4294,11 +4294,11 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
 
     //----- init mode list -----
     UInt uiMinMode = 0;
-    UInt uiModeList[NUM_CHROMA_MODE];
-    UInt uiModeListnp0111[NUM_CHROMA_MODE];
-    UInt uiModeListnp1011[NUM_CHROMA_MODE];
-    UInt uiModeListnp1101[NUM_CHROMA_MODE];
-    UInt uiModeListnp1110[NUM_CHROMA_MODE];
+    UInt uiModeList[BLK_NUM_CHROMA_MODE];
+    UInt uiModeListnp0111[BLK_NUM_CHROMA_MODE];
+    UInt uiModeListnp1011[BLK_NUM_CHROMA_MODE];
+    UInt uiModeListnp1101[BLK_NUM_CHROMA_MODE];
+    UInt uiModeListnp1110[BLK_NUM_CHROMA_MODE];
     // FIXIT: 由于各种新模式和传统模式亮度块选取的最优模式不一样, 所以对各种模式来说各自的色差模式表是不同的
     // TODO: 暂时跳过这个问题, 色差不去参考亮度的模式了, 做全搜索, 而且这样对于环状应该是更有利的. 当然对比的标准对象需要也改成全搜索
     // TODO: 如果亮度那边也类似地不去看 MPMs, 也就解决了 rd 不准确的问题, 这样做是否可行?
@@ -4308,7 +4308,7 @@ Void TEncSearch::estIntraPredChromaQT(TComDataCU *pcCU,
     {
         pcCU->getAllowedChromaDir_DIR_NUMnp(uiModeListnp0111, uiModeListnp1011, uiModeListnp1101, uiModeListnp1110);
     }
-    UInt uiMaxMode = NUM_CHROMA_MODE;
+    UInt uiMaxMode = BLK_NUM_CHROMA_MODE;
 
     //----- check chroma modes -----
     for (UInt uiMode = uiMinMode; uiMode < uiMaxMode; uiMode++)
@@ -4479,7 +4479,7 @@ Void TEncSearch::estIntraPredChromaQTLP(TComDataCU *pcCU,
 
     //----- init mode list -----
     UInt uiMinMode = 0;
-    UInt uiModeList[NUM_CHROMA_MODE];
+    UInt uiModeList[BLK_NUM_CHROMA_MODE];
     // FIXIT: 由于各种新模式和传统模式亮度块选取的最优模式不一样, 所以对各种模式来说各自的色差模式表是不同的
     // TODO: 暂时跳过这个问题, 色差不去参考亮度的模式了, 做全搜索, 而且这样对于环状应该是更有利的. 当然对比的标准对象需要也改成全搜索
     // TODO: 如果亮度那边也类似地不去看 MPMs, 也就解决了 rd 不准确的问题, 这样做是否可行?

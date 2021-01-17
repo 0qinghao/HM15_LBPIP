@@ -908,6 +908,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
             Int iLoopCnt = uiWidth - LOOP_MIN_SIZE + 1;
             if (bIs1110)
             {
+                assert(uiWidth >= 8);
                 iLoopCnt -= (uiWidth / 2 - LOOP_MIN_SIZE + 1);
                 // 只在重新编码的过程里会进入这个操作
             }
@@ -1014,10 +1015,10 @@ Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
     // }
     // else
     // {
-    //     UInt uiAllowedChromaDir[NUM_CHROMA_MODE];
+    //     UInt uiAllowedChromaDir[BLK_NUM_CHROMA_MODE];
     //     pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
 
-    //     for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    //     for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
     //     {
     //         if (uiIntraDirChroma == uiAllowedChromaDir[i])
     //         {

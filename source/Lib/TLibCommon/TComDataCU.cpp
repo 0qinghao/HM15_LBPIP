@@ -2100,7 +2100,7 @@ Void TComDataCU::getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList)
 
     UInt uiLumaMode = getLumaIntraDir(uiAbsPartIdx);
 
-    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
     {
         if (uiLumaMode == uiModeList[i])
         {
@@ -2120,8 +2120,8 @@ Void TComDataCU::getAllowedChromaDir_DIR_NUM(UInt uiAbsPartIdx, UInt *uiModeList
 
     // UInt uiLumaMode = getLumaIntraDir(uiAbsPartIdx);
 
-    // for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
-    for (UInt i = 0; i < NUM_CHROMA_MODE; i++)
+    // for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
+    for (UInt i = 0; i < BLK_NUM_CHROMA_MODE; i++)
     {
         // if (uiLumaMode == uiModeList[i])
         // {
@@ -2132,7 +2132,7 @@ Void TComDataCU::getAllowedChromaDir_DIR_NUM(UInt uiAbsPartIdx, UInt *uiModeList
 }
 Void TComDataCU::getAllowedChromaDir_DIR_NUMnp(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110)
 {
-    for (UInt i = 0; i < NUM_CHROMA_MODE; i++)
+    for (UInt i = 0; i < BLK_NUM_CHROMA_MODE; i++)
     {
         uiModeListnp0111[i] = i;
         uiModeListnp1011[i] = i;
@@ -2168,7 +2168,7 @@ Void TComDataCU::getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111
     UInt uiLumaModenp1101 = getLumaIntraDirnp1101(uiAbsPartIdx);
     UInt uiLumaModenp1110 = getLumaIntraDirnp1110(uiAbsPartIdx);
 
-    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
     {
         if (uiLumaModenp0111 == uiModeListnp0111[i])
         {
@@ -2176,7 +2176,7 @@ Void TComDataCU::getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111
             break;
         }
     }
-    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
     {
         if (uiLumaModenp1011 == uiModeListnp1011[i])
         {
@@ -2184,7 +2184,7 @@ Void TComDataCU::getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111
             break;
         }
     }
-    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
     {
         if (uiLumaModenp1101 == uiModeListnp1101[i])
         {
@@ -2192,7 +2192,7 @@ Void TComDataCU::getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111
             break;
         }
     }
-    for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
+    for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
     {
         if (uiLumaModenp1110 == uiModeListnp1110[i])
         {
