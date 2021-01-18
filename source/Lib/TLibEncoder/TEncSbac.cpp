@@ -644,7 +644,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
         // {
         //     m_pcBinIf->encodeBinEP(1);
         // }
-        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
+        // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChromaLP(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
         PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
         switch (eSize8x8)
@@ -659,7 +659,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
             // {
             //     m_pcBinIf->encodeBinEP(1);
             // }
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
+            // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
             break;
         case SIZE_B_1101:
             // if (*(pcCU->getLumaLoopFlag() + uiAbsPartIdx + 2) == 0)
@@ -671,7 +671,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
             // {
             //     m_pcBinIf->encodeBinEP(1);
             // }
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
+            // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
             break;
         case SIZE_B_1110:
             // if (*(pcCU->getLumaLoopFlag() + uiAbsPartIdx + 3) == 0)
@@ -683,7 +683,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
             // {
             //     m_pcBinIf->encodeBinEP(1);
             // }
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
+            // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
             break;
         default:
             break;
@@ -762,7 +762,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
         // {
         //     m_pcBinIf->encodeBinEP(1);
         // }
-        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
+        // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
     }
 }
