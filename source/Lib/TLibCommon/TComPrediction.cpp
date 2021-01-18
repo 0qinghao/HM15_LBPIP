@@ -1611,6 +1611,67 @@ Void TComPrediction::xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, In
     //     }
     // }
 }
+
+Void TComPrediction::xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
+{
+    assert(width == height);
+
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    // UInt blkSize = width;
+    // UInt offset2D = width;
+    UInt blkSize = uiPredDstSize;
+    UInt offset2D = uiPredDstSize;
+    // UInt shift1D = g_aucConvertToBit[width] + 2;
+    // UInt shift2D = shift1D + 1;
+
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+
+    // for (k = 0; k < blkSize; k++)
+    // {
+    //     bottomRow[k] = bottomLeft - topRow[k];
+    //     rightColumn[k] = topRight - leftColumn[k];
+    //     topRow[k] = topRow[k] * uiPredDstSize;
+    //     leftColumn[k] = leftColumn[k] * uiPredDstSize;
+    //     // topRow[k] <<= shift1D;
+    //     // leftColumn[k] <<= shift1D;
+    // }
+    // horPred = leftColumn[0] + offset2D;
+    // for (l = 0; l < blkSize; l++)
+    // {
+    //     horPred += rightColumn[0];
+    //     topRow[l] += bottomRow[l];
+    //     rpDst[l] = ((horPred + topRow[l]) / (2 * uiPredDstSize));
+    // }
+    // for (k = 1; k < blkSize; k++)
+    // {
+    //     horPred = leftColumn[k] + offset2D;
+    //     horPred += rightColumn[k];
+    //     topRow[0] += bottomRow[0];
+    //     rpDst[k * dstStride] = ((horPred + topRow[0]) / (2 * uiPredDstSize));
+    // }
+    // Generate prediction signal
+    // for (k = 0; k < blkSize; k++)
+    // {
+    //     horPred = leftColumn[k] + offset2D;
+    //     for (l = 0; l < blkSize; l++)
+    //     {
+    //         horPred += rightColumn[k];
+    //         topRow[l] += bottomRow[l];
+    //         rpDst[k * dstStride + l] = ((horPred + topRow[l]) >> shift2D);
+    //     }
+    // }
+}
 Void TComPrediction::xPredIntraPlanar3x3(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
 {
     assert(width == height);

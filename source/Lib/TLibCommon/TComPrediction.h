@@ -77,6 +77,7 @@ protected:
     Void xPredIntraAng3x3(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize);
     Void xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height);
     Void xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
+    Void xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
     Void xPredIntraPlanar3x3(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
 
     // motion compensation functions
