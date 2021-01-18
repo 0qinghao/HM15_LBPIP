@@ -1057,7 +1057,7 @@ UInt TEncSearch::xGetIntraBitsQTChroma(TComDataCU *pcCU,
     }
     else if (uiChromaId == TEXT_CHROMA_V)
     {
-        xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
+        // xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
     }
 
     UInt uiBits = m_pcEntropyCoder->getNumberOfWrittenBits();
