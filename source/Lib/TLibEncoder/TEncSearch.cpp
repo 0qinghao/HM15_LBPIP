@@ -854,11 +854,11 @@ Void TEncSearch::xEncSubdivCbfQT(TComDataCU *pcCU,
         {
             if (uiTrDepth == 0 || pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth - 1))
             {
-                m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth);
+                // m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_U, uiTrDepth);
             }
             if (uiTrDepth == 0 || pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth - 1))
             {
-                // m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
+                m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
             }
         }
     }
@@ -1037,8 +1037,8 @@ UInt TEncSearch::xGetIntraBitsQT(TComDataCU *pcCU,
     }
     if (bChroma)
     {
-        xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_U, bRealCoeff);
-        // xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
+        // xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_U, bRealCoeff);
+        xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
     }
     UInt uiBits = m_pcEntropyCoder->getNumberOfWrittenBits();
     return uiBits;
@@ -3244,8 +3244,8 @@ Void TEncSearch::xRecurIntraChromaCodingQT(TComDataCU *pcCU,
         {
             // pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_U, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
             // pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_V, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
-            xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 0);
-            // xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 1);
+            // xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 0);
+            xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 1);
         }
     }
     // 只有在处理细分到 4x4(从Y分量看的 4x4) 块时才可能进入
