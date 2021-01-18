@@ -858,7 +858,7 @@ Void TEncSearch::xEncSubdivCbfQT(TComDataCU *pcCU,
             }
             if (uiTrDepth == 0 || pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth - 1))
             {
-                m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
+                // m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepth);
             }
         }
     }
@@ -876,7 +876,7 @@ Void TEncSearch::xEncSubdivCbfQT(TComDataCU *pcCU,
     //===== Cbfs =====
     if (bLuma)
     {
-        m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_LUMA, uiTrMode);
+        // m_pcEntropyCoder->encodeQtCbf(pcCU, uiAbsPartIdx, TEXT_LUMA, uiTrMode);
     }
 }
 
@@ -987,7 +987,7 @@ Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
         {
             if (uiAbsPartIdx == 0)
             {
-                m_pcEntropyCoder->encodeIntraDirModeLuma(pcCU, 0);
+                // m_pcEntropyCoder->encodeIntraDirModeLuma(pcCU, 0);
             }
         }
         else
@@ -998,12 +998,12 @@ Void TEncSearch::xEncIntraHeader(TComDataCU *pcCU,
                 assert(uiAbsPartIdx == 0);
                 for (UInt uiPart = 0; uiPart < 4; uiPart++)
                 {
-                    m_pcEntropyCoder->encodeIntraDirModeLuma(pcCU, uiPart * uiQNumParts);
+                    // m_pcEntropyCoder->encodeIntraDirModeLuma(pcCU, uiPart * uiQNumParts);
                 }
             }
             else if ((uiAbsPartIdx % uiQNumParts) == 0)
             {
-                m_pcEntropyCoder->encodeIntraDirModeLuma(pcCU, uiAbsPartIdx);
+                // m_pcEntropyCoder->encodeIntraDirModeLuma(pcCU, uiAbsPartIdx);
             }
         }
     }
@@ -1033,12 +1033,12 @@ UInt TEncSearch::xGetIntraBitsQT(TComDataCU *pcCU,
 
     if (bLuma)
     {
-        xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_LUMA, bRealCoeff);
+        // xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_LUMA, bRealCoeff);
     }
     if (bChroma)
     {
         xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_U, bRealCoeff);
-        xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
+        // xEncCoeffQT(pcCU, uiTrDepth, uiAbsPartIdx, TEXT_CHROMA_V, bRealCoeff);
     }
     UInt uiBits = m_pcEntropyCoder->getNumberOfWrittenBits();
     return uiBits;
@@ -1547,7 +1547,7 @@ Void TEncSearch::xIntraCodingChromaBlkLP(TComDataCU *pcCU,
         for (uiMode = 0; uiMode < uiDirNum; uiMode++)
         {
             uiSAE = predIntraChromaAngLP(pPatChromaU, g_uiMode8[uiMode], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
-            uiSAE += predIntraChromaAngLP(pPatChromaV, g_uiMode8[uiMode], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            // uiSAE += predIntraChromaAngLP(pPatChromaV, g_uiMode8[uiMode], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
             if (uiSAE < uiBestSAE)
             {
                 uiBestSAE = uiSAE;
@@ -1555,14 +1555,14 @@ Void TEncSearch::xIntraCodingChromaBlkLP(TComDataCU *pcCU,
             }
         }
         predIntraChromaAngLP(pPatChromaU, g_uiMode8[puhModeAll[0]], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
-        predIntraChromaAngLP(pPatChromaV, g_uiMode8[puhModeAll[0]], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+        // predIntraChromaAngLP(pPatChromaV, g_uiMode8[puhModeAll[0]], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
         uiBestSAE = MAX_UINT;
         for (uiPredDstSize -= 1; uiPredDstSize > LOOP_MIN_SIZE; uiPredDstSize--)
         {
             for (uiMode = 0; uiMode < uiDirNum; uiMode++)
             {
                 uiSAE = predIntraChromaAngLP(pPatChromaU, g_uiMode8[uiMode], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
-                uiSAE += predIntraChromaAngLP(pPatChromaV, g_uiMode8[uiMode], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+                // uiSAE += predIntraChromaAngLP(pPatChromaV, g_uiMode8[uiMode], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
                 if (uiSAE < uiBestSAE)
                 {
                     uiBestSAE = uiSAE;
@@ -1570,7 +1570,7 @@ Void TEncSearch::xIntraCodingChromaBlkLP(TComDataCU *pcCU,
                 }
             }
             predIntraChromaAngLP(pPatChromaU, g_uiMode8[puhModeAll[uiWidth - uiPredDstSize]], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
-            predIntraChromaAngLP(pPatChromaV, g_uiMode8[puhModeAll[uiWidth - uiPredDstSize]], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            // predIntraChromaAngLP(pPatChromaV, g_uiMode8[puhModeAll[uiWidth - uiPredDstSize]], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
             uiBestSAE = MAX_UINT;
         }
         for (uiMode = 0; uiMode < uiDirNum; uiMode++)
@@ -1581,7 +1581,7 @@ Void TEncSearch::xIntraCodingChromaBlkLP(TComDataCU *pcCU,
             for (uiPredDstSize = LOOP_MIN_SIZE; uiPredDstSize != 0; uiPredDstSize--)
             {
                 uiSAE += predIntraChromaAngLP(pPatChromaU, g_uiMode8[uiMode], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
-                uiSAE += predIntraChromaAngLP(pPatChromaV, g_uiMode8[uiMode], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+                // uiSAE += predIntraChromaAngLP(pPatChromaV, g_uiMode8[uiMode], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
             }
             if (uiSAE < uiBestSAE)
             {
@@ -1592,7 +1592,7 @@ Void TEncSearch::xIntraCodingChromaBlkLP(TComDataCU *pcCU,
         for (uiPredDstSize = LOOP_MIN_SIZE; uiPredDstSize != 0; uiPredDstSize--)
         {
             predIntraChromaAngLP(pPatChromaU, g_uiMode8[puhModeAll[uiWidth - LOOP_MIN_SIZE]], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
-            predIntraChromaAngLP(pPatChromaV, g_uiMode8[puhModeAll[uiWidth - LOOP_MIN_SIZE]], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
+            // predIntraChromaAngLP(pPatChromaV, g_uiMode8[puhModeAll[uiWidth - LOOP_MIN_SIZE]], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, uiPredDstSize);
         }
         // predIntraChromaAng3x3(pPatChromaU, puhModeAll[uiWidth - 3], piPredU, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
         // predIntraChromaAng3x3(pPatChromaV, puhModeAll[uiWidth - 3], piPredV, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail, mask, 3);
@@ -3245,7 +3245,7 @@ Void TEncSearch::xRecurIntraChromaCodingQT(TComDataCU *pcCU,
             // pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_U, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
             // pcCU->setTransformSkipSubParts(0, TEXT_CHROMA_V, uiAbsPartIdx, pcCU->getDepth(0) + actualTrDepth);
             xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 0);
-            xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 1);
+            // xIntraCodingChromaBlk(pcCU, uiTrDepth, uiAbsPartIdx, pcOrgYuv, pcPredYuv, pcResiYuv, ruiDist, 1);
         }
     }
     // 只有在处理细分到 4x4(从Y分量看的 4x4) 块时才可能进入
