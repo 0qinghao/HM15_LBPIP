@@ -745,7 +745,8 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
     if (uiDirMode == PLANAR_IDX)
     {
         // PLANAR 模式预测
-        xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+        // xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+        xPredIntraPlanarLPnew(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
     }
     else
     {
@@ -1121,7 +1122,8 @@ UInt TComPrediction::predIntraChromaAngLP(Int *piSrc, UInt uiDirMode, Pel *piPre
 
     if (uiDirMode == PLANAR_IDX)
     {
-        xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+        // xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+        xPredIntraPlanarLPnew(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
     }
     else
     {
@@ -1614,63 +1616,300 @@ Void TComPrediction::xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, In
 
 Void TComPrediction::xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
 {
-    assert(width == height);
+    enum PlanarType
+    {
+        HEVC,
+        V_Planar,
+        H_Planar,
+        HV_Planar,
+        Planar_3p,
+        SAP_E,
+        Tendency,
+        Tendency_C,
+        Weight121,
+        SAP_E_LP,
+    };
+    PlanarType SelectedType = SAP_E;
 
+    assert(width == height);
     Int k, l, bottomLeft, topRight;
     Int horPred;
     Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
-    // UInt blkSize = width;
-    // UInt offset2D = width;
     UInt blkSize = uiPredDstSize;
     UInt offset2D = uiPredDstSize;
-    // UInt shift1D = g_aucConvertToBit[width] + 2;
-    // UInt shift2D = shift1D + 1;
-
     // Get left and above reference column and row
     for (k = 0; k < blkSize + 1; k++)
     {
         topRow[k] = pSrc[k - srcStride];
         leftColumn[k] = pSrc[k * srcStride - 1];
     }
-
     // Prepare intermediate variables used in interpolation
     bottomLeft = leftColumn[blkSize];
     topRight = topRow[blkSize];
 
-    // for (k = 0; k < blkSize; k++)
-    // {
-    //     bottomRow[k] = bottomLeft - topRow[k];
-    //     rightColumn[k] = topRight - leftColumn[k];
-    //     topRow[k] = topRow[k] * uiPredDstSize;
-    //     leftColumn[k] = leftColumn[k] * uiPredDstSize;
-    //     // topRow[k] <<= shift1D;
-    //     // leftColumn[k] <<= shift1D;
-    // }
-    // horPred = leftColumn[0] + offset2D;
-    // for (l = 0; l < blkSize; l++)
-    // {
-    //     horPred += rightColumn[0];
-    //     topRow[l] += bottomRow[l];
-    //     rpDst[l] = ((horPred + topRow[l]) / (2 * uiPredDstSize));
-    // }
-    // for (k = 1; k < blkSize; k++)
-    // {
-    //     horPred = leftColumn[k] + offset2D;
-    //     horPred += rightColumn[k];
-    //     topRow[0] += bottomRow[0];
-    //     rpDst[k * dstStride] = ((horPred + topRow[0]) / (2 * uiPredDstSize));
-    // }
-    // Generate prediction signal
-    // for (k = 0; k < blkSize; k++)
-    // {
-    //     horPred = leftColumn[k] + offset2D;
-    //     for (l = 0; l < blkSize; l++)
-    //     {
-    //         horPred += rightColumn[k];
-    //         topRow[l] += bottomRow[l];
-    //         rpDst[k * dstStride + l] = ((horPred + topRow[l]) >> shift2D);
-    //     }
-    // }
+    switch (SelectedType)
+    {
+    case HEVC:
+    {
+        for (k = 0; k < blkSize; k++)
+        {
+            bottomRow[k] = bottomLeft - topRow[k];
+            rightColumn[k] = topRight - leftColumn[k];
+            topRow[k] = topRow[k] * uiPredDstSize;
+            leftColumn[k] = leftColumn[k] * uiPredDstSize;
+            // topRow[k] <<= shift1D;
+            // leftColumn[k] <<= shift1D;
+        }
+        horPred = leftColumn[0] + offset2D;
+        for (l = 0; l < blkSize; l++)
+        {
+            horPred += rightColumn[0];
+            topRow[l] += bottomRow[l];
+            rpDst[l] = ((horPred + topRow[l] + uiPredDstSize) / (2 * uiPredDstSize));
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            horPred = leftColumn[k] + offset2D;
+            horPred += rightColumn[k];
+            topRow[0] += bottomRow[0];
+            rpDst[k * dstStride] = ((horPred + topRow[0] + uiPredDstSize) / (2 * uiPredDstSize));
+        }
+        break;
+    }
+    case V_Planar:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (topRow[l] * uiPredDstSize + bottomLeft * 1) / (uiPredDstSize + 1);
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = ((topRow[0] * (uiPredDstSize - k) + bottomLeft * (k + 1)) / (uiPredDstSize + 1));
+        }
+        break;
+    }
+    case H_Planar:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = ((leftColumn[k] * (uiPredDstSize) + topRight * 1)) / (uiPredDstSize + 1);
+        }
+        break;
+    }
+    case HV_Planar:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = (topRow[0] * (uiPredDstSize - k) + bottomLeft * (k + 1)) / (uiPredDstSize + 1);
+        }
+        break;
+    }
+    case Planar_3p:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+            rpDst[l] = (rpDst[l] + topRow[l] + 1) / 2;
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = (topRow[0] * (uiPredDstSize - k) + bottomLeft * (k + 1)) / (uiPredDstSize + 1);
+            rpDst[k * dstStride] = (rpDst[k * dstStride] + leftColumn[k] + 1) / 2;
+        }
+        break;
+    }
+    case SAP_E:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel left = pSrc[l - 1];
+            Pel top = pSrc[l - srcStride];
+            Pel lefttop = pSrc[l - srcStride - 1];
+            if (lefttop >= max(left, top))
+            {
+                rpDst[l] = min(left, top);
+            }
+            else if (lefttop <= min(left, top))
+            {
+                rpDst[l] = max(left, top);
+            }
+            else
+            {
+                rpDst[l] = left + top - lefttop;
+            }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel left = pSrc[k * srcStride - 1];
+            Pel top = pSrc[(k - 1) * srcStride];
+            Pel lefttop = pSrc[(k - 1) * srcStride - 1];
+            if (lefttop >= max(left, top))
+            {
+                rpDst[k * dstStride] = min(left, top);
+            }
+            else if (lefttop <= min(left, top))
+            {
+                rpDst[k * dstStride] = max(left, top);
+            }
+            else
+            {
+                rpDst[k * dstStride] = left + top - lefttop;
+            }
+        }
+        break;
+    }
+    case Tendency:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel far = (l == 0) ? pSrc[-1] : pSrc[l - srcStride - 2];
+            Pel mid = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            if ((far >= mid && mid >= near) || (far <= mid && mid <= near))
+            {
+                rpDst[l] = near;
+            }
+            else
+            {
+                rpDst[l] = ((mid - far + mid) + near) / 2;
+            }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel far = pSrc[(k - 2) * srcStride - 1];
+            Pel mid = pSrc[(k - 1) * srcStride - 1];
+            Pel near = pSrc[k * srcStride - 1];
+            if ((far >= mid && mid >= near) || (far <= mid && mid <= near))
+            {
+                rpDst[k * dstStride] = near;
+            }
+            else
+            {
+                rpDst[k * dstStride] = ((mid - far + mid) + near) / 2;
+            }
+        }
+        break;
+    }
+    case Tendency_C:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel far1 = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            Pel far2 = pSrc[l - srcStride + 1];
+            if ((far1 >= near && near >= far2) || (far1 <= near && near <= far2))
+            {
+                rpDst[l] = near;
+            }
+            else
+            {
+                rpDst[l] = (far1 + far2 + near * 2) / 4;
+            }
+
+            // else if (abs(far1 - near) > abs(far2 - near))
+            // {
+            //     rpDst[l] = far2;
+            // }
+            // else
+            // {
+            //     rpDst[l] = far1;
+            // }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel far1 = pSrc[(k - 1) * srcStride - 1];
+            Pel near = pSrc[k * srcStride - 1];
+            Pel far2 = pSrc[(k + 1) * srcStride - 1];
+            if ((far1 >= near && near >= far2) || (far1 <= near && near <= far2))
+            {
+                rpDst[k * dstStride] = near;
+            }
+            else
+            {
+                rpDst[k * dstStride] = (far1 + far2 + near * 2) / 4;
+            }
+
+            // else if (abs(far1 - near) > abs(far2 - near))
+            // {
+            //     rpDst[k * dstStride] = far2;
+            // }
+            // else
+            // {
+            //     rpDst[k * dstStride] = far1;
+            // }
+        }
+        break;
+    }
+    case Weight121:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel far1 = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            Pel far2 = pSrc[l - srcStride + 1];
+            rpDst[l] = (far1 + far2 + near * 2) / 4;
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel far1 = pSrc[(k - 1) * srcStride - 1];
+            Pel near = pSrc[k * srcStride - 1];
+            Pel far2 = pSrc[(k + 1) * srcStride - 1];
+            rpDst[k * dstStride] = (far1 + far2 + near * 2) / 4;
+        }
+        break;
+    }
+    case SAP_E_LP:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel mid = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            Pel far = (l == 0) ? pSrc[-1] : pSrc[l - srcStride - 2];
+            if (far > max(mid, near))
+            {
+                rpDst[l] = min(mid, near);
+            }
+            else if (far < min(mid, near))
+            {
+                rpDst[l] = max(mid, near);
+            }
+            else
+            {
+                rpDst[l] = mid + near - far;
+            }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel mid = pSrc[k * srcStride - 1];
+            Pel near = pSrc[(k - 1) * srcStride];
+            Pel far = pSrc[(k - 1) * srcStride - 1];
+            if (far > max(mid, near))
+            {
+                rpDst[k * dstStride] = min(mid, near);
+            }
+            else if (far < min(mid, near))
+            {
+                rpDst[k * dstStride] = max(mid, near);
+            }
+            else
+            {
+                rpDst[k * dstStride] = mid + near - far;
+            }
+        }
+        break;
+    }
+    default:
+        assert(0);
+        break;
+    }
 }
 Void TComPrediction::xPredIntraPlanar3x3(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
 {
