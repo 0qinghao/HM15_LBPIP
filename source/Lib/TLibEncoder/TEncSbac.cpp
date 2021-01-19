@@ -1571,6 +1571,8 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             m_pcBinIf->encodeBin(uiSigCoeffGroup, baseCoeffGroupCtx[uiCtxSig]);
         }
 
+        // Int absCoeffGE2[16];
+        // Int numGE2 = 0;
         // encode significant_coeff_flag
         if (uiSigCoeffGroupFlag[iCGBlkPos])
         {
@@ -1597,6 +1599,11 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                         lastNZPosInCG = iScanPosSig;
                     }
                     firstNZPosInCG = iScanPosSig;
+
+                    // if (absCoeff[numNonZero - 1] >= 2)
+                    // {
+                    //     absCoeffGE2[numGE2++] = absCoeff[numNonZero - 1];
+                    // }
                 }
             }
         }
@@ -1605,6 +1612,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             iScanPosSig = iSubPos - 1;
         }
 
+        // 注意 numNonZero, absCoeff 虽然固定有 16 个数, 但里面只有前 numNonZero 个在这轮赋值了, 是需要编码的
         if (numNonZero > 0)
         {
             Bool signHidden = (lastNZPosInCG - firstNZPosInCG >= SBH_THRESHOLD);
@@ -1637,7 +1645,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                     c1++;
                 }
             }
-
+            // Int numC2Flag;
             // 编码 4x4 块内第一个幅值大于 1 的系数的 coeff_abs_level_greater2_flag
             if (c1 == 0)
             {
@@ -1646,6 +1654,12 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 {
                     UInt symbol = absCoeff[firstC2FlagIdx] > 2;
                     m_pcBinIf->encodeBin(symbol, baseCtxMod[0]);
+                    // numC2Flag = min(numGE2, C2FLAG_NUMBER);
+                    // for (UInt uiIdx = 0; uiIdx < numC2Flag; uiIdx++)
+                    // {
+                    //     UInt symbol = absCoeffGE2[uiIdx] > 2;
+                    //     m_pcBinIf->encodeBin(symbol, baseCtxMod[0]);
+                    // }
                 }
             }
 
@@ -1660,6 +1674,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             }
 
             Int iFirstCoeff2 = 1;
+            // Int C2Checked = 0;
             if (c1 == 0 || numNonZero > C1FLAG_NUMBER)
             {
                 for (Int idx = 0; idx < numNonZero; idx++)
@@ -1675,6 +1690,8 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                     }
                     if (absCoeff[idx] >= 2)
                     {
+                        // C2Checked++;
+                        // if (C2Checked == numC2Flag)
                         iFirstCoeff2 = 0;
                     }
                 }
