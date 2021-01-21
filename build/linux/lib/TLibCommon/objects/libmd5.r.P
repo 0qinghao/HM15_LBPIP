@@ -1,5 +1,0 @@
-objects/libmd5.r.o: \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/libmd5/libmd5.c \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/libmd5/libmd5.h
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/libmd5/libmd5.c :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/libmd5/libmd5.h :

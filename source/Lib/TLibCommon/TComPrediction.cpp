@@ -360,34 +360,53 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
         }
     }
 }
+Int TComPrediction::getModebound(Int x, Bool isrow)
+{
+    //x是在当前行中第几个（从1开始）或者在列中第几个
+    //width是当前层宽
+    //widthf是块宽
+    //dirMode是
+    //isrow表示是行像素还是列像素
+    //适用于下方像素也存在的情况
+    assert(x <= 32);
+    Int i;
+    Int Modebound = 0;
+    Int Rx[32] = {100, 34, 32, 31, 30, 30, 30, 30, 30, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27};
+    Int Ry[32] = {0, 2, 4, 5, 6, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9};
+    Modebound = isrow ? Ry[x - 1] : Rx[x - 1];
+    return Modebound;
+}
 Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize)
 {
     Int k, l;
     Int blkSize = uiPredDstSize;
     Pel *pDst = rpDst;
-
+    //pSrc定为上一层参考像素的指针
+    //y从0开始
+    //输入中还需加入最大块对应的参考像素指针定为 pSrcf
+    //当前层位于当前块的第y行(从0开始)
+    //srcStridef表示最大块(16)的stride
     // Map the mode index to main prediction direction and angle
     assert(dirMode > 0); //no planar
     Bool modeDC = dirMode < 2;
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
-    // intraPredAngle 记录当前模式同水平/垂直模式之间的差
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - 26 : modeHor ? -((Int)dirMode - 10) : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
     // Set bitshifts and scale the angle parameter to block size
     Int angTable[9] = {0, 2, 5, 9, 13, 17, 21, 26, 32};
-    Int invAngTable[9] = {0, 4096, 1638, 910, 630, 482, 390, 315, 256}; // (256 * 32) / Angle
-    Int invAngle = invAngTable[absAng];
-    absAng = angTable[absAng];
-    intraPredAngle = signAng * absAng;
+    Int invAngTable[9] = {0, 4096, 1638, 910, 630, 482, 390, 315, 256}; // (256 * 32) / Angle(0,2,5,9这种)
+    Int invAngle = invAngTable[absAng];                                 // 当前角度的缩放余切值
+    absAng = angTable[absAng];                                          // 当前角度偏移值绝对值
+    intraPredAngle = signAng * absAng;                                  // 当前角度偏移值
 
     // Do the DC prediction
     if (modeDC)
     {
         Pel dcval = predIntraGetPredValDCLP(pSrc, srcStride, width, height, blkAboveAvailable, blkLeftAvailable, uiPredDstSize);
-
+        // Pel dcval = 2000;
         for (l = 0; l < blkSize; l++)
         {
             pDst[l] = dcval;
@@ -401,49 +420,53 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
     // Do angular predictions
     else
     {
-        Pel *refMain;
-        Pel *refSide;
-        Pel refAbove[2 * MAX_CU_SIZE + 1];
-        Pel refLeft[2 * MAX_CU_SIZE + 1];
+        Pel *refMain;                      // 主参考像素，垂直类模式即为上方的参考像素
+        Pel *refSide;                      // 侧边参考像素，垂直类模式即为左侧的参考像素
+        Pel refAbove[2 * MAX_CU_SIZE + 1]; // 上方参考像素
+        Pel refLeft[2 * MAX_CU_SIZE + 1];  // 左侧参考像素
 
         // Initialise the Main and Left reference array.
         if (intraPredAngle < 0)
         {
+            // 对于偏移值小于零的角度，垂直类模式需要将左侧的参考像素投影到上方参考像素的左侧，水平类反之
             for (k = 0; k < blkSize + 1; k++)
             {
-                refAbove[k + blkSize - 1] = pSrc[k - srcStride - 1];
+                refAbove[k + blkSize - 1] = pSrc[k - srcStride - 1]; //blkSize-1是为了主参考像素向右偏移
             }
             for (k = 0; k < blkSize + 1; k++)
             {
-                refLeft[k + blkSize - 1] = pSrc[(k - 1) * srcStride - 1];
+                refLeft[k + blkSize - 1] = pSrc[(k - 1) * srcStride - 1]; // 填充左侧参考像素
             }
-            refMain = (modeVer ? refAbove : refLeft) + (blkSize - 1);
-            refSide = (modeVer ? refLeft : refAbove) + (blkSize - 1);
+
+            refMain = (modeVer ? refAbove : refLeft) + (blkSize - 1); // 确定主参考像素
+            refSide = (modeVer ? refLeft : refAbove) + (blkSize - 1); // 确定侧参考像素
 
             // Extend the Main reference to the left.
+            //进行参考像素的投影
             Int invAngleSum = 128; // rounding for (shift by 8)
+                                   // intraPredAngle>>5即正切值 当前块高度乘以角度正切值，得到所需投影的最大数量
             for (k = -1; k > blkSize * intraPredAngle >> 5; k--)
             {
-                invAngleSum += invAngle;
-                refMain[k] = refSide[invAngleSum >> 8];
+                invAngleSum += invAngle;                // 每次加缩放余切值，相当于invAngleSum=invAngle*abs(k),开始的128为了四舍五入，不用在意
+                refMain[k] = refSide[invAngleSum >> 8]; // 右移8位，相当于除以256，把余切值缩放抵消。因此得到的坐标相当于是abs(k)乘以余切值，正好是投影
             }
         }
         else
         {
-            for (k = 0; k < 2 * blkSize + 1; k++)
-            { // 不管是 refAbove 还是 refLeft 都是从左上角参考点开始存储, 也就是说 refAbove[0] 和 refLeft[0] 是一样的, 重复了
-                refAbove[k] = pSrc[k - srcStride - 1];
-            }
+            // 角度偏移值大于等于零的不需要投影
             for (k = 0; k < 2 * blkSize + 1; k++)
             {
-                refLeft[k] = pSrc[(k - 1) * srcStride - 1];
+                refAbove[k] = pSrc[k - srcStride - 1];      // 填充上方参考像素
+                refLeft[k] = pSrc[(k - 1) * srcStride - 1]; // 填充左侧参考像素
             }
-            refMain = modeVer ? refAbove : refLeft;
-            refSide = modeVer ? refLeft : refAbove;
+
+            refMain = modeVer ? refAbove : refLeft; // 确定主参考像素
+            refSide = modeVer ? refLeft : refAbove; // 确定侧参考像素
         }
 
-        if (intraPredAngle == 0)
+        if (intraPredAngle == 0) // pure vertical or pure horizontal
         {
+            //竖直模式或水平模式
             for (l = 0; l < blkSize; l++)
             {
                 pDst[l] = refMain[l + 1];
@@ -461,7 +484,8 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
                 }
             }
         }
-        else
+
+        else if (intraPredAngle < 0)
         {
             Int deltaPos = 0;
             Int deltaInt;
@@ -509,12 +533,83 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
             }
         }
 
-        // Flip the block if this is the horizontal mode
+        else //剩>0的情况
+        {
+            // 非竖直或水平模式
+            Int deltaPos = 0;
+            Int deltaInt;
+            Int deltaFract;
+            Int refMainIndex;
+
+            Int Modebound;
+
+            //模式为垂直类和水平类对反向的计算起始一样，只是水平类最后翻转一下即可
+
+            deltaPos += intraPredAngle;
+            deltaInt = deltaPos >> 5;
+            deltaFract = deltaPos & (32 - 1);
+            if (deltaFract)
+            {
+                // Do linear filtering
+                for (l = 0; l < blkSize; l++) //行的情况不变
+                {
+                    refMainIndex = l + deltaInt + 1;
+                    pDst[l] = (Pel)(((32 - deltaFract) * refMain[refMainIndex] + deltaFract * refMain[refMainIndex + 1] + 16) >> 5);
+                }
+            }
+            else
+            {
+                // Just copy the integer samples
+                for (l = 0; l < blkSize; l++)
+                {
+                    pDst[l] = refMain[l + deltaInt + 1];
+                }
+            }
+
+            for (k = 1; k < blkSize; k++) //列的情况
+            {
+                Modebound = getModebound(k + 1, modeHor);
+                if (modeVer ? (dirMode < Modebound) : (dirMode > Modebound)) //说明不要反向
+                {
+                    deltaPos += intraPredAngle;
+                    deltaInt = deltaPos >> 5;
+                    deltaFract = deltaPos & (32 - 1);
+                    if (deltaFract)
+                    {
+                        // Do linear filtering
+                        refMainIndex = deltaInt + 1;
+                        pDst[k * dstStride] = (Pel)(((32 - deltaFract) * refMain[refMainIndex] + deltaFract * refMain[refMainIndex + 1] + 16) >> 5);
+                    }
+                    else
+                    {
+                        // Just copy the integer samples
+                        pDst[k * dstStride] = refMain[deltaInt + 1];
+                    }
+                }
+                else //需要反向的点
+                {
+                    //由于是从垂直模式反向水平直模式，原来的偏移值intraPredAngle指的是当前模式距离垂直模式的偏移
+                    deltaPos = 32;                                                   //deltaPos为行高(这里即为1)，32除以该值即为参考像素相对当前像素所在行的反向偏移值
+                    deltaInt = deltaPos / intraPredAngle;                            //整数部分
+                    deltaFract = 32 * ((float)deltaPos / intraPredAngle - deltaInt); //余数部分
+
+                    if (deltaFract)
+                    {
+                        refMainIndex = k + deltaInt + 1; // 左侧参考像素
+                        pDst[k * dstStride] = (Pel)(((32 - deltaFract) * refSide[refMainIndex] + deltaFract * refSide[refMainIndex + 1] + 16) >> 5);
+                    }
+                    else
+                    {
+                        pDst[k * dstStride] = refSide[k + deltaInt + 1]; //copy
+                    }
+                }
+            }
+        }
         if (modeHor)
         {
             Pel tmp;
+            k = 0;
             {
-                k = 0;
                 for (l = k + 1; l < blkSize; l++)
                 {
                     tmp = pDst[k * dstStride + l];
@@ -522,15 +617,6 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
                     pDst[l * dstStride + k] = tmp;
                 }
             }
-            // for (k = 1; k < blkSize - 1; k++)
-            // {
-            //     l = 0;
-            //     {
-            //         tmp = pDst[k * dstStride + l];
-            //         pDst[k * dstStride + l] = pDst[l * dstStride + k];
-            //         pDst[l * dstStride + k] = tmp;
-            //     }
-            // }
         }
     }
 }
