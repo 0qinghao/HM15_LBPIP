@@ -717,7 +717,7 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
     if (uiDirMode == PLANAR_IDX)
     {
         // PLANAR 模式预测
-        xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
     }
     else
     {
@@ -867,6 +867,7 @@ UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMo
 }
 UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
 {
+    assert(0);
     Pel *pDst = piPred;
     // ptrSrc 指向当前的参考像素
     Int *ptrSrc;
@@ -1082,7 +1083,7 @@ Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred,
 
     if (uiDirMode == PLANAR_IDX)
     {
-        xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
     }
     else
     {
@@ -1092,6 +1093,7 @@ Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred,
 }
 UInt TComPrediction::predIntraChromaAng3x3(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
 {
+    assert(0);
     Pel *pDst = piPred;
     Int *ptrSrc = piSrc;
 
@@ -1627,7 +1629,111 @@ Void TComPrediction::xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, In
     //     }
     // }
 }
+Void TComPrediction::xPredIntraPlanarnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height)
+{
+    // enum PlanarType
+    // {
+    //     HEVC,
+    //     V_Planar,
+    //     H_Planar,
+    //     HV_Planar,
+    //     Planar_3p,
+    //     SAP_E,
+    //     Tendency,
+    //     Tendency_C,
+    //     Weight121,
+    //     SAP_E_LP,
+    // };
+    // PlanarType SelectedType = SAP_E;
 
+    assert(width == height);
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    UInt blkSize = width;
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+
+    // switch (SelectedType)
+    // {
+    // case HEVC:
+    // {
+    //     for (k = 0; k < blkSize; k++)
+    //     {
+    //         bottomRow[k] = bottomLeft - topRow[k];
+    //         rightColumn[k] = topRight - leftColumn[k];
+    //         topRow[k] = topRow[k] * uiPredDstSize;
+    //         leftColumn[k] = leftColumn[k] * uiPredDstSize;
+    //         // topRow[k] <<= shift1D;
+    //         // leftColumn[k] <<= shift1D;
+    //     }
+    //     horPred = leftColumn[0] + offset2D;
+    //     for (l = 0; l < blkSize; l++)
+    //     {
+    //         horPred += rightColumn[0];
+    //         topRow[l] += bottomRow[l];
+    //         rpDst[l] = ((horPred + topRow[l] + uiPredDstSize) / (2 * uiPredDstSize));
+    //     }
+    //     for (k = 1; k < blkSize; k++)
+    //     {
+    //         horPred = leftColumn[k] + offset2D;
+    //         horPred += rightColumn[k];
+    //         topRow[0] += bottomRow[0];
+    //         rpDst[k * dstStride] = ((horPred + topRow[0] + uiPredDstSize) / (2 * uiPredDstSize));
+    //     }
+    //     break;
+    // }
+
+    // case SAP_E:
+    {
+        // for (l = 0; l < blkSize; l++)
+        // {
+        //     Pel left = pSrc[l - 1];
+        //     Pel top = pSrc[l - srcStride];
+        //     Pel lefttop = pSrc[l - srcStride - 1];
+        //     if (lefttop >= max(left, top))
+        //     {
+        //         rpDst[l] = min(left, top);
+        //     }
+        //     else if (lefttop <= min(left, top))
+        //     {
+        //         rpDst[l] = max(left, top);
+        //     }
+        //     else
+        //     {
+        //         rpDst[l] = left + top - lefttop;
+        //     }
+        // }
+        for (k = 0; k < blkSize; k++)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                Pel left = pSrc[k * srcStride - 1 + l];
+                Pel top = pSrc[(k - 1) * srcStride + l];
+                Pel lefttop = pSrc[(k - 1) * srcStride - 1 + l];
+                if (lefttop >= max(left, top))
+                {
+                    rpDst[k * dstStride + l] = min(left, top);
+                }
+                else if (lefttop <= min(left, top))
+                {
+                    rpDst[k * dstStride + l] = max(left, top);
+                }
+                else
+                {
+                    rpDst[k * dstStride + l] = left + top - lefttop;
+                }
+            }
+        }
+    }
+}
 Void TComPrediction::xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
 {
     enum PlanarType
@@ -1927,6 +2033,7 @@ Void TComPrediction::xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst,
 }
 Void TComPrediction::xPredIntraPlanar3x3(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
 {
+    assert(0);
     assert(width == height);
     assert(uiPredDstSize == 3);
 

@@ -1107,6 +1107,7 @@ Void TEncSearch::xIntraCodingLumaBlk(TComDataCU *pcCU,
         pcCU->getPattern()->initPattern(pcCU, uiTrDepth, uiAbsPartIdx);
         // 处理参考像素
         pcCU->getPattern()->initAdiPattern(pcCU, uiAbsPartIdx, uiTrDepth, m_piYuvExt, m_iYuvExtStride, m_iYuvExtHeight, bAboveAvail, bLeftAvail);
+        FillRefLP(m_piYuvExt, piOrg, uiWidth, 0b1111);
         //===== get prediction signal =====
         // 针对给定模式进行帧内预测, 获取预测值
         predIntraLumaAng(pcCU->getPattern(), uiLumaPredMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail);
@@ -1839,7 +1840,14 @@ Void TEncSearch::xIntraCodingChromaBlk(TComDataCU *pcCU,
 
         pcCU->getPattern()->initAdiPatternChroma(pcCU, uiAbsPartIdx, uiTrDepth, m_piYuvExt, m_iYuvExtStride, m_iYuvExtHeight, bAboveAvail, bLeftAvail);
         Int *pPatChroma = (uiChromaId > 0 ? pcCU->getPattern()->getAdiCrBuf(uiWidth, uiHeight, m_piYuvExt) : pcCU->getPattern()->getAdiCbBuf(uiWidth, uiHeight, m_piYuvExt));
-
+        if (uiChromaId > 0)
+        {
+            FillRefChromaLP(pPatChroma, piOrg, uiWidth, 0b1111);
+        }
+        else
+        {
+            FillRefChromaLP(pPatChroma, piOrg, uiWidth, 0b1111);
+        }
         //===== get prediction signal =====
         {
             predIntraChromaAng(pPatChroma, uiChromaPredMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail);
