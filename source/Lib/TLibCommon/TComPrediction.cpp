@@ -247,6 +247,16 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
                 pDst[k * dstStride + l] = dcval;
             }
         }
+        // for (k = 0; k < blkSize; k++)
+        // {
+        //     for (l = 0; l < blkSize; l++)
+        //     {
+        //         Pel far1 = pSrc[(k - 1) * srcStride - 1 + l];
+        //         Pel near = pSrc[k * srcStride - 1 + l];
+        //         Pel far2 = pSrc[(k + 1) * srcStride - 1 + l];
+        //         rpDst[k * dstStride + l] = (far1 + far2 + near * 2 + 2) / 4;
+        //     }
+        // }
     }
 
     // Do angular predictions
