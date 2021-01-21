@@ -360,7 +360,7 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
         }
     }
 }
-Int TComPrediction::getModebound(Int x, Bool isrow)
+Int TComPrediction::getModebound(int x, Bool isrow)
 {
     //x是在当前行中第几个（从1开始）或者在列中第几个
     //width是当前层宽
@@ -368,13 +368,54 @@ Int TComPrediction::getModebound(Int x, Bool isrow)
     //dirMode是
     //isrow表示是行像素还是列像素
     //适用于下方像素也存在的情况
-    assert(x <= 32);
-    Int i;
-    Int Modebound = 0;
-    Int Rx[32] = {100, 34, 32, 31, 30, 30, 30, 30, 30, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27};
-    Int Ry[32] = {0, 2, 4, 5, 6, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9};
-    Modebound = isrow ? Ry[x - 1] : Rx[x - 1];
-    return Modebound;
+    // assert(x <= 32);
+    // Int i;
+    // Int Modebound = 0;
+    // Int Rx[32] = {100, 34, 32, 31, 30, 30, 30, 30, 30, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27};
+    // Int Ry[32] = {0, 2, 4, 5, 6, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9};
+    // Modebound = isrow ? Ry[x - 1] : Rx[x - 1];
+    // return Modebound;
+
+    // Int getModebound(int x, int width, int widthf, int isrow)
+    //x是在当前行中第几个（从1开始）或者在列中第几个
+    //width是当前层宽
+    //widthf是块宽
+    //dirMode是
+    //isrow表示是行像素还是列像素
+    //适用于下方像素也存在的情况
+    // Int blkSizef = widthf; //16
+    // int blkSize = width;
+    int i;
+    int tang[9] = {0, 16, 40, 72, 104, 136, 168, 208, 256}; //当前角度正切值
+    int Modebound = 0;
+    int Modeboundrow = 0;
+    int Modeboundcol;
+    int Modebound1 = 0;
+    int Modebound2 = 0;
+    int Modebound3 = 0;
+
+    float curang1 = 256.0 / x; //黑色
+                               //	float	curang2 = 256.0 *(blkSizef - blkSize + 1) / (blkSize - x + blkSizef);//红色
+                               //	float	curang3 = 256.0 / (blkSize - x);//绿色
+
+    for (i = 0; i <= 8; i++) //根据每个点位置信息算出了需要反向的模式边界
+    {
+        if (curang1 >= tang[i] && curang1 < tang[i + 1]) //步骤1
+            Modebound1 = 10 - (i + 1);
+        //	if (curang2 >= tang[i] && curang2 < tang[i + 1])//步骤2
+        //			Modebound2 = 10 - (i + 1);
+        //	if (curang3 >= tang[i] && curang3 < tang[i + 1])//步骤3
+        //		Modebound3 = 10 - (i + 1);
+    }
+    //	if (x > blkSize / 2 && Modebound2 <= Modebound1)
+    //		Modeboundrow = Modebound2;
+    //	else
+    //		Modeboundrow = Modebound1;
+    //	if (Modebound3 <= Modebound1 && Modebound3 >= Modebound2)
+    //		Modeboundrow = Modebound3;
+    //	Modeboundcol = 36 - Modeboundrow;
+    //	Modebound = isrow ? Modeboundrow : Modeboundcol;
+    return Modebound1;
 }
 Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize)
 {
