@@ -401,7 +401,11 @@ Int TComPrediction::getModebound(int x, Bool isrow)
     for (i = 0; i <= 8; i++) //根据每个点位置信息算出了需要反向的模式边界
     {
         if (curang1 >= tang[i] && curang1 < tang[i + 1]) //步骤1
-            Modebound1 = 10 - (i + 1);
+        // Modebound1 = 10 - (i + 1);
+        {
+            Modebound1 = isrow ? (10 - (i + 1)) : (26 + i + 1);
+            break;
+        }
         //	if (curang2 >= tang[i] && curang2 < tang[i + 1])//步骤2
         //			Modebound2 = 10 - (i + 1);
         //	if (curang3 >= tang[i] && curang3 < tang[i + 1])//步骤3
