@@ -522,15 +522,15 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
                     pDst[l * dstStride + k] = tmp;
                 }
             }
-            for (k = 1; k < blkSize - 1; k++)
-            {
-                l = 0;
-                {
-                    tmp = pDst[k * dstStride + l];
-                    pDst[k * dstStride + l] = pDst[l * dstStride + k];
-                    pDst[l * dstStride + k] = tmp;
-                }
-            }
+            // for (k = 1; k < blkSize - 1; k++)
+            // {
+            //     l = 0;
+            //     {
+            //         tmp = pDst[k * dstStride + l];
+            //         pDst[k * dstStride + l] = pDst[l * dstStride + k];
+            //         pDst[l * dstStride + k] = tmp;
+            //     }
+            // }
         }
     }
 }
