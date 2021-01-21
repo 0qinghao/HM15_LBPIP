@@ -122,6 +122,7 @@ public:
     Void codeQtRootCbfZero(TComDataCU *pcCU);
     Void codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple);
     Void codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple);
+    Void codeIntraDirLumaAngLPwr(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple);
     Void codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx);

@@ -1472,7 +1472,7 @@ Void TEncGOP::compressGOP(Int iPOCLast, Int iNumPicRcvd, TComList<TComPic *> &rc
                 pcSlice->setTileOffstForMultES(uiOneBitstreamPerSliceLength);
                 pcSlice->setTileLocationCount(0);
                 // 根据 RDO 结果编码 写数据流
-                m_pcSliceEncoder->encodeSlice(pcPic, pcSubstreamsOut);
+                // m_pcSliceEncoder->encodeSlice(pcPic, pcSubstreamsOut);
 
                 {
                     // Construct the final bitstream by flushing and concatenating substreams.
