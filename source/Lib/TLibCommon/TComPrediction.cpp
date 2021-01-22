@@ -1728,15 +1728,15 @@ Void TComPrediction::xPredIntraPlanarnew(Int *pSrc, Int srcStride, Pel *rpDst, I
                 Pel left = pSrc[k * srcStride - 1 + l];
                 Pel top = pSrc[(k - 1) * srcStride + l];
                 Pel lefttop = pSrc[(k - 1) * srcStride - 1 + l];
-                if (lefttop >= max(left, top))
-                {
-                    rpDst[k * dstStride + l] = min(left, top);
-                }
-                else if (lefttop <= min(left, top))
-                {
-                    rpDst[k * dstStride + l] = max(left, top);
-                }
-                else
+                // if (lefttop >= max(left, top))
+                // {
+                //     rpDst[k * dstStride + l] = min(left, top);
+                // }
+                // else if (lefttop <= min(left, top))
+                // {
+                //     rpDst[k * dstStride + l] = max(left, top);
+                // }
+                // else
                 {
                     rpDst[k * dstStride + l] = left + top - lefttop;
                 }
