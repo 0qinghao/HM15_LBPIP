@@ -1643,7 +1643,7 @@ Void TComPrediction::xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst,
         Weight121,
         SAP_E_LP,
     };
-    PlanarType SelectedType = SAP_E;
+    PlanarType SelectedType = HV_Planar;
 
     assert(width == height);
     Int k, l, bottomLeft, topRight;
@@ -1718,11 +1718,12 @@ Void TComPrediction::xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst,
     {
         for (l = 0; l < blkSize; l++)
         {
-            rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+            // rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+            rpDst[l] = (bottomLeft * 1 + topRow[l] * uiPredDstSize) / (uiPredDstSize + 1);
         }
         for (k = 1; k < blkSize; k++)
         {
-            rpDst[k * dstStride] = (topRow[0] * (uiPredDstSize - k) + bottomLeft * (k + 1)) / (uiPredDstSize + 1);
+            rpDst[k * dstStride] = (leftColumn[k] * (uiPredDstSize) + topRight * (1)) / (uiPredDstSize + 1);
         }
         break;
     }
