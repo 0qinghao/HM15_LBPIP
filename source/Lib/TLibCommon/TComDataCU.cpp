@@ -1,7 +1,7 @@
 ﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
- * granted under this license.  
+ * granted under this license.
  *
  * Copyright (c) 2010-2014, ITU/ISO/IEC
  * All rights reserved.
@@ -32,9 +32,9 @@
  */
 
 /** \file     TComDataCU.cpp
-    \brief    CU data structure
-    \todo     not all entities are documented
-*/
+     \brief    CU data structure
+     \todo     not all entities are documented
+ */
 
 #include "TComDataCU.h"
 #include "TComPic.h"
@@ -918,8 +918,8 @@ Void TComDataCU::initCU(TComPic *pcPic, UInt iCUAddr)
 *\param  uiDepth  depth of the current CU
 *\param  qp     qp for the current CU
 *- set CU width and CU height according to depth
-*- set qp value according to input qp 
-*- set last-coded qp value according to input last-coded qp 
+*- set qp value according to input qp
+*- set last-coded qp value according to input last-coded qp
 */
 // 初始化 TComDataCU 类中的各种成员变量
 Void TComDataCU::initEstData(UInt uiDepth, Int qp, Bool bTransquantBypass)
@@ -1395,15 +1395,15 @@ Void TComDataCU::copyPartFrom(TComDataCU *pcCU, UInt uiPartUnitIdx, UInt uiDepth
     memcpy(m_puhChromaLoopFlag + uiOffset, pcCU->getChromaLoopFlag(), iSizeInUchar);
     memcpy(m_puhLumaIntraDir + (uiOffset << 2), pcCU->getLumaIntraDir(), iSizeInUchar << 2);
     // memcpy(m_puhLumaIntraDirnp0111 + (uiOffset << 2), pcCU->getLumaIntraDirnp0111(), iSizeInUchar << 2);
-    // memcpy(m_puhLumaIntraDirnp1011 + (uiOffset << 2), pcCU->getLumaIntraDirnp1011(), iSizeInUchar << 2);
-    // memcpy(m_puhLumaIntraDirnp1101 + (uiOffset << 2), pcCU->getLumaIntraDirnp1101(), iSizeInUchar << 2);
-    // memcpy(m_puhLumaIntraDirnp1110 + (uiOffset << 2), pcCU->getLumaIntraDirnp1110(), iSizeInUchar << 2);
+    memcpy(m_puhLumaIntraDirnp1011 + (uiOffset << 2), pcCU->getLumaIntraDirnp1011(), iSizeInUchar << 2);
+    memcpy(m_puhLumaIntraDirnp1101 + (uiOffset << 2), pcCU->getLumaIntraDirnp1101(), iSizeInUchar << 2);
+    memcpy(m_puhLumaIntraDirnp1110 + (uiOffset << 2), pcCU->getLumaIntraDirnp1110(), iSizeInUchar << 2);
     // memcpy(m_puhChromaIntraDir + uiOffset, pcCU->getChromaIntraDir(), iSizeInUchar);
     memcpy(m_puhChromaIntraDir + (uiOffset << 2), pcCU->getChromaIntraDir(), (iSizeInUchar << 2));
     // memcpy(m_puhChromaIntraDirnp0111 + (uiOffset << 2), pcCU->getChromaIntraDirnp0111(), (iSizeInUchar << 2));
-    // memcpy(m_puhChromaIntraDirnp1011 + (uiOffset << 2), pcCU->getChromaIntraDirnp1011(), (iSizeInUchar << 2));
-    // memcpy(m_puhChromaIntraDirnp1101 + (uiOffset << 2), pcCU->getChromaIntraDirnp1101(), (iSizeInUchar << 2));
-    // memcpy(m_puhChromaIntraDirnp1110 + (uiOffset << 2), pcCU->getChromaIntraDirnp1110(), (iSizeInUchar << 2));
+    memcpy(m_puhChromaIntraDirnp1011 + (uiOffset << 2), pcCU->getChromaIntraDirnp1011(), (iSizeInUchar << 2));
+    memcpy(m_puhChromaIntraDirnp1101 + (uiOffset << 2), pcCU->getChromaIntraDirnp1101(), (iSizeInUchar << 2));
+    memcpy(m_puhChromaIntraDirnp1110 + (uiOffset << 2), pcCU->getChromaIntraDirnp1110(), (iSizeInUchar << 2));
     // memcpy(m_puhInterDir + uiOffset, pcCU->getInterDir(), iSizeInUchar);
     memcpy(m_puhTrIdx + uiOffset, pcCU->getTransformIdx(), iSizeInUchar);
     // memcpy(m_puhTransformSkip[0] + uiOffset, pcCU->getTransformSkip(TEXT_LUMA), iSizeInUchar);
@@ -1491,7 +1491,7 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     // memcpy(rpcCU->m_puhLumaIntraDirnp1101 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1101, iSizeInUchar);
     // memcpy(rpcCU->m_puhLumaIntraDirnp1110 + m_uiAbsIdxInLCU, m_puhLumaIntraDirnp1110, iSizeInUchar);
     memcpy(rpcCU->getLumaIntraDir() + (m_uiAbsIdxInLCU << 2), m_puhLumaIntraDir, (iSizeInUchar << 2));
-    memcpy(rpcCU->getLumaIntraDirnp0111() + (m_uiAbsIdxInLCU << 2), m_puhLumaIntraDirnp0111, (iSizeInUchar << 2));
+    // memcpy(rpcCU->getLumaIntraDirnp0111() + (m_uiAbsIdxInLCU << 2), m_puhLumaIntraDirnp0111, (iSizeInUchar << 2));
     memcpy(rpcCU->getLumaIntraDirnp1011() + (m_uiAbsIdxInLCU << 2), m_puhLumaIntraDirnp1011, (iSizeInUchar << 2));
     memcpy(rpcCU->getLumaIntraDirnp1101() + (m_uiAbsIdxInLCU << 2), m_puhLumaIntraDirnp1101, (iSizeInUchar << 2));
     memcpy(rpcCU->getLumaIntraDirnp1110() + (m_uiAbsIdxInLCU << 2), m_puhLumaIntraDirnp1110, (iSizeInUchar << 2));
@@ -1499,7 +1499,7 @@ Void TComDataCU::copyToPic(UChar uhDepth)
     memcpy(rpcCU->getLumaLoopFlag() + m_uiAbsIdxInLCU, m_puhLumaLoopFlag, iSizeInUchar);
     memcpy(rpcCU->getChromaLoopFlag() + m_uiAbsIdxInLCU, m_puhChromaLoopFlag, iSizeInUchar);
     memcpy(rpcCU->getChromaIntraDir() + (m_uiAbsIdxInLCU << 2), m_puhChromaIntraDir, (iSizeInUchar << 2));
-    memcpy(rpcCU->getChromaIntraDirnp0111() + (m_uiAbsIdxInLCU << 2), m_puhChromaIntraDirnp0111, (iSizeInUchar << 2));
+    // memcpy(rpcCU->getChromaIntraDirnp0111() + (m_uiAbsIdxInLCU << 2), m_puhChromaIntraDirnp0111, (iSizeInUchar << 2));
     memcpy(rpcCU->getChromaIntraDirnp1011() + (m_uiAbsIdxInLCU << 2), m_puhChromaIntraDirnp1011, (iSizeInUchar << 2));
     memcpy(rpcCU->getChromaIntraDirnp1101() + (m_uiAbsIdxInLCU << 2), m_puhChromaIntraDirnp1101, (iSizeInUchar << 2));
     memcpy(rpcCU->getChromaIntraDirnp1110() + (m_uiAbsIdxInLCU << 2), m_puhChromaIntraDirnp1110, (iSizeInUchar << 2));
@@ -2077,7 +2077,7 @@ Char TComDataCU::getLastCodedQP(UInt uiAbsPartIdx)
 }
 /** Check whether the CU is coded in lossless coding mode
  * \param   uiAbsPartIdx
- * \returns true if the CU is coded in lossless coding mode; false if otherwise 
+ * \returns true if the CU is coded in lossless coding mode; false if otherwise
  */
 Bool TComDataCU::isLosslessCoded(UInt absPartIdx)
 {
@@ -2087,7 +2087,7 @@ Bool TComDataCU::isLosslessCoded(UInt absPartIdx)
 /** Get allowed chroma intra modes
 *\param   uiAbsPartIdx
 *\param   uiModeList  pointer to chroma intra modes array
-*\returns 
+*\returns
 *- fill uiModeList with chroma intra modes
 */
 Void TComDataCU::getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList)
@@ -2497,12 +2497,19 @@ Void TComDataCU::setLumaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx,
         Int iRasterIdxC = i - (uiWidth / 4) * iRasterIdxR;
         UInt uiOffset = uiRasterToZscan[i] * 4;
         puhModeCurrLoop = puhModeAll + min(iRasterIdxR, iRasterIdxC) * 4;
+        assert(*puhModeCurrLoop < LOOP_DIR_NUM);
+        assert(*(puhModeCurrLoop + 1) < LOOP_DIR_NUM);
+        assert(*(puhModeCurrLoop + 2) < LOOP_DIR_NUM);
+        assert(*(puhModeCurrLoop + 3) < LOOP_DIR_NUM);
 
         ::memcpy(puhLumaIntraDir + uiOffset, puhModeCurrLoop, 4 * sizeof(UChar));
     }
     UInt uiOffset = uiRasterToZscan[(uiWidth / 4) * (uiWidth / 4) - 1] * 4;
-    ::memset(puhLumaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 1);
-    ::memset(puhLumaIntraDir + uiOffset + 1, puhModeAll[uiWidth - 3], 3);
+    assert(puhModeAll[uiWidth - 4] < LOOP_DIR_NUM);
+    // assert(puhModeAll[uiWidth - 3] < LOOP_DIR_NUM);
+    ::memset(puhLumaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 4);
+    // ::memset(puhLumaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 1);
+    // ::memset(puhLumaIntraDir + uiOffset + 1, puhModeAll[uiWidth - 3], 3);
 }
 Void TComDataCU::setChromaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx, UInt uiWidth)
 {
@@ -2537,12 +2544,18 @@ Void TComDataCU::setChromaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartId
         Int iRasterIdxC = i - (uiWidth / 4) * iRasterIdxR;
         UInt uiOffset = uiRasterToZscan[i] * 4;
         puhModeCurrLoop = puhModeAll + min(iRasterIdxR, iRasterIdxC) * 4;
+        assert(*puhModeCurrLoop < LOOP_DIR_NUM);
+        assert(*(puhModeCurrLoop + 1) < LOOP_DIR_NUM);
+        assert(*(puhModeCurrLoop + 2) < LOOP_DIR_NUM);
+        assert(*(puhModeCurrLoop + 3) < LOOP_DIR_NUM);
 
         ::memcpy(puhChromaIntraDir + uiOffset, puhModeCurrLoop, 4 * sizeof(UChar));
     }
     UInt uiOffset = uiRasterToZscan[(uiWidth / 4) * (uiWidth / 4) - 1] * 4;
-    ::memset(puhChromaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 1);
-    ::memset(puhChromaIntraDir + uiOffset + 1, puhModeAll[uiWidth - 3], 3);
+    assert(puhModeAll[uiWidth - 4] < LOOP_DIR_NUM);
+    ::memset(puhChromaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 4);
+    // ::memset(puhChromaIntraDir + uiOffset, puhModeAll[uiWidth - 4], 1);
+    // ::memset(puhChromaIntraDir + uiOffset + 1, puhModeAll[uiWidth - 3], 3);
 }
 Void TComDataCU::setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth)
 {
@@ -3082,8 +3095,8 @@ Void TComDataCU::deriveLeftBottomIdx(UInt uiPartIdx, UInt &ruiPartIdxLB)
 
 /** Derives the partition index of neighbouring bottom right block
  * \param [in]  eCUMode
- * \param [in]  uiPartIdx 
- * \param [out] ruiPartIdxRB 
+ * \param [in]  uiPartIdx
+ * \param [out] ruiPartIdxRB
  */
 Void TComDataCU::deriveRightBottomIdx(UInt uiPartIdx, UInt &ruiPartIdxRB)
 {
@@ -3165,7 +3178,7 @@ Bool TComDataCU::hasEqualMotion(UInt uiAbsPartIdx, TComDataCU *pcCandCU, UInt ui
 
 /** Constructs a list of merging candidates
  * \param uiAbsPartIdx
- * \param uiPUIdx 
+ * \param uiPUIdx
  * \param uiDepth
  * \param pcMvFieldNeighbours
  * \param puhInterDirNeighbours
@@ -3594,7 +3607,7 @@ Void TComDataCU::getPartPosition(UInt partIdx, Int &xP, Int &yP, Int &nPSW, Int 
 
 /** Constructs a list of candidates for AMVP
  * \param uiPartIdx
- * \param uiPartAddr 
+ * \param uiPartAddr
  * \param eRefPicList
  * \param iRefIdx
  * \param pInfo
@@ -3903,9 +3916,9 @@ Bool TComDataCU::xAddMVPCand(AMVPInfo *pInfo, RefPicList eRefPicList, Int iRefId
     return false;
 }
 
-/** 
+/**
  * \param pInfo
- * \param eRefPicList 
+ * \param eRefPicList
  * \param iRefIdx
  * \param uiPartUnitIdx
  * \param eDir
@@ -4034,9 +4047,9 @@ Bool TComDataCU::xAddMVPCandOrder(AMVPInfo *pInfo, RefPicList eRefPicList, Int i
     return false;
 }
 
-/** 
+/**
  * \param eRefPicList
- * \param uiCUAddr 
+ * \param uiCUAddr
  * \param uiPartUnitIdx
  * \param riRefIdx
  * \returns Bool
@@ -4150,9 +4163,9 @@ Int TComDataCU::xGetDistScaleFactor(Int iCurrPOC, Int iCurrRefPOC, Int iColPOC, 
     }
 }
 
-/** 
+/**
  * \param eCUMode
- * \param uiPartIdx 
+ * \param uiPartIdx
  * \param ruiPartIdxCenter
  * \returns Void
  */

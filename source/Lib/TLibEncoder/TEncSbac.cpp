@@ -1,7 +1,7 @@
 ﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
- * granted under this license.  
+ * granted under this license.
  *
  * Copyright (c) 2010-2014, ITU/ISO/IEC
  * All rights reserved.
@@ -32,8 +32,8 @@
  */
 
 /** \file     TEncSbac.cpp
-    \brief    SBAC encoder class
-*/
+     \brief    SBAC encoder class
+ */
 
 #include "TEncTop.h"
 #include "TEncSbac.h"
@@ -129,8 +129,8 @@ Void TEncSbac::resetEntropy()
     return;
 }
 
-/** The function does the following: 
- * If current slice type is P/B then it determines the distance of initialisation type 1 and 2 from the current CABAC states and 
+/** The function does the following:
+ * If current slice type is P/B then it determines the distance of initialisation type 1 and 2 from the current CABAC states and
  * stores the index of the closest table.  This index is used for the next P/B slice when cabac_init_present_flag is true.
  */
 Void TEncSbac::determineCabacInitIdx()
@@ -511,7 +511,7 @@ Void TEncSbac::codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
 /** code prediction mode
  * \param pcCU
- * \param uiAbsPartIdx  
+ * \param uiAbsPartIdx
  * \returns Void
  */
 // 编码预测模式(帧内还是帧间)
@@ -530,7 +530,7 @@ Void TEncSbac::codeCUTransquantBypassFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
 
 /** code skip flag
  * \param pcCU
- * \param uiAbsPartIdx 
+ * \param uiAbsPartIdx
  * \returns Void
  */
 Void TEncSbac::codeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
@@ -550,7 +550,7 @@ Void TEncSbac::codeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
 
 /** code merge flag
  * \param pcCU
- * \param uiAbsPartIdx 
+ * \param uiAbsPartIdx
  * \returns Void
  */
 Void TEncSbac::codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
@@ -570,7 +570,7 @@ Void TEncSbac::codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
 
 /** code merge index
  * \param pcCU
- * \param uiAbsPartIdx 
+ * \param uiAbsPartIdx
  * \returns Void
  */
 Void TEncSbac::codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx)
@@ -626,63 +626,19 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     {
         codePartSize(pcCU, uiAbsPartIdx, uiDepth);
         codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
-        // if (*(pcCU->getLumaLoopFlag() + uiAbsPartIdx) == 0)
-        // {
-        //     // 环状还是块状
-        //     m_pcBinIf->encodeBinEP(0);
-        // }
-        // else
-        // {
-        //     m_pcBinIf->encodeBinEP(1);
-        // }
-        // if (*(pcCU->getChromaLoopFlag() + uiAbsPartIdx) == 0)
-        // {
-        //     // 环状还是块状
-        //     m_pcBinIf->encodeBinEP(0);
-        // }
-        // else
-        // {
-        //     m_pcBinIf->encodeBinEP(1);
-        // }
+
         codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChromaLP(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
         PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
         switch (eSize8x8)
         {
         case SIZE_B_1011:
-            // if (*(pcCU->getLumaLoopFlag() + uiAbsPartIdx + 1) == 0)
-            // {
-            //     // 环状还是块状
-            //     m_pcBinIf->encodeBinEP(0);
-            // }
-            // else
-            // {
-            //     m_pcBinIf->encodeBinEP(1);
-            // }
             codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
             break;
         case SIZE_B_1101:
-            // if (*(pcCU->getLumaLoopFlag() + uiAbsPartIdx + 2) == 0)
-            // {
-            //     // 环状还是块状
-            //     m_pcBinIf->encodeBinEP(0);
-            // }
-            // else
-            // {
-            //     m_pcBinIf->encodeBinEP(1);
-            // }
             codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
             break;
         case SIZE_B_1110:
-            // if (*(pcCU->getLumaLoopFlag() + uiAbsPartIdx + 3) == 0)
-            // {
-            //     // 环状还是块状
-            //     m_pcBinIf->encodeBinEP(0);
-            // }
-            // else
-            // {
-            //     m_pcBinIf->encodeBinEP(1);
-            // }
             codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
             break;
         default:
@@ -717,16 +673,16 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
         codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
         codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
         break;
-    // case SIZE_NxN:
-    //     codeSplitFlag(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
-    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1); // 第一部分不用编方向了
-    //     codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
-    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
-    //     codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
-    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
-    //     codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
-    //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
-    //     break;
+        // case SIZE_NxN:
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1); // 第一部分不用编方向了
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        //     break;
     default:
         break;
     }
@@ -744,24 +700,6 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     }
     else
     {
-        // if (*(pcCU->getLumaLoopFlag() + uiAbsPartIdx) == 0)
-        // {
-        //     // 环状还是块状
-        //     m_pcBinIf->encodeBinEP(0);
-        // }
-        // else
-        // {
-        //     m_pcBinIf->encodeBinEP(1);
-        // }
-        // if (*(pcCU->getChromaLoopFlag() + uiAbsPartIdx) == 0)
-        // {
-        //     // 环状还是块状
-        //     m_pcBinIf->encodeBinEP(0);
-        // }
-        // else
-        // {
-        //     m_pcBinIf->encodeBinEP(1);
-        // }
         codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
     }
@@ -917,6 +855,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
             // 干脆直接编码得了
             for (j = 0; j < iLoopCnt; j++)
             {
+                assert(puhModeAll[j] < LOOP_DIR_NUM);
                 m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
                 // if (puhModeAll[j] == 0) iLoopCnt);
                 // {
@@ -1910,7 +1849,7 @@ Void TEncSbac::codeSaoMaxUvlc(UInt code, UInt maxSymbol)
     }
 }
 
-/** Code SAO EO class or BO band position 
+/** Code SAO EO class or BO band position
  * \param uiLength
  * \param uiCode
  */
@@ -1933,7 +1872,7 @@ Void TEncSbac::codeSaoMerge(UInt uiCode)
         m_pcBinIf->encodeBin(1, m_cSaoMergeSCModel.get(0, 0, 0));
     }
 }
-/** Code SAO type index 
+/** Code SAO type index
  * \param uiCode
  */
 Void TEncSbac::codeSaoTypeIdx(UInt uiCode)

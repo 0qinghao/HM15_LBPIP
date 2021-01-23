@@ -1,7 +1,7 @@
 ﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
- * granted under this license.  
+ * granted under this license.
  *
  * Copyright (c) 2010-2014, ITU/ISO/IEC
  * All rights reserved.
@@ -32,8 +32,8 @@
  */
 
 /** \file     TEncCu.cpp
-    \brief    Coding Unit (CU) encoder class
-*/
+     \brief    Coding Unit (CU) encoder class
+ */
 
 #include <stdio.h>
 #include "TEncTop.h"
@@ -299,7 +299,7 @@ Void TEncCu::encodeCU(TComDataCU *pcCU)
  *\param   bTestAMP_Ver
  *\param   bTestMergeAMP_Hor
  *\param   bTestMergeAMP_Ver
- *\returns Void 
+ *\returns Void
 */
 #if AMP_ENC_SPEEDUP
 #if AMP_MRG
@@ -927,7 +927,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
 /** finish encoding a cu and handle end-of-slice conditions
  * \param pcCU
  * \param uiAbsPartIdx
- * \param uiDepth 
+ * \param uiDepth
  * \returns Void
  */
 Void TEncCu::finishCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
@@ -1045,7 +1045,7 @@ Int TEncCu::xComputeQP(TComDataCU *pcCU, UInt uiDepth)
 /** encode a CU block recursively
  * \param pcCU
  * \param uiAbsPartIdx
- * \param uiDepth 
+ * \param uiDepth
  * \returns Void
  */
 Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
@@ -1524,11 +1524,11 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     xCheckBestMode(rpcBestCU, rpcTempCU, uiDepth);
 }
 
-/** Check R-D costs for a CU with PCM mode. 
+/** Check R-D costs for a CU with PCM mode.
  * \param rpcBestCU pointer to best mode CU data structure
  * \param rpcTempCU pointer to testing mode CU data structure
  * \returns Void
- * 
+ *
  * \note Current PCM implementation encodes sample values in a lossless way. The distortion of PCM mode CUs are zero. PCM mode is selected if the best mode yields bits greater than that of PCM mode.
  */
 Void TEncCu::xCheckIntraPCM(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU)
@@ -1653,9 +1653,9 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
             // 不知道为什么把上下文模型存储限定在 temp 最好时更新会得到更好的压缩结果 ~0.1%
             m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
             break;
-        // case 2:
-        //     MergeLnQuar(rpcBestCU, rpcTempCU, 0b0111);
-        //     break;
+            // case 2:
+            //     MergeLnQuar(rpcBestCU, rpcTempCU, 0b0111);
+            //     break;
         case 3:
             MergeLnQuar(rpcBestCU, rpcTempCU, 0b1011);
             break;
@@ -1723,10 +1723,10 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
         TCoeff *pcCoeffMergeY;
         switch (mask)
         {
-        // case 0b0111:
-        //     pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp0111;
-        //     pcCoeffMergeY = pcCoeffBestYLpart;
-        //     break;
+            // case 0b0111:
+            //     pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp0111;
+            //     pcCoeffMergeY = pcCoeffBestYLpart;
+            //     break;
         case 0b1011:
             pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1011;
             pcCoeffMergeY = pcCoeffBestYLpart + (uiWidth >> 1);
@@ -1868,12 +1868,12 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
         UInt uiQuarSizeDir = (uiWidth * uiWidth) >> 4;
         switch (mask)
         {
-        case 0b0111:
-            puhDirBestYLpart = rpcBestCU->m_puhLumaIntraDirnp0111;
-            puhDirMergeY = puhDirBestYLpart;
-            puhDirBestCLpart = rpcBestCU->m_puhChromaIntraDirnp0111;
-            puhDirMergeC = puhDirBestCLpart;
-            break;
+        // case 0b0111:
+        //     puhDirBestYLpart = rpcBestCU->m_puhLumaIntraDirnp0111;
+        //     puhDirMergeY = puhDirBestYLpart;
+        //     puhDirBestCLpart = rpcBestCU->m_puhChromaIntraDirnp0111;
+        //     puhDirMergeC = puhDirBestCLpart;
+        //     break;
         case 0b1011:
             puhDirBestYLpart = rpcBestCU->m_puhLumaIntraDirnp1011;
             puhDirMergeY = puhDirBestYLpart + 1 * uiQuarSizeDir;
@@ -2011,7 +2011,46 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
             assert(0);
         }
     }
+    // 处理 Width 部分
+    {
+        UChar *puhWidth = rpcBestCU->getWidth();
+        UInt uiQuarSizeWidth = (uiWidth * uiWidth) >> 6;
 
+        switch (mask)
+        {
+        case 0b1011:
+            ::memcpy(puhWidth + uiQuarSizeWidth * 1, rpcTempCU->getWidth() + uiQuarSizeWidth * 1, uiQuarSizeWidth * sizeof(UChar));
+            break;
+        case 0b1101:
+            ::memcpy(puhWidth + uiQuarSizeWidth * 2, rpcTempCU->getWidth() + uiQuarSizeWidth * 2, uiQuarSizeWidth * sizeof(UChar));
+            break;
+        case 0b1110:
+            ::memcpy(puhWidth + uiQuarSizeWidth * 3, rpcTempCU->getWidth() + uiQuarSizeWidth * 3, uiQuarSizeWidth * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+    }
+    // 处理 Height 部分
+    {
+        UChar *puhHeight = rpcBestCU->getHeight();
+        UInt uiQuarSizeHeight = (uiWidth * uiWidth) >> 6;
+
+        switch (mask)
+        {
+        case 0b1011:
+            ::memcpy(puhHeight + uiQuarSizeHeight * 1, rpcTempCU->getHeight() + uiQuarSizeHeight * 1, uiQuarSizeHeight * sizeof(UChar));
+            break;
+        case 0b1101:
+            ::memcpy(puhHeight + uiQuarSizeHeight * 2, rpcTempCU->getHeight() + uiQuarSizeHeight * 2, uiQuarSizeHeight * sizeof(UChar));
+            break;
+        case 0b1110:
+            ::memcpy(puhHeight + uiQuarSizeHeight * 3, rpcTempCU->getHeight() + uiQuarSizeHeight * 3, uiQuarSizeHeight * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+    }
     // 处理 loopflag 部分 未验证
     {
         UChar *puhLumaLoopFlag = rpcBestCU->getLumaLoopFlag();
@@ -2113,7 +2152,7 @@ Void TEncCu::xCopyYuv2Tmp(UInt uiPartUnitIdx, UInt uiNextDepth)
     m_ppcRecoYuvBest[uiNextDepth]->copyToPartYuv(m_ppcRecoYuvTemp[uiCurrDepth], uiPartUnitIdx);
 }
 
-/** Function for filling the PCM buffer of a CU using its original sample array 
+/** Function for filling the PCM buffer of a CU using its original sample array
  * \param pcCU pointer to current CU
  * \param pcOrgYuv pointer to original sample array
  * \returns Void

@@ -95,65 +95,15 @@
 		]
 	},
 	{
-		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSbac.cpp",
-		"bookmarks": [
-			{
-				"line": 516,
-				"column": 16,
-				"label": ""
-			},
-			{
-				"line": 611,
-				"column": 24,
-				"label": ""
-			},
-			{
-				"line": 697,
-				"column": 40,
-				"label": ""
-			},
-			{
-				"line": 780,
-				"column": 0,
-				"label": ""
-			},
-			{
-				"line": 1036,
-				"column": 0,
-				"label": ""
-			},
-			{
-				"line": 1415,
-				"column": 9,
-				"label": ""
-			},
-			{
-				"line": 1508,
-				"column": 18,
-				"label": ""
-			},
-			{
-				"line": 1540,
-				"column": 11,
-				"label": ""
-			},
-			{
-				"line": 1558,
-				"column": 9,
-				"label": ""
-			}
-		]
-	},
-	{
 		"path": "$ROOTPATH$/source/Lib/TLibCommon/TComRom.cpp",
 		"bookmarks": [
 			{
-				"line": 382,
+				"line": 383,
 				"column": 13,
 				"label": ""
 			},
 			{
-				"line": 510,
+				"line": 511,
 				"column": 29,
 				"label": ""
 			}
@@ -220,16 +170,6 @@
 			{
 				"line": 46,
 				"column": 65,
-				"label": ""
-			}
-		]
-	},
-	{
-		"path": "$ROOTPATH$/source/Lib/TLibEncoder/TEncSearch.cpp",
-		"bookmarks": [
-			{
-				"line": 1210,
-				"column": 21,
 				"label": ""
 			}
 		]
