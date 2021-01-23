@@ -427,8 +427,12 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
     {
         Pel *refMain;
         Pel *refSide;
+        Pel *refMainLP;
+        Pel *refSideLP;
         Pel refAbove[2 * MAX_CU_SIZE + 1];
         Pel refLeft[2 * MAX_CU_SIZE + 1];
+        Pel refAboveLP[2 * MAX_CU_SIZE + 1];
+        Pel refLeftLP[2 * MAX_CU_SIZE + 1];
 
         // Initialise the Main and Left reference array.
         if (intraPredAngle < 0)
@@ -457,13 +461,17 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
             for (k = 0; k < 2 * blkSize + 1; k++)
             { // 不管是 refAbove 还是 refLeft 都是从左上角参考点开始存储, 也就是说 refAbove[0] 和 refLeft[0] 是一样的, 重复了
                 refAbove[k] = pSrc[k - srcStride - 1];
+                refAboveLP[k] = pSrc[k - 1];
             }
             for (k = 0; k < 2 * blkSize + 1; k++)
             {
                 refLeft[k] = pSrc[(k - 1) * srcStride - 1];
+                refLeftLP[k] = pSrc[(k - 1) * srcStride];
             }
             refMain = modeVer ? refAbove : refLeft;
             refSide = modeVer ? refLeft : refAbove;
+            refMainLP = modeVer ? refAboveLP : refLeftLP;
+            refSideLP = modeVer ? refLeftLP : refAboveLP;
         }
 
         if (intraPredAngle == 0)
@@ -471,19 +479,22 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
             for (l = 0; l < blkSize; l++)
             {
                 pDst[l] = refMain[l + 1];
+                // pDst[l] = refMainLP[l + 1];
             }
             for (k = 1; k < blkSize; k++)
             {
-                pDst[k * dstStride] = refMain[1];
+                // pDst[k * dstStride] = refMain[1];
+                // 水平垂直模式改成挨个点递进的模式
+                pDst[k * dstStride] = refSideLP[k];
             }
 
-            if (bFilter)
-            {
-                for (k = 0; k < blkSize; k++)
-                {
-                    pDst[k * dstStride] = Clip3(0, (1 << bitDepth) - 1, pDst[k * dstStride] + ((refSide[k + 1] - refSide[0]) >> 1));
-                }
-            }
+            // if (bFilter)
+            // {
+            //     for (k = 0; k < blkSize; k++)
+            //     {
+            //         pDst[k * dstStride] = Clip3(0, (1 << bitDepth) - 1, pDst[k * dstStride] + ((refSide[k + 1] - refSide[0]) >> 1));
+            //     }
+            // }
         }
         else
         {
@@ -561,6 +572,7 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
 
 Void TComPrediction::xPredIntraAng3x3(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize)
 {
+    assert(0);
     assert(uiPredDstSize == 3);
     Int k, l;
     Int blkSize = uiPredDstSize;
