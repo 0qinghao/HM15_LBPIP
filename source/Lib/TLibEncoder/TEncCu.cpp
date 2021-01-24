@@ -1583,7 +1583,7 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     {
         if (bStatus == 0) // 表示在向下搜索的过程中
         {
-            rpcTempCU->getTotalBits() += (1); // 模拟编码分块标志 0 和切块方式保持大块
+            rpcTempCU->getTotalBits() += (1 + 2); // 模拟编码分块标志 0 和切块方式保持大块
         }
         else
         {
