@@ -739,7 +739,7 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
     if (uiDirMode == PLANAR_IDX)
     {
         // PLANAR 模式预测
-        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
     }
     else
     {
@@ -1105,7 +1105,7 @@ Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred,
 
     if (uiDirMode == PLANAR_IDX)
     {
-        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
     }
     else
     {
