@@ -798,7 +798,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
         if (*(pcCU->getLumaLoopFlag() + absPartIdx + k) == 0)
         {
             // 环状还是块状
-            m_pcBinIf->encodeBinEP(0);
+            // m_pcBinIf->encodeBinEP(0);
 
             dir[k] = pcCU->getLumaIntraDir(absPartIdx + partOffset * k);
             m_pcBinIf->encodeBinsEP(dir[k], DIR_BITS);
@@ -827,7 +827,7 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
             //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
             // }
             // 环状还是块状
-            m_pcBinIf->encodeBinEP(1);
+            // m_pcBinIf->encodeBinEP(1);
 
             // for (i = 0; i < uiWidth - 3 + 1; i++)
             // {
@@ -898,7 +898,7 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
     if (*(pcCU->getChromaLoopFlag() + uiAbsPartIdx) == 0)
     {
         // 环状还是块状
-        m_pcBinIf->encodeBinEP(0);
+        // m_pcBinIf->encodeBinEP(0);
 
         UInt uiIntraDirChroma = pcCU->getChromaIntraDir(uiAbsPartIdx);
         m_pcBinIf->encodeBinsEP(uiIntraDirChroma, DIR_BITS);
@@ -906,7 +906,7 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
     else
     {
         // 环状还是块状
-        m_pcBinIf->encodeBinEP(1);
+        // m_pcBinIf->encodeBinEP(1);
 
         // for (Int i = 0; i < uiWidth - 3 + 1; i++)
         // {
