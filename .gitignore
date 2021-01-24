@@ -1,7 +1,7 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
-# Created by https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
-# Edit at https://www.toptal.com/developers/gitignore?templates=xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
+# Created by https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,vscode,visualstudiocode,visualstudio,microsoftoffice,matlab,latex,c++,c
+# Edit at https://www.toptal.com/developers/gitignore?templates=xtext,xcodeinjection,windows,vscode,visualstudiocode,visualstudio,microsoftoffice,matlab,latex,c++,c
 
 ### C ###
 # Prerequisites
@@ -65,6 +65,10 @@ dkms.conf
 
 # Precompiled Headers
 
+# Linker files
+
+# Debugger Files
+
 # Compiled Dynamic libraries
 
 # Fortran module files
@@ -75,23 +79,6 @@ dkms.conf
 *.lai
 
 # Executables
-
-### CMake ###
-CMakeLists.txt.user
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
-_deps
-
-### CMake Patch ###
-# External projects
-*-prefix/
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
@@ -844,7 +831,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# End of https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,visualstudio,microsoftoffice,matlab,latex,cmake,c++,c,visualstudiocode,vscode
+# End of https://www.toptal.com/developers/gitignore/api/xtext,xcodeinjection,windows,vscode,visualstudiocode,visualstudio,microsoftoffice,matlab,latex,c++,c
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
