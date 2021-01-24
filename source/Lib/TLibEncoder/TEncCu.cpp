@@ -1455,32 +1455,32 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
     // 亮度部分 帧内编码
     m_pcPredSearch->estIntraPredQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma);
     m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1111);
-    if (eSize != SIZE_NxN)
-    {
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
-        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1011);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
-        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1101);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
-        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1110);
-    }
-    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
+    // if (eSize != SIZE_NxN)
+    // {
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1011);
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1101);
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1110);
+    // }
+    // rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
     // 在 estIntraPredQT 里面就已经对 rpcTempCU 重建过了, 这里有啥必要?
     // m_ppcRecoYuvTemp[uiDepth]->copyToPicLuma(rpcTempCU->getPic()->getPicYuvRec(), rpcTempCU->getAddr(), rpcTempCU->getZorderIdxInCU());
 
     m_pcPredSearch->estIntraPredChromaQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma);
     // 在处理 4x4 时当作 8x8 层来处理 方便一些
     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1111);
-    if (eSize != SIZE_NxN)
-    {
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
-        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1011);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
-        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1101);
-        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
-        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1110);
-    }
-    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
+    // if (eSize != SIZE_NxN)
+    // {
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1011);
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1101);
+    //     rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
+    //     m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1110);
+    // }
+    // rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
 
     m_pcEntropyCoder->resetBits();
     if (rpcTempCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
@@ -1490,13 +1490,13 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
 
     // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
     // 搜索过程中没有加上 bypass flag, 这里加上
-    if (eSize != SIZE_NxN)
-    {
-        // rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_0111;
-        rpcTempCU->getTotalCostnpLpart(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1011;
-        rpcTempCU->getTotalCostnpLpart(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1101;
-        rpcTempCU->getTotalCostnpLpart(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1110;
-    }
+    // if (eSize != SIZE_NxN)
+    // {
+    //     // rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_0111;
+    //     rpcTempCU->getTotalCostnpLpart(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1011;
+    //     rpcTempCU->getTotalCostnpLpart(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1101;
+    //     rpcTempCU->getTotalCostnpLpart(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1110;
+    // }
 
     // 项目不会编码的标志
     // m_pcEntropyCoder->encodeSkipFlag(rpcTempCU, 0, true);
@@ -1583,39 +1583,39 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     {
         if (bStatus == 0) // 表示在向下搜索的过程中
         {
-            rpcTempCU->getTotalBits() += (1 + 2); // 模拟编码分块标志 0 和切块方式保持大块
+            rpcTempCU->getTotalBits() += (1); // 模拟编码分块标志 0 和切块方式保持大块
         }
         else
         {
             rpcTempCU->getTotalBits() += (1); // 模拟编码分块标志 1
             // rpcBestCU->getTotalCostnpLpart(0b0111) += (1 + 3); // 模拟编码分块标志 0 和切块方式(L)
-            rpcBestCU->getTotalCostnpLpart(0b1011) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
-            rpcBestCU->getTotalCostnpLpart(0b1101) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
-            rpcBestCU->getTotalCostnpLpart(0b1110) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1011) += (1); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1101) += (1); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1110) += (1); // 模拟编码分块标志 0 和切块方式(L)
         }
     }
     else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况
     {
         rpcTempCU->getTotalBits() += (1); // 模拟编码搜索过程中没有计算的SIZE_NXN partsize (如果 part size == nxn 肯定是正常四分, 因为我们将 3个4x4的L+1个4x4块 定义为 8x8 层 也就是使用了 partsize == 2nx2n 的编码体积)
         // rpcBestCU->getTotalCostnpLpart(0b0111) += (3); // 模拟编码切块方式(L)
-        rpcBestCU->getTotalCostnpLpart(0b1011) += (2); // 模拟编码切块方式(L)
-        rpcBestCU->getTotalCostnpLpart(0b1101) += (2); // 模拟编码切块方式(L)
-        rpcBestCU->getTotalCostnpLpart(0b1110) += (2); // 模拟编码切块方式(L)
+        // rpcBestCU->getTotalCostnpLpart(0b1011) += (2); // 模拟编码切块方式(L)
+        // rpcBestCU->getTotalCostnpLpart(0b1101) += (2); // 模拟编码切块方式(L)
+        // rpcBestCU->getTotalCostnpLpart(0b1110) += (2); // 模拟编码切块方式(L)
     }
     else // 8x8 块不往下分的情况
     {
-        rpcTempCU->getTotalBits() += 2; // 模拟编码切块方式保持大块
+        // rpcTempCU->getTotalBits() += 2; // 模拟编码切块方式保持大块
     }
     rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
 
     // 新方法 Cost 计算: Best L + Temp 1/4
-    if (bStatus == 1) // 向上回归时计算新方法的 Cost
-    {
-        // rpcBestCU->m_dTotalCostnp0111 = rpcBestCU->getTotalCostnpLpart(0b0111) + rpcTempCU->dBestCostQuarPartLT;
-        rpcBestCU->m_dTotalCostnp1011 = rpcBestCU->getTotalCostnpLpart(0b1011) + rpcTempCU->dBestCostQuarPartRT;
-        rpcBestCU->m_dTotalCostnp1101 = rpcBestCU->getTotalCostnpLpart(0b1101) + rpcTempCU->dBestCostQuarPartLB;
-        rpcBestCU->m_dTotalCostnp1110 = rpcBestCU->getTotalCostnpLpart(0b1110) + rpcTempCU->dBestCostQuarPartRB;
-    }
+    // if (bStatus == 1) // 向上回归时计算新方法的 Cost
+    // {
+    //     // rpcBestCU->m_dTotalCostnp0111 = rpcBestCU->getTotalCostnpLpart(0b0111) + rpcTempCU->dBestCostQuarPartLT;
+    //     rpcBestCU->m_dTotalCostnp1011 = rpcBestCU->getTotalCostnpLpart(0b1011) + rpcTempCU->dBestCostQuarPartRT;
+    //     rpcBestCU->m_dTotalCostnp1101 = rpcBestCU->getTotalCostnpLpart(0b1101) + rpcTempCU->dBestCostQuarPartLB;
+    //     rpcBestCU->m_dTotalCostnp1110 = rpcBestCU->getTotalCostnpLpart(0b1110) + rpcTempCU->dBestCostQuarPartRB;
+    // }
 
     Int iMinPos;
     // if (bStatus == 1) // 模拟 HEVC 标准状况
@@ -1627,13 +1627,18 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     // }
     if (bStatus == 1) // 向上回归时从所有 6 种情况里面找最小值
     {
-        Double CostList[6] = {rpcBestCU->getTotalCost(),
-                              rpcTempCU->getTotalCost(),
-                              //   rpcBestCU->m_dTotalCostnp0111,
-                              MAX_DOUBLE,
-                              rpcBestCU->m_dTotalCostnp1011,
-                              rpcBestCU->m_dTotalCostnp1101,
-                              rpcBestCU->m_dTotalCostnp1110};
+        Double CostList[6] = {
+            rpcBestCU->getTotalCost(),
+            rpcTempCU->getTotalCost(),
+            //   rpcBestCU->m_dTotalCostnp0111,
+            MAX_DOUBLE,
+            MAX_DOUBLE,
+            MAX_DOUBLE,
+            MAX_DOUBLE,
+            //   rpcBestCU->m_dTotalCostnp1011,
+            //   rpcBestCU->m_dTotalCostnp1101,
+            //   rpcBestCU->m_dTotalCostnp1110,
+        };
         iMinPos = min_element(CostList, CostList + 6) - CostList;
     }
     else
