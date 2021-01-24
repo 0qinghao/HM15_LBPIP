@@ -2702,7 +2702,9 @@ Void TEncSearch::xSetIntraResultQTnp(TComDataCU *pcCU,
     TCoeff *pcCoeffSrcY = m_ppcQTTempCoeffY[uiQTLayer] + (uiNumCoeffIncY * uiAbsPartIdx);
     TCoeff *pcCoeffDstY = NULL;
     UChar *puhLumaIntraDirSrc = pcCU->getLumaIntraDir() + (uiNumCoeffIncY * uiAbsPartIdx) / 4;
+    UChar *puhLumaLoopFlagSrc = pcCU->getLumaLoopFlag() + (uiNumCoeffIncY * uiAbsPartIdx) / 16;
     UChar *puhLumaIntraDirDst = NULL;
+    UChar *puhLumaLoopFlagDst = NULL;
     switch (mask)
     {
     case 0b1111:
@@ -2715,18 +2717,24 @@ Void TEncSearch::xSetIntraResultQTnp(TComDataCU *pcCU,
         assert(uiAbsPartIdx == 0);
         pcCoeffDstY = pcCU->m_pcTrCoeffYnp1011;
         puhLumaIntraDirDst = pcCU->m_puhLumaIntraDirnp1011;
+        puhLumaLoopFlagDst = pcCU->m_puhLumaLoopFlagnp1011;
+        ::memcpy(puhLumaLoopFlagDst, puhLumaLoopFlagSrc, sizeof(UChar) * uiNumCoeffY / 16);
         ::memcpy(puhLumaIntraDirDst, puhLumaIntraDirSrc, sizeof(UChar) * uiNumCoeffY / 4);
         break;
     case 0b1101:
         assert(uiAbsPartIdx == 0);
         pcCoeffDstY = pcCU->m_pcTrCoeffYnp1101;
         puhLumaIntraDirDst = pcCU->m_puhLumaIntraDirnp1101;
+        puhLumaLoopFlagDst = pcCU->m_puhLumaLoopFlagnp1101;
+        ::memcpy(puhLumaLoopFlagDst, puhLumaLoopFlagSrc, sizeof(UChar) * uiNumCoeffY / 16);
         ::memcpy(puhLumaIntraDirDst, puhLumaIntraDirSrc, sizeof(UChar) * uiNumCoeffY / 4);
         break;
     case 0b1110:
         assert(uiAbsPartIdx == 0);
         pcCoeffDstY = pcCU->m_pcTrCoeffYnp1110;
         puhLumaIntraDirDst = pcCU->m_puhLumaIntraDirnp1110;
+        puhLumaLoopFlagDst = pcCU->m_puhLumaLoopFlagnp1110;
+        ::memcpy(puhLumaLoopFlagDst, puhLumaLoopFlagSrc, sizeof(UChar) * uiNumCoeffY / 16);
         ::memcpy(puhLumaIntraDirDst, puhLumaIntraDirSrc, sizeof(UChar) * uiNumCoeffY / 4);
         break;
     default:
@@ -3361,9 +3369,11 @@ Void TEncSearch::xSetIntraResultChromaQTnp(TComDataCU *pcCU,
     TCoeff *pcCoeffSrcU = m_ppcQTTempCoeffCb[uiQTLayer];
     TCoeff *pcCoeffSrcV = m_ppcQTTempCoeffCr[uiQTLayer];
     UChar *puhChromaIntraDirSrc = pcCU->getChromaIntraDir();
+    UChar *puhChromaLoopFlagSrc = pcCU->getChromaLoopFlag();
     TCoeff *pcCoeffDstU = NULL;
     TCoeff *pcCoeffDstV = NULL;
     UChar *puhChromaIntraDirDst = NULL;
+    UChar *puhChromaLoopFlagDst = NULL;
     switch (mask)
     {
     case 0b1111:
@@ -3378,18 +3388,24 @@ Void TEncSearch::xSetIntraResultChromaQTnp(TComDataCU *pcCU,
         pcCoeffDstU = pcCU->m_pcTrCoeffCbnp1011;
         pcCoeffDstV = pcCU->m_pcTrCoeffCrnp1011;
         puhChromaIntraDirDst = pcCU->m_puhChromaIntraDirnp1011;
+        puhChromaLoopFlagDst = pcCU->m_puhChromaLoopFlagnp1011;
+        ::memcpy(puhChromaLoopFlagDst, puhChromaLoopFlagSrc, sizeof(UChar) * uiNumCoeffC / 16);
         ::memcpy(puhChromaIntraDirDst, puhChromaIntraDirSrc, sizeof(UChar) * uiNumCoeffC / 4);
         break;
     case 0b1101:
         pcCoeffDstU = pcCU->m_pcTrCoeffCbnp1101;
         pcCoeffDstV = pcCU->m_pcTrCoeffCrnp1101;
         puhChromaIntraDirDst = pcCU->m_puhChromaIntraDirnp1101;
+        puhChromaLoopFlagDst = pcCU->m_puhChromaLoopFlagnp1101;
+        ::memcpy(puhChromaLoopFlagDst, puhChromaLoopFlagSrc, sizeof(UChar) * uiNumCoeffC / 16);
         ::memcpy(puhChromaIntraDirDst, puhChromaIntraDirSrc, sizeof(UChar) * uiNumCoeffC / 4);
         break;
     case 0b1110:
         pcCoeffDstU = pcCU->m_pcTrCoeffCbnp1110;
         pcCoeffDstV = pcCU->m_pcTrCoeffCrnp1110;
         puhChromaIntraDirDst = pcCU->m_puhChromaIntraDirnp1110;
+        puhChromaLoopFlagDst = pcCU->m_puhChromaLoopFlagnp1110;
+        ::memcpy(puhChromaLoopFlagDst, puhChromaLoopFlagSrc, sizeof(UChar) * uiNumCoeffC / 16);
         ::memcpy(puhChromaIntraDirDst, puhChromaIntraDirSrc, sizeof(UChar) * uiNumCoeffC / 4);
         break;
     default:

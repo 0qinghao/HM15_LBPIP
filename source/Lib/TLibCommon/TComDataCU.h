@@ -223,6 +223,14 @@ public:
     UChar *m_puhChromaIntraDirnp1011; ///< array of intra directions (luma)
     UChar *m_puhChromaIntraDirnp1101; ///< array of intra directions (luma)
     UChar *m_puhChromaIntraDirnp1110; ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp0111;   ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp1011;   ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp1101;   ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp1110;   ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp0111; ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp1011; ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp1101; ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp1110; ///< array of intra directions (luma)
     // 新分块方法 L 区域的最优总 Cost
     Double m_dTotalCostnpLpart0111; ///< sum of partition RD costs
     Double m_dTotalCostnpLpart1011; ///< sum of partition RD costs

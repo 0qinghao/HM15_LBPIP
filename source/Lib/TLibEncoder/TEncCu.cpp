@@ -2053,27 +2053,35 @@ Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ma
     }
     // 处理 loopflag 部分 未验证
     {
-        UChar *puhLumaLoopFlag = rpcBestCU->getLumaLoopFlag();
-        UChar *puhChromaLoopFlag = rpcBestCU->getChromaLoopFlag();
-        UInt uiQuarSizeDepth = (uiWidth * uiWidth) >> 6;
+        UInt uiQuarSizeLF = (uiWidth * uiWidth) >> 6;
+        UChar *puhLumaLoopFlag;
+        UChar *puhChromaLoopFlag;
 
         switch (mask)
         {
         case 0b1011:
-            ::memcpy(puhLumaLoopFlag + uiQuarSizeDepth * 1, rpcTempCU->getLumaLoopFlag() + uiQuarSizeDepth * 1, uiQuarSizeDepth * sizeof(UChar));
-            ::memcpy(puhChromaLoopFlag + uiQuarSizeDepth * 1, rpcTempCU->getChromaLoopFlag() + uiQuarSizeDepth * 1, uiQuarSizeDepth * sizeof(UChar));
+            puhLumaLoopFlag = rpcBestCU->m_puhLumaLoopFlagnp1011;
+            puhChromaLoopFlag = rpcBestCU->m_puhChromaLoopFlagnp1011;
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeLF * 1, rpcTempCU->getLumaLoopFlag() + uiQuarSizeLF * 1, uiQuarSizeLF * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeLF * 1, rpcTempCU->getChromaLoopFlag() + uiQuarSizeLF * 1, uiQuarSizeLF * sizeof(UChar));
             break;
         case 0b1101:
-            ::memcpy(puhLumaLoopFlag + uiQuarSizeDepth * 2, rpcTempCU->getLumaLoopFlag() + uiQuarSizeDepth * 2, uiQuarSizeDepth * sizeof(UChar));
-            ::memcpy(puhChromaLoopFlag + uiQuarSizeDepth * 2, rpcTempCU->getChromaLoopFlag() + uiQuarSizeDepth * 2, uiQuarSizeDepth * sizeof(UChar));
+            puhLumaLoopFlag = rpcBestCU->m_puhLumaLoopFlagnp1101;
+            puhChromaLoopFlag = rpcBestCU->m_puhChromaLoopFlagnp1101;
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeLF * 2, rpcTempCU->getLumaLoopFlag() + uiQuarSizeLF * 2, uiQuarSizeLF * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeLF * 2, rpcTempCU->getChromaLoopFlag() + uiQuarSizeLF * 2, uiQuarSizeLF * sizeof(UChar));
             break;
         case 0b1110:
-            ::memcpy(puhLumaLoopFlag + uiQuarSizeDepth * 3, rpcTempCU->getLumaLoopFlag() + uiQuarSizeDepth * 3, uiQuarSizeDepth * sizeof(UChar));
-            ::memcpy(puhChromaLoopFlag + uiQuarSizeDepth * 3, rpcTempCU->getChromaLoopFlag() + uiQuarSizeDepth * 3, uiQuarSizeDepth * sizeof(UChar));
+            puhLumaLoopFlag = rpcBestCU->m_puhLumaLoopFlagnp1110;
+            puhChromaLoopFlag = rpcBestCU->m_puhChromaLoopFlagnp1110;
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeLF * 3, rpcTempCU->getLumaLoopFlag() + uiQuarSizeLF * 3, uiQuarSizeLF * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeLF * 3, rpcTempCU->getChromaLoopFlag() + uiQuarSizeLF * 3, uiQuarSizeLF * sizeof(UChar));
             break;
         default:
             assert(0);
         }
+        ::memcpy(rpcBestCU->getLumaLoopFlag(), puhLumaLoopFlag, uiQuarSizeLF * 4);
+        ::memcpy(rpcBestCU->getChromaLoopFlag(), puhChromaLoopFlag, uiQuarSizeLF * 4);
     }
 }
 
