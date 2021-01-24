@@ -1604,7 +1604,7 @@ Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt
     }
     else // 8x8 块不往下分的情况
     {
-        // rpcTempCU->getTotalBits() += 2; // 模拟编码切块方式保持大块
+        rpcTempCU->getTotalBits() += 2; // 模拟编码切块方式保持大块
     }
     rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
 
