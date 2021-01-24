@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -1062,6 +1062,10 @@ Void TEncCavlc::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
     assert(0);
 }
+Void TEncCavlc::codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    assert(0);
+}
 
 Void TEncCavlc::codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
@@ -1094,6 +1098,10 @@ Void TEncCavlc::codeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
 }
 
 Void TEncCavlc::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    assert(0);
+}
+Void TEncCavlc::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
     assert(0);
 }
@@ -1142,7 +1150,15 @@ Void TEncCavlc::codeIntraDirLumaAng(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool is
     assert(0);
 }
 
+Void TEncCavlc::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiple)
+{
+    assert(0);
+}
 Void TEncCavlc::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
+{
+    assert(0);
+}
+Void TEncCavlc::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     assert(0);
 }
@@ -1178,7 +1194,10 @@ Void TEncCavlc::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
 {
     assert(0);
 }
-
+Void TEncCavlc::codeModeRes(Int *iModeAllDiff, Int iCnt)
+{
+    assert(0);
+}
 Void TEncCavlc::estBit(estBitsSbacStruct *pcEstBitsCabac, Int width, Int height, TextType eTType)
 {
     // printf("error : no VLC mode support in this version\n");

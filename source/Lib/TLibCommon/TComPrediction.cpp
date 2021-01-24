@@ -159,7 +159,37 @@ Pel TComPrediction::predIntraGetPredValDC(Int *pSrc, Int iSrcStride, UInt iWidth
 
     return pDcVal;
 }
+Pel TComPrediction::predIntraGetPredValDCLP(Int *pSrc, Int iSrcStride, UInt iWidth, UInt iHeight, Bool bAbove, Bool bLeft, UInt uiPredDstSize)
+{
+    assert(iWidth > 0 && iHeight > 0 && uiPredDstSize > 0);
+    Int iInd, iSum = 0;
+    Pel pDcVal;
 
+    if (bAbove)
+    {
+        for (iInd = 0; iInd < uiPredDstSize; iInd++)
+        {
+            iSum += pSrc[iInd - iSrcStride];
+        }
+    }
+    if (bLeft)
+    {
+        for (iInd = 0; iInd < uiPredDstSize; iInd++)
+        {
+            iSum += pSrc[iInd * iSrcStride - 1];
+        }
+    }
+
+    if (bAbove && bLeft)
+    {
+        pDcVal = (iSum + uiPredDstSize) / (uiPredDstSize + uiPredDstSize);
+    }
+    else
+    {
+        assert(0);
+    }
+    return pDcVal;
+}
 // Function for deriving the angular Intra predictions
 
 /** Function for deriving the simplified angular intra predictions.
@@ -181,7 +211,8 @@ Pel TComPrediction::predIntraGetPredValDC(Int *pSrc, Int iSrcStride, UInt iWidth
  * the predicted value for the pixel is linearly interpolated from the reference samples. All reference samples are taken
  * from the extended main reference.
  */
-Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *&rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter)
+// TODO: 原来这个 rpDst 是引用指针, 引用导致没法在调用的时候操作该参数, 改完发现没影响. 是真的没影响吗
+Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter)
 {
     Int k, l;
     Int blkSize = width;
@@ -216,6 +247,16 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
                 pDst[k * dstStride + l] = dcval;
             }
         }
+        // for (k = 0; k < blkSize; k++)
+        // {
+        //     for (l = 0; l < blkSize; l++)
+        //     {
+        //         Pel far1 = pSrc[(k - 1) * srcStride - 1 + l];
+        //         Pel near = pSrc[k * srcStride - 1 + l];
+        //         Pel far2 = pSrc[(k + 1) * srcStride - 1 + l];
+        //         rpDst[k * dstStride + l] = (far1 + far2 + near * 2 + 2) / 4;
+        //     }
+        // }
     }
 
     // Do angular predictions
@@ -329,7 +370,356 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
         }
     }
 }
+Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize)
+{
+    Int k, l;
+    Int blkSize = uiPredDstSize;
+    Pel *pDst = rpDst;
 
+    // Map the mode index to main prediction direction and angle
+    assert(dirMode > 0); //no planar
+    Bool modeDC = dirMode < 2;
+    Bool modeHor = !modeDC && (dirMode < 18);
+    Bool modeVer = !modeDC && !modeHor;
+    // intraPredAngle 记录当前模式同水平/垂直模式之间的差
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int absAng = abs(intraPredAngle);
+    Int signAng = intraPredAngle < 0 ? -1 : 1;
+
+    // Set bitshifts and scale the angle parameter to block size
+    Int angTable[9] = {0, 2, 5, 9, 13, 17, 21, 26, 32};
+    Int invAngTable[9] = {0, 4096, 1638, 910, 630, 482, 390, 315, 256}; // (256 * 32) / Angle
+    Int invAngle = invAngTable[absAng];
+    absAng = angTable[absAng];
+    intraPredAngle = signAng * absAng;
+
+    // Do the DC prediction
+    if (modeDC)
+    {
+        // Pel dcval = predIntraGetPredValDCLP(pSrc, srcStride, width, height, blkAboveAvailable, blkLeftAvailable, uiPredDstSize);
+
+        // for (l = 0; l < blkSize; l++)
+        // {
+        //     pDst[l] = dcval;
+        // }
+        // for (k = 0; k < blkSize; k++)
+        // {
+        //     pDst[k * dstStride] = dcval;
+        // }
+        for (l = 0; l < uiPredDstSize; l++)
+        {
+            Pel far1 = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            Pel far2 = pSrc[l - srcStride + 1];
+            rpDst[l] = (far1 + far2 + near * 2 + 2) / 4;
+        }
+        for (k = 1; k < uiPredDstSize; k++)
+        {
+            Pel far1 = pSrc[(k - 1) * srcStride - 1];
+            Pel near = pSrc[k * srcStride - 1];
+            Pel far2 = pSrc[(k + 1) * srcStride - 1];
+            rpDst[k * dstStride] = (far1 + far2 + near * 2 + 2) / 4;
+        }
+    }
+
+    // Do angular predictions
+    else
+    {
+        Pel *refMain;
+        Pel *refSide;
+        Pel *refMainLP;
+        Pel *refSideLP;
+        Pel refAbove[2 * MAX_CU_SIZE + 1];
+        Pel refLeft[2 * MAX_CU_SIZE + 1];
+        Pel refAboveLP[2 * MAX_CU_SIZE + 1];
+        Pel refLeftLP[2 * MAX_CU_SIZE + 1];
+
+        // Initialise the Main and Left reference array.
+        if (intraPredAngle < 0)
+        {
+            for (k = 0; k < blkSize + 1; k++)
+            {
+                refAbove[k + blkSize - 1] = pSrc[k - srcStride - 1];
+            }
+            for (k = 0; k < blkSize + 1; k++)
+            {
+                refLeft[k + blkSize - 1] = pSrc[(k - 1) * srcStride - 1];
+            }
+            refMain = (modeVer ? refAbove : refLeft) + (blkSize - 1);
+            refSide = (modeVer ? refLeft : refAbove) + (blkSize - 1);
+
+            // Extend the Main reference to the left.
+            Int invAngleSum = 128; // rounding for (shift by 8)
+            for (k = -1; k > blkSize * intraPredAngle >> 5; k--)
+            {
+                invAngleSum += invAngle;
+                refMain[k] = refSide[invAngleSum >> 8];
+            }
+        }
+        else
+        {
+            for (k = 0; k < 2 * blkSize + 1; k++)
+            { // 不管是 refAbove 还是 refLeft 都是从左上角参考点开始存储, 也就是说 refAbove[0] 和 refLeft[0] 是一样的, 重复了
+                refAbove[k] = pSrc[k - srcStride - 1];
+                refAboveLP[k] = pSrc[k - 1];
+            }
+            for (k = 0; k < 2 * blkSize + 1; k++)
+            {
+                refLeft[k] = pSrc[(k - 1) * srcStride - 1];
+                refLeftLP[k] = pSrc[(k - 1) * srcStride];
+            }
+            refMain = modeVer ? refAbove : refLeft;
+            refSide = modeVer ? refLeft : refAbove;
+            refMainLP = modeVer ? refAboveLP : refLeftLP;
+            refSideLP = modeVer ? refLeftLP : refAboveLP;
+        }
+
+        if (intraPredAngle == 0)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                pDst[l] = refMain[l + 1];
+                // pDst[l] = refMainLP[l + 1];
+            }
+            for (k = 1; k < blkSize; k++)
+            {
+                // pDst[k * dstStride] = refMain[1];
+                // 水平垂直模式改成挨个点递进的模式
+                pDst[k * dstStride] = refSideLP[k];
+            }
+
+            // if (bFilter)
+            // {
+            //     for (k = 0; k < blkSize; k++)
+            //     {
+            //         pDst[k * dstStride] = Clip3(0, (1 << bitDepth) - 1, pDst[k * dstStride] + ((refSide[k + 1] - refSide[0]) >> 1));
+            //     }
+            // }
+        }
+        else
+        {
+            Int deltaPos = 0;
+            Int deltaInt;
+            Int deltaFract;
+            Int refMainIndex;
+
+            {
+                deltaPos += intraPredAngle;
+                deltaInt = deltaPos >> 5;
+                deltaFract = deltaPos & (32 - 1);
+                if (deltaFract)
+                {
+                    // Do linear filtering
+                    for (l = 0; l < blkSize; l++)
+                    {
+                        refMainIndex = l + deltaInt + 1;
+                        pDst[l] = (Pel)(((32 - deltaFract) * refMain[refMainIndex] + deltaFract * refMain[refMainIndex + 1] + 16) >> 5);
+                    }
+                }
+                else
+                {
+                    // Just copy the integer samples
+                    for (l = 0; l < blkSize; l++)
+                    {
+                        pDst[l] = refMain[l + deltaInt + 1];
+                    }
+                }
+            }
+            for (k = 1; k < blkSize; k++)
+            {
+                deltaPos += intraPredAngle;
+                deltaInt = deltaPos >> 5;
+                deltaFract = deltaPos & (32 - 1);
+                if (deltaFract)
+                {
+                    // Do linear filtering
+                    refMainIndex = deltaInt + 1;
+                    pDst[k * dstStride] = (Pel)(((32 - deltaFract) * refMain[refMainIndex] + deltaFract * refMain[refMainIndex + 1] + 16) >> 5);
+                }
+                else
+                {
+                    // Just copy the integer samples
+                    pDst[k * dstStride] = refMain[deltaInt + 1];
+                }
+            }
+        }
+
+        // Flip the block if this is the horizontal mode
+        if (modeHor)
+        {
+            Pel tmp;
+            {
+                k = 0;
+                for (l = k + 1; l < blkSize; l++)
+                {
+                    tmp = pDst[k * dstStride + l];
+                    pDst[k * dstStride + l] = pDst[l * dstStride + k];
+                    pDst[l * dstStride + k] = tmp;
+                }
+            }
+            // for (k = 1; k < blkSize - 1; k++)
+            // {
+            //     l = 0;
+            //     {
+            //         tmp = pDst[k * dstStride + l];
+            //         pDst[k * dstStride + l] = pDst[l * dstStride + k];
+            //         pDst[l * dstStride + k] = tmp;
+            //     }
+            // }
+        }
+    }
+}
+
+Void TComPrediction::xPredIntraAng3x3(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize)
+{
+    assert(0);
+    assert(uiPredDstSize == 3);
+    Int k, l;
+    Int blkSize = uiPredDstSize;
+    Pel *pDst = rpDst;
+
+    // Map the mode index to main prediction direction and angle
+    assert(dirMode > 0); //no planar
+    Bool modeDC = dirMode < 2;
+    Bool modeHor = !modeDC && (dirMode < 18);
+    Bool modeVer = !modeDC && !modeHor;
+    // intraPredAngle 记录当前模式同水平/垂直模式之间的差
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int absAng = abs(intraPredAngle);
+    Int signAng = intraPredAngle < 0 ? -1 : 1;
+
+    // Set bitshifts and scale the angle parameter to block size
+    Int angTable[9] = {0, 2, 5, 9, 13, 17, 21, 26, 32};
+    Int invAngTable[9] = {0, 4096, 1638, 910, 630, 482, 390, 315, 256}; // (256 * 32) / Angle
+    Int invAngle = invAngTable[absAng];
+    absAng = angTable[absAng];
+    intraPredAngle = signAng * absAng;
+
+    // Do the DC prediction
+    if (modeDC)
+    {
+        Pel dcval = predIntraGetPredValDCLP(pSrc, srcStride, width, height, blkAboveAvailable, blkLeftAvailable, uiPredDstSize);
+
+        for (k = 0; k < blkSize; k++)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                pDst[k * dstStride + l] = dcval;
+            }
+        }
+    }
+
+    // Do angular predictions
+    else
+    {
+        Pel *refMain;
+        Pel *refSide;
+        Pel refAbove[2 * MAX_CU_SIZE + 1];
+        Pel refLeft[2 * MAX_CU_SIZE + 1];
+
+        // Initialise the Main and Left reference array.
+        if (intraPredAngle < 0)
+        {
+            for (k = 0; k < blkSize + 1; k++)
+            {
+                refAbove[k + blkSize - 1] = pSrc[k - srcStride - 1];
+            }
+            for (k = 0; k < blkSize + 1; k++)
+            {
+                refLeft[k + blkSize - 1] = pSrc[(k - 1) * srcStride - 1];
+            }
+            refMain = (modeVer ? refAbove : refLeft) + (blkSize - 1);
+            refSide = (modeVer ? refLeft : refAbove) + (blkSize - 1);
+
+            // Extend the Main reference to the left.
+            Int invAngleSum = 128; // rounding for (shift by 8)
+            for (k = -1; k > blkSize * intraPredAngle >> 5; k--)
+            {
+                invAngleSum += invAngle;
+                refMain[k] = refSide[invAngleSum >> 8];
+            }
+        }
+        else
+        {
+            for (k = 0; k < 2 * blkSize + 1; k++)
+            { // 不管是 refAbove 还是 refLeft 都是从左上角参考点开始存储, 也就是说 refAbove[0] 和 refLeft[0] 是一样的, 重复了
+                refAbove[k] = pSrc[k - srcStride - 1];
+            }
+            for (k = 0; k < 2 * blkSize + 1; k++)
+            {
+                refLeft[k] = pSrc[(k - 1) * srcStride - 1];
+            }
+            refMain = modeVer ? refAbove : refLeft;
+            refSide = modeVer ? refLeft : refAbove;
+        }
+
+        if (intraPredAngle == 0)
+        {
+            for (k = 0; k < blkSize; k++)
+            {
+                for (l = 0; l < blkSize; l++)
+                {
+                    pDst[k * dstStride + l] = refMain[l + 1];
+                }
+            }
+
+            if (bFilter)
+            {
+                for (k = 0; k < blkSize; k++)
+                {
+                    pDst[k * dstStride] = Clip3(0, (1 << bitDepth) - 1, pDst[k * dstStride] + ((refSide[k + 1] - refSide[0]) >> 1));
+                }
+            }
+        }
+        else
+        {
+            Int deltaPos = 0;
+            Int deltaInt;
+            Int deltaFract;
+            Int refMainIndex;
+
+            for (k = 0; k < blkSize; k++)
+            {
+                deltaPos += intraPredAngle;
+                deltaInt = deltaPos >> 5;
+                deltaFract = deltaPos & (32 - 1);
+
+                if (deltaFract)
+                {
+                    // Do linear filtering
+                    for (l = 0; l < blkSize; l++)
+                    {
+                        refMainIndex = l + deltaInt + 1;
+                        pDst[k * dstStride + l] = (Pel)(((32 - deltaFract) * refMain[refMainIndex] + deltaFract * refMain[refMainIndex + 1] + 16) >> 5);
+                    }
+                }
+                else
+                {
+                    // Just copy the integer samples
+                    for (l = 0; l < blkSize; l++)
+                    {
+                        pDst[k * dstStride + l] = refMain[l + deltaInt + 1];
+                    }
+                }
+            }
+        }
+
+        // Flip the block if this is the horizontal mode
+        if (modeHor)
+        {
+            Pel tmp;
+            for (k = 0; k < blkSize - 1; k++)
+            {
+                for (l = k + 1; l < blkSize; l++)
+                {
+                    tmp = pDst[k * dstStride + l];
+                    pDst[k * dstStride + l] = pDst[l * dstStride + k];
+                    pDst[l * dstStride + k] = tmp;
+                }
+            }
+        }
+    }
+}
 Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft)
 {
     Pel *pDst = piPred;
@@ -349,7 +739,7 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
     if (uiDirMode == PLANAR_IDX)
     {
         // PLANAR 模式预测
-        xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
     }
     else
     {
@@ -370,7 +760,340 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
         }
     }
 }
+UInt TComPrediction::predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
+{
+    Pel *pDst = piPred;
+    // ptrSrc 指向当前的参考像素
+    Int *ptrSrc;
 
+    // assert(g_aucConvertToBit[iWidth] >= 0); //   4x  4
+    // assert(g_aucConvertToBit[iWidth] <= 5); // 128x128
+    assert(iWidth == iHeight);
+
+    ptrSrc = pcTComPattern->getPredictorPtrLP(m_piYuvExt);
+
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+    Int srcoffset = sw * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+    Int dstoffset = uiStride * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+
+    // Create the prediction
+    if (uiDirMode == PLANAR_IDX)
+    {
+        // PLANAR 模式预测
+        // xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+        xPredIntraPlanarLPnew(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+    }
+    else
+    {
+        // TODO: 环状预测时 尺寸是连续变化的 可以尝试不设定 16 作为滤波的界限
+        // if ((iWidth > 16) || (iHeight > 16))
+        if (uiPredDstSize > 8)
+        {
+            xPredIntraAngLP(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+        }
+        else
+        {
+            // 角度模式预测(包括 DC 在内), 块小于 16 时需要滤波
+            xPredIntraAngLP(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, true, uiPredDstSize);
+
+            // DC 模式下预测结果的滤波
+            if ((uiDirMode == DC_IDX) && bAbove && bLeft)
+            {
+                // xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight);
+                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, uiPredDstSize, uiPredDstSize);
+            }
+        }
+    }
+
+    // TODO: 可以尝试用误差平方和作为环状决定预测角度的依据
+    UInt uiSAE = 0;
+    Pel *pred = pDst + dstoffset;
+    Int *src = ptrSrc + sw + 1 + srcoffset;
+    switch (mask)
+    {
+    case 0b1111:
+    case 0b1110:
+        for (Int i = 0; i < uiPredDstSize; i++)
+        {
+            uiSAE += abs(src[i] - pred[i]);
+            // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+        }
+        for (Int j = 1; j < uiPredDstSize; j++)
+        {
+            uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+            // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+        }
+        break;
+    case 0b1011:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize - iWidth / 2; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
+    case 0b1101:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize - iWidth / 2; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    return uiSAE;
+}
+UInt TComPrediction::predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
+{
+    assert(0);
+    Pel *pDst = piPred;
+    // ptrSrc 指向当前的参考像素
+    Int *ptrSrc;
+
+    // assert(g_aucConvertToBit[iWidth] >= 0); //   4x  4
+    // assert(g_aucConvertToBit[iWidth] <= 5); // 128x128
+    assert(iWidth == iHeight);
+
+    ptrSrc = pcTComPattern->getPredictorPtrLP(m_piYuvExt);
+
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+    Int srcoffset = sw * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+    Int dstoffset = uiStride * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+
+    // Create the prediction
+    if (uiDirMode == PLANAR_IDX)
+    {
+        // PLANAR 模式预测
+        xPredIntraPlanar3x3(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+    }
+    else
+    {
+        // if ((iWidth > 16) || (iHeight > 16))
+        // if (uiPredDstSize > 8)
+        // {
+        //     xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+        // }
+        // else
+        {
+            // 角度模式预测(包括 DC 在内), 块小于 16 时需要滤波
+            xPredIntraAng3x3(g_bitDepthY, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, true, uiPredDstSize);
+
+            // DC 模式下预测结果的滤波
+            if ((uiDirMode == DC_IDX) && bAbove && bLeft)
+            {
+                xDCPredFiltering(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, uiPredDstSize, uiPredDstSize);
+            }
+        }
+    }
+
+    // TODO: 可以尝试用误差平方和作为环状决定预测角度的依据
+    UInt uiSAE = 0;
+    Pel *pred = pDst + dstoffset;
+    Int *src = ptrSrc + sw + 1 + srcoffset;
+    // switch (mask)
+    // {
+    // case 0b1111:
+    for (Int i = 0; i < uiPredDstSize; i++)
+    {
+        for (Int j = 0; j < uiPredDstSize; j++)
+        {
+            uiSAE += abs(src[i * sw + j] - pred[i * uiStride + j]);
+            // uiSAE += (src[i * sw + j] - pred[i * uiStride + j]) * (src[i * sw + j] - pred[i * uiStride + j]);
+        }
+    }
+    //     break;
+    // default:
+    //     break;
+    // }
+
+    return uiSAE;
+}
+Void TComPrediction::FillRefChromaLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
+{
+
+    UInt uiStrideRef = uiWidth * 2 + 1;
+    // 色差部分不同的地方
+    // UInt uiStrideOrg = (uiWidth == 4) ? 8 : uiWidth;
+    UInt uiStrideOrg = uiWidth;
+    piRef += uiStrideRef + 1;
+
+    Int *piRefbak = piRef;
+    Pel *piOrgbak = piOrg;
+    Int i, j, k;
+
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        for (j = uiWidth; j < 2 * uiWidth; j++)
+        {
+            piRef[j] = piOrg[uiWidth - 1];
+        }
+
+        piRef += uiStrideRef;
+        piOrg += uiStrideOrg;
+    }
+    piOrg -= uiStrideOrg;
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        piRef += uiStrideRef;
+    }
+
+    piRef = piRefbak;
+    piOrg = piOrgbak;
+    if (uiWidth >= 8)
+    {
+        switch (mask)
+        {
+        case 0b1011:
+            piRef += uiWidth / 2;
+            piOrg += uiWidth / 2;
+            for (i = 0; i < uiWidth / 2 - 1; i++)
+            {
+                for (j = 0; j < uiWidth / 2 * 3; j++)
+                {
+                    piRef[j] = piOrg[-1];
+                }
+                piRef += uiStrideRef;
+                piOrg += uiStrideOrg;
+            }
+            break;
+        case 0b1101:
+            piRef += uiWidth / 2 * uiStrideRef;
+            piOrg += uiWidth / 2 * uiStrideOrg;
+            for (i = 0; i < uiWidth / 2 * 3; i++)
+            {
+                for (j = 0; j < uiWidth / 2 - 1; j++)
+                {
+                    piRef[j] = *(piOrg + j - uiStrideOrg);
+                }
+                piRef += uiStrideRef;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
+{
+
+    UInt uiStrideRef = uiWidth * 2 + 1;
+    UInt uiStrideOrg = (uiWidth == 4) ? 8 : uiWidth;
+    piRef += uiStrideRef + 1;
+
+    Int *piRefbak = piRef;
+    Pel *piOrgbak = piOrg;
+    Int i, j, k;
+
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        for (j = uiWidth; j < 2 * uiWidth; j++)
+        {
+            piRef[j] = piOrg[uiWidth - 1];
+        }
+
+        piRef += uiStrideRef;
+        piOrg += uiStrideOrg;
+    }
+    piOrg -= uiStrideOrg;
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        piRef += uiStrideRef;
+    }
+
+    piRef = piRefbak;
+    piOrg = piOrgbak;
+    switch (mask)
+    {
+    case 0b1011:
+        piRef += uiWidth / 2;
+        piOrg += uiWidth / 2;
+        for (i = 0; i < uiWidth / 2 - 1; i++)
+        {
+            for (j = 0; j < (uiWidth / 2) * 3; j++)
+            {
+                piRef[j] = piOrg[-1];
+            }
+            piRef += uiStrideRef;
+            piOrg += uiStrideOrg;
+        }
+        break;
+    case 0b1101:
+        piRef += uiWidth / 2 * uiStrideRef;
+        piOrg += uiWidth / 2 * uiStrideOrg;
+        for (i = 0; i < uiWidth / 2 * 3; i++)
+        {
+            for (j = 0; j < uiWidth / 2 - 1; j++)
+            {
+                piRef[j] = *(piOrg + j - uiStrideOrg);
+            }
+            piRef += uiStrideRef;
+        }
+        break;
+    default:
+        break;
+    }
+}
 // Angular chroma
 Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft)
 {
@@ -382,7 +1105,7 @@ Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred,
 
     if (uiDirMode == PLANAR_IDX)
     {
-        xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
     }
     else
     {
@@ -390,7 +1113,143 @@ Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred,
         xPredIntraAng(g_bitDepthC, ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false);
     }
 }
+UInt TComPrediction::predIntraChromaAng3x3(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
+{
+    assert(0);
+    Pel *pDst = piPred;
+    Int *ptrSrc = piSrc;
 
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+    Int srcoffset = sw * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+    Int dstoffset = uiStride * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+
+    if (uiDirMode == PLANAR_IDX)
+    {
+        xPredIntraPlanar3x3(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+    }
+    else
+    {
+        // Create the prediction
+        xPredIntraAng3x3(g_bitDepthC, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+    }
+
+    // TODO: 可以尝试用误差平方和作为环状决定预测角度的依据
+    UInt uiSAE = 0;
+    Pel *pred = pDst + dstoffset;
+    Int *src = ptrSrc + sw + 1 + srcoffset;
+    for (Int i = 0; i < uiPredDstSize; i++)
+    {
+        for (Int j = 0; j < uiPredDstSize; j++)
+        {
+            uiSAE += abs(src[i * sw + j] - pred[i * uiStride + j]);
+            // uiSAE += (src[i * sw + j] - pred[i * uiStride + j]) * (src[i * sw + j] - pred[i * uiStride + j]);
+        }
+    }
+    return uiSAE;
+}
+UInt TComPrediction::predIntraChromaAngLP(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize)
+{
+    Pel *pDst = piPred;
+    Int *ptrSrc = piSrc;
+
+    // get starting pixel in block
+    Int sw = 2 * iWidth + 1;
+    Int srcoffset = sw * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+    Int dstoffset = uiStride * (iWidth - uiPredDstSize) + (iWidth - uiPredDstSize);
+
+    if (uiDirMode == PLANAR_IDX)
+    {
+        // xPredIntraPlanarLP(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+        xPredIntraPlanarLPnew(ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiPredDstSize);
+    }
+    else
+    {
+        // Create the prediction
+        xPredIntraAngLP(g_bitDepthC, ptrSrc + sw + 1 + srcoffset, sw, pDst + dstoffset, uiStride, iWidth, iHeight, uiDirMode, bAbove, bLeft, false, uiPredDstSize);
+    }
+
+    // TODO: 可以尝试用误差平方和作为环状决定预测角度的依据
+    UInt uiSAE = 0;
+    Pel *pred = pDst + dstoffset;
+    Int *src = ptrSrc + sw + 1 + srcoffset;
+    switch (mask)
+    {
+    case 0b1111:
+    case 0b1110:
+        for (Int i = 0; i < uiPredDstSize; i++)
+        {
+            uiSAE += abs(src[i] - pred[i]);
+            // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+        }
+        for (Int j = 1; j < uiPredDstSize; j++)
+        {
+            uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+            // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+        }
+        break;
+    case 0b1011:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize - iWidth / 2; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
+    case 0b1101:
+        if (uiPredDstSize <= iWidth / 2)
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        else
+        {
+            for (Int i = 0; i < uiPredDstSize; i++)
+            {
+                uiSAE += abs(src[i] - pred[i]);
+                // uiSAE += (src[i] - pred[i]) * (src[i] - pred[i]);
+            }
+            for (Int j = 1; j < uiPredDstSize - iWidth / 2; j++)
+            {
+                uiSAE += abs(src[j * sw] - pred[j * uiStride]);
+                // uiSAE += (src[j * sw] - pred[j * uiStride]) * (src[j * sw] - pred[j * uiStride]);
+            }
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    return uiSAE;
+}
 /** Function for checking identical motion.
  * \param TComDataCU* pcCU
  * \param UInt PartAddr
@@ -732,7 +1591,530 @@ Void TComPrediction::xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int 
         }
     }
 }
+Void TComPrediction::xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
+{
+    assert(width == height);
 
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    // UInt blkSize = width;
+    // UInt offset2D = width;
+    UInt blkSize = uiPredDstSize;
+    UInt offset2D = uiPredDstSize;
+    // UInt shift1D = g_aucConvertToBit[width] + 2;
+    // UInt shift2D = shift1D + 1;
+
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+    for (k = 0; k < blkSize; k++)
+    {
+        bottomRow[k] = bottomLeft - topRow[k];
+        rightColumn[k] = topRight - leftColumn[k];
+        topRow[k] = topRow[k] * uiPredDstSize;
+        leftColumn[k] = leftColumn[k] * uiPredDstSize;
+        // topRow[k] <<= shift1D;
+        // leftColumn[k] <<= shift1D;
+    }
+
+    horPred = leftColumn[0] + offset2D;
+    for (l = 0; l < blkSize; l++)
+    {
+        horPred += rightColumn[0];
+        topRow[l] += bottomRow[l];
+        rpDst[l] = ((horPred + topRow[l]) / (2 * uiPredDstSize));
+    }
+    for (k = 1; k < blkSize; k++)
+    {
+        horPred = leftColumn[k] + offset2D;
+        horPred += rightColumn[k];
+        topRow[0] += bottomRow[0];
+        rpDst[k * dstStride] = ((horPred + topRow[0]) / (2 * uiPredDstSize));
+    }
+    // Generate prediction signal
+    // for (k = 0; k < blkSize; k++)
+    // {
+    //     horPred = leftColumn[k] + offset2D;
+    //     for (l = 0; l < blkSize; l++)
+    //     {
+    //         horPred += rightColumn[k];
+    //         topRow[l] += bottomRow[l];
+    //         rpDst[k * dstStride + l] = ((horPred + topRow[l]) >> shift2D);
+    //     }
+    // }
+}
+Void TComPrediction::xPredIntraPlanarnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height)
+{
+    // enum PlanarType
+    // {
+    //     HEVC,
+    //     V_Planar,
+    //     H_Planar,
+    //     HV_Planar,
+    //     Planar_3p,
+    //     SAP_E,
+    //     Tendency,
+    //     Tendency_C,
+    //     Weight121,
+    //     SAP_E_LP,
+    // };
+    // PlanarType SelectedType = SAP_E;
+
+    assert(width == height);
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    UInt blkSize = width;
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+
+    // switch (SelectedType)
+    // {
+    // case HEVC:
+    // {
+    //     for (k = 0; k < blkSize; k++)
+    //     {
+    //         bottomRow[k] = bottomLeft - topRow[k];
+    //         rightColumn[k] = topRight - leftColumn[k];
+    //         topRow[k] = topRow[k] * uiPredDstSize;
+    //         leftColumn[k] = leftColumn[k] * uiPredDstSize;
+    //         // topRow[k] <<= shift1D;
+    //         // leftColumn[k] <<= shift1D;
+    //     }
+    //     horPred = leftColumn[0] + offset2D;
+    //     for (l = 0; l < blkSize; l++)
+    //     {
+    //         horPred += rightColumn[0];
+    //         topRow[l] += bottomRow[l];
+    //         rpDst[l] = ((horPred + topRow[l] + uiPredDstSize) / (2 * uiPredDstSize));
+    //     }
+    //     for (k = 1; k < blkSize; k++)
+    //     {
+    //         horPred = leftColumn[k] + offset2D;
+    //         horPred += rightColumn[k];
+    //         topRow[0] += bottomRow[0];
+    //         rpDst[k * dstStride] = ((horPred + topRow[0] + uiPredDstSize) / (2 * uiPredDstSize));
+    //     }
+    //     break;
+    // }
+
+    // case SAP_E:
+    {
+        // for (l = 0; l < blkSize; l++)
+        // {
+        //     Pel left = pSrc[l - 1];
+        //     Pel top = pSrc[l - srcStride];
+        //     Pel lefttop = pSrc[l - srcStride - 1];
+        //     if (lefttop >= max(left, top))
+        //     {
+        //         rpDst[l] = min(left, top);
+        //     }
+        //     else if (lefttop <= min(left, top))
+        //     {
+        //         rpDst[l] = max(left, top);
+        //     }
+        //     else
+        //     {
+        //         rpDst[l] = left + top - lefttop;
+        //     }
+        // }
+        for (k = 0; k < blkSize; k++)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                Pel left = pSrc[k * srcStride - 1 + l];
+                Pel top = pSrc[(k - 1) * srcStride + l];
+                Pel lefttop = pSrc[(k - 1) * srcStride - 1 + l];
+                if (lefttop >= max(left, top))
+                {
+                    rpDst[k * dstStride + l] = min(left, top);
+                }
+                else if (lefttop <= min(left, top))
+                {
+                    rpDst[k * dstStride + l] = max(left, top);
+                }
+                else
+                {
+                    rpDst[k * dstStride + l] = left + top - lefttop;
+                }
+            }
+        }
+    }
+}
+Void TComPrediction::xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
+{
+    enum PlanarType
+    {
+        HEVC,
+        V_Planar,
+        H_Planar,
+        HV_Planar,
+        Planar_3p,
+        SAP_E,
+        Tendency,
+        Tendency_C,
+        Weight121,
+        SAP_E_LP,
+    };
+    PlanarType SelectedType = SAP_E;
+
+    assert(width == height);
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    UInt blkSize = uiPredDstSize;
+    UInt offset2D = uiPredDstSize;
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+
+    switch (SelectedType)
+    {
+    case HEVC:
+    {
+        for (k = 0; k < blkSize; k++)
+        {
+            bottomRow[k] = bottomLeft - topRow[k];
+            rightColumn[k] = topRight - leftColumn[k];
+            topRow[k] = topRow[k] * uiPredDstSize;
+            leftColumn[k] = leftColumn[k] * uiPredDstSize;
+            // topRow[k] <<= shift1D;
+            // leftColumn[k] <<= shift1D;
+        }
+        horPred = leftColumn[0] + offset2D;
+        for (l = 0; l < blkSize; l++)
+        {
+            horPred += rightColumn[0];
+            topRow[l] += bottomRow[l];
+            rpDst[l] = ((horPred + topRow[l] + uiPredDstSize) / (2 * uiPredDstSize));
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            horPred = leftColumn[k] + offset2D;
+            horPred += rightColumn[k];
+            topRow[0] += bottomRow[0];
+            rpDst[k * dstStride] = ((horPred + topRow[0] + uiPredDstSize) / (2 * uiPredDstSize));
+        }
+        break;
+    }
+    case V_Planar:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (topRow[l] * uiPredDstSize + bottomLeft * 1) / (uiPredDstSize + 1);
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = ((topRow[0] * (uiPredDstSize - k) + bottomLeft * (k + 1)) / (uiPredDstSize + 1));
+        }
+        break;
+    }
+    case H_Planar:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = ((leftColumn[k] * (uiPredDstSize) + topRight * 1)) / (uiPredDstSize + 1);
+        }
+        break;
+    }
+    case HV_Planar:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = (topRow[0] * (uiPredDstSize - k) + bottomLeft * (k + 1)) / (uiPredDstSize + 1);
+        }
+        break;
+    }
+    case Planar_3p:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            rpDst[l] = (leftColumn[0] * (uiPredDstSize - l) + topRight * (l + 1)) / (uiPredDstSize + 1);
+            rpDst[l] = (rpDst[l] + topRow[l] + 1) / 2;
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            rpDst[k * dstStride] = (topRow[0] * (uiPredDstSize - k) + bottomLeft * (k + 1)) / (uiPredDstSize + 1);
+            rpDst[k * dstStride] = (rpDst[k * dstStride] + leftColumn[k] + 1) / 2;
+        }
+        break;
+    }
+    case SAP_E:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel left = pSrc[l - 1];
+            Pel top = pSrc[l - srcStride];
+            Pel lefttop = pSrc[l - srcStride - 1];
+            if (lefttop >= max(left, top))
+            {
+                rpDst[l] = min(left, top);
+            }
+            else if (lefttop <= min(left, top))
+            {
+                rpDst[l] = max(left, top);
+            }
+            else
+            {
+                rpDst[l] = left + top - lefttop;
+            }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel left = pSrc[k * srcStride - 1];
+            Pel top = pSrc[(k - 1) * srcStride];
+            Pel lefttop = pSrc[(k - 1) * srcStride - 1];
+            if (lefttop >= max(left, top))
+            {
+                rpDst[k * dstStride] = min(left, top);
+            }
+            else if (lefttop <= min(left, top))
+            {
+                rpDst[k * dstStride] = max(left, top);
+            }
+            else
+            {
+                rpDst[k * dstStride] = left + top - lefttop;
+            }
+        }
+        break;
+    }
+    case Tendency:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel far = (l == 0) ? pSrc[-1] : pSrc[l - srcStride - 2];
+            Pel mid = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            if ((far >= mid && mid >= near) || (far <= mid && mid <= near))
+            {
+                rpDst[l] = near;
+            }
+            else
+            {
+                rpDst[l] = ((mid - far + mid) + near) / 2;
+            }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel far = pSrc[(k - 2) * srcStride - 1];
+            Pel mid = pSrc[(k - 1) * srcStride - 1];
+            Pel near = pSrc[k * srcStride - 1];
+            if ((far >= mid && mid >= near) || (far <= mid && mid <= near))
+            {
+                rpDst[k * dstStride] = near;
+            }
+            else
+            {
+                rpDst[k * dstStride] = ((mid - far + mid) + near) / 2;
+            }
+        }
+        break;
+    }
+    case Tendency_C:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel far1 = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            Pel far2 = pSrc[l - srcStride + 1];
+            if ((far1 >= near && near >= far2) || (far1 <= near && near <= far2))
+            {
+                rpDst[l] = near;
+            }
+            else
+            {
+                rpDst[l] = (far1 + far2 + near * 2) / 4;
+            }
+
+            // else if (abs(far1 - near) > abs(far2 - near))
+            // {
+            //     rpDst[l] = far2;
+            // }
+            // else
+            // {
+            //     rpDst[l] = far1;
+            // }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel far1 = pSrc[(k - 1) * srcStride - 1];
+            Pel near = pSrc[k * srcStride - 1];
+            Pel far2 = pSrc[(k + 1) * srcStride - 1];
+            if ((far1 >= near && near >= far2) || (far1 <= near && near <= far2))
+            {
+                rpDst[k * dstStride] = near;
+            }
+            else
+            {
+                rpDst[k * dstStride] = (far1 + far2 + near * 2) / 4;
+            }
+
+            // else if (abs(far1 - near) > abs(far2 - near))
+            // {
+            //     rpDst[k * dstStride] = far2;
+            // }
+            // else
+            // {
+            //     rpDst[k * dstStride] = far1;
+            // }
+        }
+        break;
+    }
+    case Weight121:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel far1 = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            Pel far2 = pSrc[l - srcStride + 1];
+            rpDst[l] = (far1 + far2 + near * 2) / 4;
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel far1 = pSrc[(k - 1) * srcStride - 1];
+            Pel near = pSrc[k * srcStride - 1];
+            Pel far2 = pSrc[(k + 1) * srcStride - 1];
+            rpDst[k * dstStride] = (far1 + far2 + near * 2) / 4;
+        }
+        break;
+    }
+    case SAP_E_LP:
+    {
+        for (l = 0; l < blkSize; l++)
+        {
+            Pel mid = pSrc[l - srcStride - 1];
+            Pel near = pSrc[l - srcStride];
+            Pel far = (l == 0) ? pSrc[-1] : pSrc[l - srcStride - 2];
+            if (far > max(mid, near))
+            {
+                rpDst[l] = min(mid, near);
+            }
+            else if (far < min(mid, near))
+            {
+                rpDst[l] = max(mid, near);
+            }
+            else
+            {
+                rpDst[l] = mid + near - far;
+            }
+        }
+        for (k = 1; k < blkSize; k++)
+        {
+            Pel mid = pSrc[k * srcStride - 1];
+            Pel near = pSrc[(k - 1) * srcStride];
+            Pel far = pSrc[(k - 1) * srcStride - 1];
+            if (far > max(mid, near))
+            {
+                rpDst[k * dstStride] = min(mid, near);
+            }
+            else if (far < min(mid, near))
+            {
+                rpDst[k * dstStride] = max(mid, near);
+            }
+            else
+            {
+                rpDst[k * dstStride] = mid + near - far;
+            }
+        }
+        break;
+    }
+    default:
+        assert(0);
+        break;
+    }
+}
+Void TComPrediction::xPredIntraPlanar3x3(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize)
+{
+    assert(0);
+    assert(width == height);
+    assert(uiPredDstSize == 3);
+
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    // UInt blkSize = width;
+    // UInt offset2D = width;
+    UInt blkSize = uiPredDstSize;
+    UInt offset2D = uiPredDstSize;
+    // UInt shift1D = g_aucConvertToBit[width] + 2;
+    // UInt shift2D = shift1D + 1;
+
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+    for (k = 0; k < blkSize; k++)
+    {
+        bottomRow[k] = bottomLeft - topRow[k];
+        rightColumn[k] = topRight - leftColumn[k];
+        topRow[k] = topRow[k] * uiPredDstSize;
+        leftColumn[k] = leftColumn[k] * uiPredDstSize;
+        // topRow[k] <<= shift1D;
+        // leftColumn[k] <<= shift1D;
+    }
+
+    // horPred = leftColumn[0] + offset2D;
+    // for (l = 0; l < blkSize; l++)
+    // {
+    //     horPred += rightColumn[0];
+    //     topRow[l] += bottomRow[l];
+    //     rpDst[l] = ((horPred + topRow[l]) / (2 * uiPredDstSize));
+    // }
+    // for (k = 1; k < blkSize; k++)
+    // {
+    //     horPred = leftColumn[k] + offset2D;
+    //     horPred += rightColumn[k];
+    //     topRow[0] += bottomRow[0];
+    //     rpDst[k * dstStride] = ((horPred + topRow[0]) / (2 * uiPredDstSize));
+    // }
+    // Generate prediction signal
+    for (k = 0; k < blkSize; k++)
+    {
+        horPred = leftColumn[k] + offset2D;
+        for (l = 0; l < blkSize; l++)
+        {
+            horPred += rightColumn[k];
+            topRow[l] += bottomRow[l];
+            rpDst[k * dstStride + l] = ((horPred + topRow[l]) / (2 * uiPredDstSize));
+        }
+    }
+}
 /** Function for filtering intra DC predictor.
  * \param pSrc pointer to reconstructed sample array
  * \param iSrcStride the stride of the reconstructed sample array
@@ -743,7 +2125,7 @@ Void TComPrediction::xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int 
  *
  * This function performs filtering left and top edges of the prediction samples for DC mode (intra coding).
  */
-Void TComPrediction::xDCPredFiltering(Int *pSrc, Int iSrcStride, Pel *&rpDst, Int iDstStride, Int iWidth, Int iHeight)
+Void TComPrediction::xDCPredFiltering(Int *pSrc, Int iSrcStride, Pel *rpDst, Int iDstStride, Int iWidth, Int iHeight)
 {
     Pel *pDst = rpDst;
     Int x, y, iDstStride2, iSrcStride2;

@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -123,6 +123,9 @@ public:
 
     Void setBitCounter(TComBitCounter *pcBitCounter) { m_pcBitCounter = pcBitCounter; }
     Int updateLCUDataISlice(TComDataCU *pcCU, Int LCUIdx, Int width, Int height);
+
+    // 增加
+    Void MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt mask);
 
 protected:
     Void finishCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);

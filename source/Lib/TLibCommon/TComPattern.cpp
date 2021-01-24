@@ -46,14 +46,23 @@
 // Tables
 // ====================================================================================================================
 
+// 使预测时不滤波. 预测角度与水平/垂直的差值大于下表时, 选择滤波. 通过调大下表值可以实现所有大小块不滤波
 const UChar TComPattern::m_aucIntraFilter[5] =
     {
-        10, //4x4
-        7,  //8x8
-        1,  //16x16
-        0,  //32x32
-        10, //64x64
+        MAX_UCHAR, //4x4
+        MAX_UCHAR, //8x8
+        MAX_UCHAR, //16x16
+        MAX_UCHAR, //32x32
+        MAX_UCHAR, //64x64
 };
+// const UChar TComPattern::m_aucIntraFilter[5] =
+//     {
+//         10, //4x4
+//         7,  //8x8
+//         1,  //16x16
+//         0,  //32x32
+//         10, //64x64
+// };
 
 // ====================================================================================================================
 // Public member functions (TComPatternParam)
@@ -240,96 +249,96 @@ Void TComPattern::initAdiPattern(TComDataCU *pcCU, UInt uiZorderIdxInPart, UInt 
     // 获取 + 填充参考像素 piAdiTemp
     fillReferenceSamples(g_bitDepthY, piRoiOrigin, piAdiTemp, bNeighborFlags, iNumIntraNeighbor, iUnitSize, iNumUnitsInCu, iTotalUnits, uiCuWidth, uiCuHeight, uiWidth, uiHeight, iPicStride, bLMmode);
 
-    Int i;
-    // generate filtered intra prediction samples
-    Int iBufSize = uiCuHeight2 + uiCuWidth2 + 1; // left and left above border + above and above right border + top left corner = length of 3. filter buffer
+    // Int i;
+    // // generate filtered intra prediction samples
+    // Int iBufSize = uiCuHeight2 + uiCuWidth2 + 1; // left and left above border + above and above right border + top left corner = length of 3. filter buffer
 
-    UInt uiWH = uiWidth * uiHeight; // number of elements in one buffer
+    // UInt uiWH = uiWidth * uiHeight; // number of elements in one buffer
 
-    // piAdiBuf 指向原始的参考像素(当然包括填补操作)
-    // 往右移动 (2*width+1)*(2*height+1) 个单位, 用于存放滤波后的数据
-    Int *piFilteredBuf1 = piAdiBuf + uiWH;       // 1. filter buffer
-    Int *piFilteredBuf2 = piFilteredBuf1 + uiWH; // 2. filter buffer
-    Int *piFilterBuf = piFilteredBuf2 + uiWH;    // buffer for 2. filtering (sequential)
-    Int *piFilterBufN = piFilterBuf + iBufSize;  // buffer for 1. filtering (sequential)
+    // // piAdiBuf 指向原始的参考像素(当然包括填补操作)
+    // // 往右移动 (2*width+1)*(2*height+1) 个单位, 用于存放滤波后的数据
+    // Int *piFilteredBuf1 = piAdiBuf + uiWH;       // 1. filter buffer
+    // Int *piFilteredBuf2 = piFilteredBuf1 + uiWH; // 2. filter buffer
+    // Int *piFilterBuf = piFilteredBuf2 + uiWH;    // buffer for 2. filtering (sequential)
+    // Int *piFilterBufN = piFilterBuf + iBufSize;  // buffer for 1. filtering (sequential)
 
-    Int l = 0;
-    // 所有参考像素顺时针顺序暂存在 piFilterBuf
-    // left border from bottom to top
-    for (i = 0; i < uiCuHeight2; i++)
-    {
-        piFilterBuf[l++] = piAdiTemp[uiWidth * (uiCuHeight2 - i)];
-    }
-    // top left corner
-    piFilterBuf[l++] = piAdiTemp[0];
-    // above border from left to right
-    for (i = 0; i < uiCuWidth2; i++)
-    {
-        piFilterBuf[l++] = piAdiTemp[1 + i];
-    }
+    // Int l = 0;
+    // // 所有参考像素顺时针顺序暂存在 piFilterBuf
+    // // left border from bottom to top
+    // for (i = 0; i < uiCuHeight2; i++)
+    // {
+    //     piFilterBuf[l++] = piAdiTemp[uiWidth * (uiCuHeight2 - i)];
+    // }
+    // // top left corner
+    // piFilterBuf[l++] = piAdiTemp[0];
+    // // above border from left to right
+    // for (i = 0; i < uiCuWidth2; i++)
+    // {
+    //     piFilterBuf[l++] = piAdiTemp[1 + i];
+    // }
 
-    // 参考像素滤波
-    // 默认情况下是 [1,2,1] 滤波
-    // 特殊: 32x32 且足够平坦, 采用 起始-中点-终点 三点做插值的方法滤波
-    if (pcCU->getSlice()->getSPS()->getUseStrongIntraSmoothing())
-    {
-        Int blkSize = 32;
-        Int bottomLeft = piFilterBuf[0];
-        Int topLeft = piFilterBuf[uiCuHeight2];
-        Int topRight = piFilterBuf[iBufSize - 1];
-        Int threshold = 1 << (g_bitDepthY - 5);
-        // 足够平坦 的判断依据
-        Bool bilinearLeft = abs(bottomLeft + topLeft - 2 * piFilterBuf[uiCuHeight]) < threshold;
-        Bool bilinearAbove = abs(topLeft + topRight - 2 * piFilterBuf[uiCuHeight2 + uiCuHeight]) < threshold;
+    // // 参考像素滤波
+    // // 默认情况下是 [1,2,1] 滤波
+    // // 特殊: 32x32 且足够平坦, 采用 起始-中点-终点 三点做插值的方法滤波
+    // if (pcCU->getSlice()->getSPS()->getUseStrongIntraSmoothing())
+    // {
+    //     Int blkSize = 32;
+    //     Int bottomLeft = piFilterBuf[0];
+    //     Int topLeft = piFilterBuf[uiCuHeight2];
+    //     Int topRight = piFilterBuf[iBufSize - 1];
+    //     Int threshold = 1 << (g_bitDepthY - 5);
+    //     // 足够平坦 的判断依据
+    //     Bool bilinearLeft = abs(bottomLeft + topLeft - 2 * piFilterBuf[uiCuHeight]) < threshold;
+    //     Bool bilinearAbove = abs(topLeft + topRight - 2 * piFilterBuf[uiCuHeight2 + uiCuHeight]) < threshold;
 
-        if (uiCuWidth >= blkSize && (bilinearLeft && bilinearAbove))
-        {
-            Int shift = g_aucConvertToBit[uiCuWidth] + 3; // log2(uiCuHeight2)
-            piFilterBufN[0] = piFilterBuf[0];
-            piFilterBufN[uiCuHeight2] = piFilterBuf[uiCuHeight2];
-            piFilterBufN[iBufSize - 1] = piFilterBuf[iBufSize - 1];
-            for (i = 1; i < uiCuHeight2; i++)
-            {
-                piFilterBufN[i] = ((uiCuHeight2 - i) * bottomLeft + i * topLeft + uiCuHeight) >> shift;
-            }
-            for (i = 1; i < uiCuWidth2; i++)
-            {
-                piFilterBufN[uiCuHeight2 + i] = ((uiCuWidth2 - i) * topLeft + i * topRight + uiCuWidth) >> shift;
-            }
-        }
-        else
-        {
-            // 1. filtering with [1 2 1]
-            piFilterBufN[0] = piFilterBuf[0];
-            piFilterBufN[iBufSize - 1] = piFilterBuf[iBufSize - 1];
-            for (i = 1; i < iBufSize - 1; i++)
-            {
-                piFilterBufN[i] = (piFilterBuf[i - 1] + 2 * piFilterBuf[i] + piFilterBuf[i + 1] + 2) >> 2;
-            }
-        }
-    }
-    else
-    {
-        // 1. filtering with [1 2 1]
-        piFilterBufN[0] = piFilterBuf[0];
-        piFilterBufN[iBufSize - 1] = piFilterBuf[iBufSize - 1];
-        for (i = 1; i < iBufSize - 1; i++)
-        {
-            piFilterBufN[i] = (piFilterBuf[i - 1] + 2 * piFilterBuf[i] + piFilterBuf[i + 1] + 2) >> 2;
-        }
-    }
+    //     if (uiCuWidth >= blkSize && (bilinearLeft && bilinearAbove))
+    //     {
+    //         Int shift = g_aucConvertToBit[uiCuWidth] + 3; // log2(uiCuHeight2)
+    //         piFilterBufN[0] = piFilterBuf[0];
+    //         piFilterBufN[uiCuHeight2] = piFilterBuf[uiCuHeight2];
+    //         piFilterBufN[iBufSize - 1] = piFilterBuf[iBufSize - 1];
+    //         for (i = 1; i < uiCuHeight2; i++)
+    //         {
+    //             piFilterBufN[i] = ((uiCuHeight2 - i) * bottomLeft + i * topLeft + uiCuHeight) >> shift;
+    //         }
+    //         for (i = 1; i < uiCuWidth2; i++)
+    //         {
+    //             piFilterBufN[uiCuHeight2 + i] = ((uiCuWidth2 - i) * topLeft + i * topRight + uiCuWidth) >> shift;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         // 1. filtering with [1 2 1]
+    //         piFilterBufN[0] = piFilterBuf[0];
+    //         piFilterBufN[iBufSize - 1] = piFilterBuf[iBufSize - 1];
+    //         for (i = 1; i < iBufSize - 1; i++)
+    //         {
+    //             piFilterBufN[i] = (piFilterBuf[i - 1] + 2 * piFilterBuf[i] + piFilterBuf[i + 1] + 2) >> 2;
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     // 1. filtering with [1 2 1]
+    //     piFilterBufN[0] = piFilterBuf[0];
+    //     piFilterBufN[iBufSize - 1] = piFilterBuf[iBufSize - 1];
+    //     for (i = 1; i < iBufSize - 1; i++)
+    //     {
+    //         piFilterBufN[i] = (piFilterBuf[i - 1] + 2 * piFilterBuf[i] + piFilterBuf[i + 1] + 2) >> 2;
+    //     }
+    // }
 
-    // fill 1. filter buffer with filtered values
-    l = 0;
-    for (i = 0; i < uiCuHeight2; i++)
-    {
-        piFilteredBuf1[uiWidth * (uiCuHeight2 - i)] = piFilterBufN[l++];
-    }
-    piFilteredBuf1[0] = piFilterBufN[l++];
-    for (i = 0; i < uiCuWidth2; i++)
-    {
-        piFilteredBuf1[1 + i] = piFilterBufN[l++];
-    }
+    // // fill 1. filter buffer with filtered values
+    // l = 0;
+    // for (i = 0; i < uiCuHeight2; i++)
+    // {
+    //     piFilteredBuf1[uiWidth * (uiCuHeight2 - i)] = piFilterBufN[l++];
+    // }
+    // piFilteredBuf1[0] = piFilterBufN[l++];
+    // for (i = 0; i < uiCuWidth2; i++)
+    // {
+    //     piFilteredBuf1[1 + i] = piFilterBufN[l++];
+    // }
 }
 
 Void TComPattern::initAdiPatternChroma(TComDataCU *pcCU, UInt uiZorderIdxInPart, UInt uiPartDepth, Int *piAdiBuf, Int iOrgBufStride, Int iOrgBufHeight, Bool &bAbove, Bool &bLeft)
@@ -642,6 +651,10 @@ Int *TComPattern::getPredictorPtr(UInt uiDirMode, UInt log2BlkSize, Int *piAdiBu
     }
 
     return piSrc;
+}
+Int *TComPattern::getPredictorPtrLP(Int *piAdiBuf)
+{
+    return piAdiBuf;
 }
 
 Bool TComPattern::isAboveLeftAvailable(TComDataCU *pcCU, UInt uiPartIdxLT)

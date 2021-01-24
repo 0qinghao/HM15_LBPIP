@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -63,6 +63,8 @@
 class TComDataCU
 {
 private:
+    // 增加
+
     // -------------------------------------------------------------------------------------------------------------------
     // class pointers
     // -------------------------------------------------------------------------------------------------------------------
@@ -75,10 +77,11 @@ private:
     // CU description
     // -------------------------------------------------------------------------------------------------------------------
 
-    UInt m_uiCUAddr;       ///< CU address in a slice
-    UInt m_uiAbsIdxInLCU;  ///< absolute address in a CU. It's Z scan order
-    UInt m_uiCUPelX;       ///< CU position in a pixel (X)
-    UInt m_uiCUPelY;       ///< CU position in a pixel (Y)
+    UInt m_uiCUAddr;      ///< CU address in a slice
+    UInt m_uiAbsIdxInLCU; ///< absolute address in a CU. It's Z scan order
+    UInt m_uiCUPelX;      ///< CU position in a pixel (X)
+    UInt m_uiCUPelY;      ///< CU position in a pixel (Y)
+    // 当前 CU 中有多少个 4x4 块
     UInt m_uiNumPartition; ///< total number of minimum partitions in a CU
     UChar *m_puhWidth;     ///< array of widths
     UChar *m_puhHeight;    ///< array of heights
@@ -92,17 +95,16 @@ private:
     // PU 的类型 (是不是划分了 PU, 由枚举 PartSize 赋值, 0 表示 2Nx2N, 3 表示 NxN )
     Char *m_pePartSize; ///< array of partition sizes
     // PU 的编码模式 (帧内还是帧间)
-    Char *m_pePredMode;             ///< array of prediction modes
-    Bool *m_CUTransquantBypass;     ///< array of cu_transquant_bypass flags
-    Char *m_phQP;                   ///< array of QP values
-    UChar *m_puhTrIdx;              ///< array of transform indices
-    UChar *m_puhTransformSkip[3];   ///< array of transform skipping flags
+    Char *m_pePredMode;         ///< array of prediction modes
+    Bool *m_CUTransquantBypass; ///< array of cu_transquant_bypass flags
+    Char *m_phQP;               ///< array of QP values
+    // 变换层数 在处理 8x8 细分到 4x4 时为 1, 其他时候为 0
+    UChar *m_puhTrIdx; ///< array of transform indices
+    // 变换跳过标志
+    UChar *m_puhTransformSkip[3]; ///< array of transform skipping flags
+    // coding block flag 待处理的 PU 块如果整个全为 0(一个 PU 只有一个 cbf, 不是像 significant_flag 那样的 4x4 一个) 则 cbf 标志为 0, 否则 1
     UChar *m_puhCbf[3];             ///< array of coded block flags (CBF)
     TComCUMvField m_acCUMvField[2]; ///< array of motion vectors
-    // 量化后的系数
-    TCoeff *m_pcTrCoeffY;  ///< transformed coefficient buffer (Y)
-    TCoeff *m_pcTrCoeffCb; ///< transformed coefficient buffer (Cb)
-    TCoeff *m_pcTrCoeffCr; ///< transformed coefficient buffer (Cr)
 #if ADAPTIVE_QP_SELECTION
     Int *m_pcArlCoeffY;                 ///< ARL coefficient buffer (Y)
     Int *m_pcArlCoeffCb;                ///< ARL coefficient buffer (Cb)
@@ -149,6 +151,8 @@ private:
     Char *m_apiMVPIdx[2];       ///< array of motion vector predictor candidates
     Char *m_apiMVPNum[2];       ///< array of number of possible motion vectors predictors
     Bool *m_pbIPCMFlag;         ///< array of intra_pcm flags
+    UChar *m_puhLumaLoopFlag;
+    UChar *m_puhChromaLoopFlag;
 
     // -------------------------------------------------------------------------------------------------------------------
     // misc. variables
@@ -181,6 +185,77 @@ protected:
     Void xDeriveCenterIdx(UInt uiPartIdx, UInt &ruiPartIdxCenter);
 
 public:
+    // 量化后的系数
+    TCoeff *m_pcTrCoeffY;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffCb; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCr; ///< transformed coefficient buffer (Cr)
+    // 增加
+    // codeCoeffNxN 中记录公共部分 bits
+    UInt uiBitsComm;
+    UInt uiBitsCommChroma;
+    // codeCoeffNxN 中记录每个 4x4 块所需的 bits, 最大 CU 是 32x32 所以实际上只用上 8x8 大小
+    UInt uiBitsPer4x4[16][16];
+    UInt uiBitsPer4x4Chroma[16][16];
+    // 新分块方法的系数
+    TCoeff *m_pcTrCoeffYnp0111;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1011;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1101;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffYnp1110;  ///< transformed coefficient buffer (Y)
+    TCoeff *m_pcTrCoeffCbnp0111; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1011; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1101; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCbnp1110; ///< transformed coefficient buffer (Cb)
+    TCoeff *m_pcTrCoeffCrnp0111; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1011; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1101; ///< transformed coefficient buffer (Cr)
+    TCoeff *m_pcTrCoeffCrnp1110; ///< transformed coefficient buffer (Cr)
+    // 新分块方法的 cbf 标志
+    UChar *m_puhCbfnp0111[3]; ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1011[3]; ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1101[3]; ///< array of coded block flags (CBF)
+    UChar *m_puhCbfnp1110[3]; ///< array of coded block flags (CBF)
+    // 新分块方法的预测角度记录
+    UChar *m_puhLumaIntraDirnp0111;   ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1011;   ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1101;   ///< array of intra directions (luma)
+    UChar *m_puhLumaIntraDirnp1110;   ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp0111; ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp1011; ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp1101; ///< array of intra directions (luma)
+    UChar *m_puhChromaIntraDirnp1110; ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp0111;   ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp1011;   ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp1101;   ///< array of intra directions (luma)
+    UChar *m_puhLumaLoopFlagnp1110;   ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp0111; ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp1011; ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp1101; ///< array of intra directions (luma)
+    UChar *m_puhChromaLoopFlagnp1110; ///< array of intra directions (luma)
+    // 新分块方法 L 区域的最优总 Cost
+    Double m_dTotalCostnpLpart0111; ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1011; ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1101; ///< sum of partition RD costs
+    Double m_dTotalCostnpLpart1110; ///< sum of partition RD costs
+    // 用于计算 L 区域最优总 Cost 的暂存数据
+    Double dBestCostLpartY0111;
+    Double dBestCostLpartY1011;
+    Double dBestCostLpartY1101;
+    Double dBestCostLpartY1110;
+    Double dBestCostLpartC0111;
+    Double dBestCostLpartC1011;
+    Double dBestCostLpartC1101;
+    Double dBestCostLpartC1110;
+    // L 分块的 1/4 矩形区域的最优 Cost
+    Double dBestCostQuarPartLT;
+    Double dBestCostQuarPartRT;
+    Double dBestCostQuarPartLB;
+    Double dBestCostQuarPartRB;
+    // 新分块方法的总 Cost
+    Double m_dTotalCostnp0111; ///< sum of partition RD costs
+    Double m_dTotalCostnp1011; ///< sum of partition RD costs
+    Double m_dTotalCostnp1101; ///< sum of partition RD costs
+    Double m_dTotalCostnp1110; ///< sum of partition RD costs
+
     TComDataCU();
     virtual ~TComDataCU();
 
@@ -303,10 +378,71 @@ public:
     Pel *&getPCMSampleCb() { return m_pcIPCMSampleCb; }
     Pel *&getPCMSampleCr() { return m_pcIPCMSampleCr; }
 
-    UChar getCbf(UInt uiIdx, TextType eType) { return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx]; }
-    UChar *getCbf(TextType eType) { return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]]; }
-    UChar getCbf(UInt uiIdx, TextType eType, UInt uiTrDepth) { return ((getCbf(uiIdx, eType) >> uiTrDepth) & 0x1); }
-    Void setCbf(UInt uiIdx, TextType eType, UChar uh) { m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx] = uh; }
+    // 新分块方法的 getCbf 看情况实现 可选择直接取公有成员变量的方式
+    UChar getCbf(UInt uiIdx, TextType eType)
+    {
+        return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+    }
+    UChar getCbfnp(UInt uiIdx, TextType eType, UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_puhCbfnp0111[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        case 0b1011:
+            return m_puhCbfnp1011[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        case 0b1101:
+            return m_puhCbfnp1101[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        case 0b1110:
+            return m_puhCbfnp1110[g_aucConvertTxtTypeToIdx[eType]][uiIdx];
+            break;
+        default:
+            assert(0);
+            break;
+        }
+    }
+    UChar *getCbf(TextType eType)
+    {
+        return m_puhCbf[g_aucConvertTxtTypeToIdx[eType]];
+    }
+    UChar *getCbfnp(TextType eType, UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_puhCbfnp0111[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        case 0b1011:
+            return m_puhCbfnp1011[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        case 0b1101:
+            return m_puhCbfnp1101[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        case 0b1110:
+            return m_puhCbfnp1110[g_aucConvertTxtTypeToIdx[eType]];
+            break;
+        default:
+            assert(0);
+            return 0;
+            break;
+        }
+    }
+    UChar getCbf(UInt uiIdx, TextType eType, UInt uiTrDepth)
+    {
+        return ((getCbf(uiIdx, eType) >> uiTrDepth) & 0x1);
+    }
+    UChar getCbfnp(UInt uiIdx, TextType eType, UInt uiTrDepth, UInt mask)
+    {
+        return ((getCbfnp(uiIdx, eType, mask) >> uiTrDepth) & 0x1);
+    }
+    Void setCbf(UInt uiIdx, TextType eType, UChar uh)
+    {
+        // TODO: 项目不进入 不处理
+        m_puhCbf[g_aucConvertTxtTypeToIdx[eType]][uiIdx] = uh;
+    }
     Void clearCbf(UInt uiIdx, TextType eType, UInt uiNumParts);
     UChar getQtRootCbf(UInt uiIdx) { return getCbf(uiIdx, TEXT_LUMA, 0) || getCbf(uiIdx, TEXT_CHROMA_U, 0) || getCbf(uiIdx, TEXT_CHROMA_V, 0); }
 
@@ -338,18 +474,182 @@ public:
     Bool getMergeAMP() { return m_bIsMergeAMP; }
 #endif
 
+    UChar *getLumaLoopFlag()
+    {
+        return m_puhLumaLoopFlag;
+    }
+    UChar *getChromaLoopFlag()
+    {
+        return m_puhChromaLoopFlag;
+    }
     UChar *getLumaIntraDir()
     {
         return m_puhLumaIntraDir;
     }
-    UChar getLumaIntraDir(UInt uiIdx) { return m_puhLumaIntraDir[uiIdx]; }
-    Void setLumaIntraDir(UInt uiIdx, UChar uh) { m_puhLumaIntraDir[uiIdx] = uh; }
+    UChar *getLumaIntraDirnp0111()
+    {
+        return m_puhLumaIntraDirnp0111;
+    }
+    UChar *getLumaIntraDirnp1011()
+    {
+        return m_puhLumaIntraDirnp1011;
+    }
+    UChar *getLumaIntraDirnp1101()
+    {
+        return m_puhLumaIntraDirnp1101;
+    }
+    UChar *getLumaIntraDirnp1110()
+    {
+        return m_puhLumaIntraDirnp1110;
+    }
+    // UChar getLumaIntraDir(UInt uiIdx)
+    // {
+    //     return m_puhLumaIntraDir[uiIdx];
+    // }
+    UChar getLumaIntraDir(UInt uiIdx)
+    {
+        return m_puhLumaIntraDir[uiIdx << 2];
+    }
+    Void getLumaIntraDirLP(UInt uiIdx, UInt uiWidth, UChar *puhModeAll)
+    {
+        UInt uiRasterIdx = 0;
+        UChar *puhLumaIntraDir = m_puhLumaIntraDir + (uiIdx << 2);
+        UInt *uiRasterToZscan;
+        switch (uiWidth)
+        {
+        case 32:
+            uiRasterToZscan = g_auiRasterToZscan;
+            break;
+        case 16:
+            uiRasterToZscan = g_auiRasterToZscan4x4;
+            break;
+        case 8:
+            uiRasterToZscan = g_auiRasterToZscan2x2;
+            break;
+        case 4:
+            uiRasterToZscan = g_auiRasterToZscan1x1;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+        for (Int i = 0; i < uiWidth / 4; i++)
+        {
+            ::memcpy(puhModeAll + i * 4, puhLumaIntraDir + uiRasterToZscan[uiRasterIdx] * 4, 4);
+            uiRasterIdx += (uiWidth / 4) + 1;
+        }
+    }
+    Void getChromaIntraDirLP(UInt uiIdx, UInt uiWidth, UChar *puhModeAll)
+    {
+        UInt uiRasterIdx = 0;
+        UChar *puhChromaIntraDir = m_puhChromaIntraDir + (uiIdx << 2);
+        UInt *uiRasterToZscan;
+        switch (uiWidth)
+        {
+        case 32:
+            assert(0);
+            uiRasterToZscan = g_auiRasterToZscan;
+            break;
+        case 16:
+            uiRasterToZscan = g_auiRasterToZscan4x4;
+            break;
+        case 8:
+            uiRasterToZscan = g_auiRasterToZscan2x2;
+            break;
+        case 4:
+            uiRasterToZscan = g_auiRasterToZscan1x1;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+        for (Int i = 0; i < uiWidth / 4; i++)
+        {
+            ::memcpy(puhModeAll + i * 4, puhChromaIntraDir + uiRasterToZscan[uiRasterIdx] * 4, 4);
+            uiRasterIdx += (uiWidth / 4) + 1;
+        }
+    }
+    UChar getLumaIntraDirnp0111(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp0111[uiIdx << 2];
+    }
+    UChar getLumaIntraDirnp1011(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp1011[uiIdx << 2];
+    }
+    UChar getLumaIntraDirnp1101(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp1101[uiIdx << 2];
+    }
+    UChar getLumaIntraDirnp1110(UInt uiIdx)
+    {
+        return m_puhLumaIntraDirnp1110[uiIdx << 2];
+    }
+    // TODO: 不进入 不处理
+    Void setLumaIntraDir(UInt uiIdx, UChar uh)
+    {
+        m_puhLumaIntraDir[uiIdx << 2] = uh;
+    }
     Void setLumaIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
+    Void setLumaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx, UInt uiWidth);
+    Void setChromaIntraDirSubPartsLP(UChar *puhModeAll, UInt uiAbsPartIdx, UInt uiWidth);
+    // 增加
+    Void setLumaIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
 
-    UChar *getChromaIntraDir() { return m_puhChromaIntraDir; }
-    UChar getChromaIntraDir(UInt uiIdx) { return m_puhChromaIntraDir[uiIdx]; }
-    Void setChromaIntraDir(UInt uiIdx, UChar uh) { m_puhChromaIntraDir[uiIdx] = uh; }
+    UChar *getChromaIntraDir()
+    {
+        return m_puhChromaIntraDir;
+    }
+    UChar *getChromaIntraDirnp0111()
+    {
+        return m_puhChromaIntraDirnp0111;
+    }
+    UChar *getChromaIntraDirnp1011()
+    {
+        return m_puhChromaIntraDirnp1011;
+    }
+    UChar *getChromaIntraDirnp1101()
+    {
+        return m_puhChromaIntraDirnp1101;
+    }
+    UChar *getChromaIntraDirnp1110()
+    {
+        return m_puhChromaIntraDirnp1110;
+    }
+    // UChar getChromaIntraDir(UInt uiIdx)
+    // {
+    //     return m_puhChromaIntraDir[uiIdx];
+    // }
+    UChar getChromaIntraDir(UInt uiIdx)
+    {
+        return m_puhChromaIntraDir[uiIdx << 2];
+    }
+    UChar getChromaIntraDirnp0111(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp0111[uiIdx << 2];
+    }
+    UChar getChromaIntraDirnp1011(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp1011[uiIdx << 2];
+    }
+    UChar getChromaIntraDirnp1101(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp1101[uiIdx << 2];
+    }
+    UChar getChromaIntraDirnp1110(UInt uiIdx)
+    {
+        return m_puhChromaIntraDirnp1110[uiIdx << 2];
+    }
+    // TODO: 不进入 不处理
+    Void setChromaIntraDir(UInt uiIdx, UChar uh)
+    {
+        m_puhChromaIntraDir[uiIdx << 2] = uh;
+    }
     Void setChromIntraDirSubParts(UInt uiDir, UInt uiAbsPartIdx, UInt uiDepth);
+    // 增加
+    Void setChromIntraDirSubPartsnp(UInt uiDir, UInt mask, UInt uiDepth);
+    Void setChromLoopFlag(UInt flag, UInt uiAbsPartIdx, UInt uiDepth);
+    Void setLumaLoopFlag(UInt flag, UInt uiAbsPartIdx, UInt uiDepth);
 
     UChar *getInterDir() { return m_puhInterDir; }
     UChar getInterDir(UInt uiIdx) { return m_puhInterDir[uiIdx]; }
@@ -451,6 +751,9 @@ public:
     UInt getIntraSizeIdx(UInt uiAbsPartIdx);
 
     Void getAllowedChromaDir(UInt uiAbsPartIdx, UInt *uiModeList);
+    Void getAllowedChromaDir_DIR_NUM(UInt uiAbsPartIdx, UInt *uiModeList);
+    Void getAllowedChromaDirnp(UInt uiAbsPartIdx, UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110);
+    Void getAllowedChromaDir_DIR_NUMnp(UInt *uiModeListnp0111, UInt *uiModeListnp1011, UInt *uiModeListnp1101, UInt *uiModeListnp1110);
     Int getIntraDirLumaPredictor(UInt uiAbsPartIdx, Int *uiIntraDirPred, Int *piMode = NULL);
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -471,6 +774,47 @@ public:
     // -------------------------------------------------------------------------------------------------------------------
 
     Double &getTotalCost() { return m_dTotalCost; }
+    // 增加
+    Double &getTotalCostnpLpart(UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_dTotalCostnpLpart0111;
+            break;
+        case 0b1011:
+            return m_dTotalCostnpLpart1011;
+            break;
+        case 0b1101:
+            return m_dTotalCostnpLpart1101;
+            break;
+        case 0b1110:
+            return m_dTotalCostnpLpart1110;
+            break;
+        default:
+            assert(0);
+        }
+    }
+    Double &getTotalCostnp(UInt mask)
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            return m_dTotalCostnp0111;
+            break;
+        case 0b1011:
+            return m_dTotalCostnp1011;
+            break;
+        case 0b1101:
+            return m_dTotalCostnp1101;
+            break;
+        case 0b1110:
+            return m_dTotalCostnp1110;
+            break;
+        default:
+            assert(0);
+        }
+    }
     UInt &getTotalDistortion() { return m_uiTotalDistortion; }
     UInt &getTotalBits() { return m_uiTotalBits; }
     UInt &getTotalNumPart() { return m_uiNumPartition; }

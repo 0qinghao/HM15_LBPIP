@@ -89,8 +89,8 @@
 
 #define DISABLING_CLIP_FOR_BIPREDME 1 ///< Ticket #175
 
-#define C1FLAG_NUMBER 8 // maximum number of largerThan1 flag coded in one chunk :  16 in HM5
-#define C2FLAG_NUMBER 1 // maximum number of largerThan2 flag coded in one chunk:  16 in HM5
+#define C1FLAG_NUMBER 16 // maximum number of largerThan1 flag coded in one chunk :  16 in HM5
+#define C2FLAG_NUMBER 1  // maximum number of largerThan2 flag coded in one chunk:  16 in HM5
 // 无损不用 SAO, 关掉方便看代码, 配置文件中也设置了不做 SAO
 #define SAO_ENCODING_CHOICE 0 ///< I0184: picture early termination
 #if SAO_ENCODING_CHOICE
@@ -158,17 +158,24 @@
 #define RVM_VCEGAM10_M 4
 
 #define PLANAR_IDX 0
-#define VER_IDX 26        // index for intra VERTICAL   mode
-#define HOR_IDX 10        // index for intra HORIZONTAL mode
-#define DC_IDX 1          // index for intra DC mode
-#define NUM_CHROMA_MODE 5 // total number of chroma modes
-#define DM_CHROMA_IDX 36  // chroma mode index for derived from luma intra mode
+#define VER_IDX 26 // index for intra VERTICAL   mode
+#define HOR_IDX 10 // index for intra HORIZONTAL mode
+#define DC_IDX 1   // index for intra DC mode
+// #define BLK_NUM_CHROMA_MODE 5 // total number of chroma modes
+#define DIR_NUM 32      // total number of chroma modes
+#define DIR_BITS 5      // total number of chroma modes
+#define LOOP_DIR_NUM 4  // total number of chroma modes
+#define LOOP_DIR_BITS 2 // total number of chroma modes
+#define LOOP_MIN_SIZE 4
+// 注意 这个参数是仅在块状预测里面使用的
+#define BLK_NUM_CHROMA_MODE 32 // total number of chroma modes
+#define DM_CHROMA_IDX 36       // chroma mode index for derived from luma intra mode
 
 // 不粗筛, 强制计算所有模式的 RDCost, 该选项也就无意义了
 #define FAST_UDI_USE_MPM 0
 
 // 项目中不涉及该参数, 可以改成 1 方便看代码
-#define RDO_WITHOUT_DQP_BITS 0 ///< Disable counting dQP bits in RDO-based mode decision
+#define RDO_WITHOUT_DQP_BITS 1 ///< Disable counting dQP bits in RDO-based mode decision
 
 #define FULL_NBIT 0 ///< When enabled, compute costs using full sample bitdepth.  When disabled, compute costs as if it is 8-bit source video.
 #if FULL_NBIT
@@ -374,6 +381,7 @@ enum ChromaFormat
 };
 
 /// supported partition shape
+// 分块类型枚举
 enum PartSize
 {
     SIZE_2Nx2N,  ///< symmetric motion partition,  2Nx2N
@@ -384,12 +392,22 @@ enum PartSize
     SIZE_2NxnD,  ///< asymmetric motion partition, 2Nx(3N/2) + 2Nx( N/2)
     SIZE_nLx2N,  ///< asymmetric motion partition, ( N/2)x2N + (3N/2)x2N
     SIZE_nRx2N,  ///< asymmetric motion partition, (3N/2)x2N + ( N/2)x2N
-    SIZE_L_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形
-    SIZE_L_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形
-    SIZE_L_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形
-    SIZE_L_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形
+    SIZE_B_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形 （块状)
+    SIZE_B_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形 （块状)
+    SIZE_B_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形 （块状)
+    SIZE_B_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形  (块状)
+    // SIZE_L_0111, /// 新分块模式, 左上角保留底层 + 剩下 L 形 （环状)
+    // SIZE_L_1011, /// 新分块模式, 右上角保留底层 + 剩下 L 形 （环状)
+    // SIZE_L_1101, /// 新分块模式, 左下角保留底层 + 剩下 L 形 （环状)
+    // SIZE_L_1110, /// 新分块模式, 右上角保留底层 + 剩下 L 形  (环状)
     SIZE_NONE = 31
 };
+// #define PartSizeCost_2Nx2N 4;
+// #define PartSizeCost_NxN 1;
+// #define PartSizeCost_B_0111 4;
+// #define PartSizeCost_B_1011 3;
+// #define PartSizeCost_B_1101 3;
+// #define PartSizeCost_B_1110 3;
 
 /// supported prediction type
 enum PredMode

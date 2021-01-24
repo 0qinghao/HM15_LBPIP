@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -155,9 +155,12 @@ public:
     Void codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    Void codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
     Void codeMVPIdx(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList);
 
     Void codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    // 增加
+    Void codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
     Void codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeTransformSubdivFlag(UInt uiSymbol, UInt uiCtx);
@@ -166,8 +169,10 @@ public:
     Void codeQtCbfZero(TComDataCU *pcCU, TextType eType, UInt uiTrDepth);
     Void codeQtRootCbfZero(TComDataCU *pcCU);
     Void codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple);
+    Void codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple);
 
     Void codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx);
+    Void codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx);
     Void codeRefFrmIdx(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList);
     Void codeMvd(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList);
@@ -176,6 +181,7 @@ public:
 
     Void codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int height, TextType eTType, UInt uiScanIdx);
     Void codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType);
+    Void codeModeRes(Int *iModeAllDiff, Int iCnt);
     void codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt width, UInt height, TextType eTType);
 
     // -------------------------------------------------------------------------------------------------------------------

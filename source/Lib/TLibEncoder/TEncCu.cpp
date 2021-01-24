@@ -1,7 +1,7 @@
 ﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
- * granted under this license.  
+ * granted under this license.
  *
  * Copyright (c) 2010-2014, ITU/ISO/IEC
  * All rights reserved.
@@ -32,8 +32,8 @@
  */
 
 /** \file     TEncCu.cpp
-    \brief    Coding Unit (CU) encoder class
-*/
+     \brief    Coding Unit (CU) encoder class
+ */
 
 #include <stdio.h>
 #include "TEncTop.h"
@@ -108,6 +108,10 @@ Void TEncCu::create(UChar uhTotalDepth, UInt uiMaxWidth, UInt uiMaxHeight)
     UInt *piTmp = &g_auiZscanToRaster[0];
     initZscanToRaster(m_uhTotalDepth, 1, 0, piTmp);
     initRasterToZscan(uiMaxWidth, uiMaxHeight, m_uhTotalDepth);
+    piTmp = &g_auiZscanToRaster4x4[0];
+    initZscanToRaster(3, 1, 0, piTmp);
+    initRasterToZscanFor4x4(16, 16, 3, g_auiRasterToZscan4x4, g_auiZscanToRaster4x4);
+    piTmp = &g_auiZscanToRaster4x4[0];
 
     // initialize conversion matrix from partition index to pel
     initRasterToPelXY(uiMaxWidth, uiMaxHeight, m_uhTotalDepth);
@@ -149,24 +153,26 @@ Void TEncCu::destroy()
             delete m_ppcRecoYuvBest[i];
             m_ppcRecoYuvBest[i] = NULL;
         }
-        if (m_ppcPredYuvTemp[i])
-        {
-            m_ppcPredYuvTemp[i]->destroy();
-            delete m_ppcPredYuvTemp[i];
-            m_ppcPredYuvTemp[i] = NULL;
-        }
+        // TODO: 小心内存问题
+        // if (m_ppcPredYuvTemp[i])
+        // {
+        //     m_ppcPredYuvTemp[i]->destroy();
+        //     delete m_ppcPredYuvTemp[i];
+        //     m_ppcPredYuvTemp[i] = NULL;
+        // }
         if (m_ppcResiYuvTemp[i])
         {
             m_ppcResiYuvTemp[i]->destroy();
             delete m_ppcResiYuvTemp[i];
             m_ppcResiYuvTemp[i] = NULL;
         }
-        if (m_ppcRecoYuvTemp[i])
-        {
-            m_ppcRecoYuvTemp[i]->destroy();
-            delete m_ppcRecoYuvTemp[i];
-            m_ppcRecoYuvTemp[i] = NULL;
-        }
+        // TODO: 小心内存问题
+        // if (m_ppcRecoYuvTemp[i])
+        // {
+        //     m_ppcRecoYuvTemp[i]->destroy();
+        //     delete m_ppcRecoYuvTemp[i];
+        //     m_ppcRecoYuvTemp[i] = NULL;
+        // }
         if (m_ppcOrigYuv[i])
         {
             m_ppcOrigYuv[i]->destroy();
@@ -293,7 +299,7 @@ Void TEncCu::encodeCU(TComDataCU *pcCU)
  *\param   bTestAMP_Ver
  *\param   bTestMergeAMP_Hor
  *\param   bTestMergeAMP_Ver
- *\returns Void 
+ *\returns Void
 */
 #if AMP_ENC_SPEEDUP
 #if AMP_MRG
@@ -498,6 +504,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                 {
                     iQP = lowestQP;
                 }
+                // 既然不可能进入 inter modes, 自然不需要这一步初始化. 前面已经做过一次
                 rpcTempCU->initEstData(uiDepth, iQP, bIsLosslessMode);
 
                 // do inter modes, NxN, 2NxN, and Nx2N
@@ -668,6 +675,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     }
                 }
 
+                // 不尝试 PCM
                 // test PCM
                 if (pcPic->getSlice(0)->getSPS()->getUsePCM() && rpcTempCU->getWidth(0) <= (1 << pcPic->getSlice(0)->getSPS()->getPCMLog2MaxSize()) && rpcTempCU->getWidth(0) >= (1 << pcPic->getSlice(0)->getSPS()->getPCMLog2MinSize()))
                 {
@@ -687,10 +695,19 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
         }
 
         m_pcEntropyCoder->resetBits();
-        m_pcEntropyCoder->encodeSplitFlag(rpcBestCU, 0, uiDepth, true);
-        rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
-        rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
-        rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion()); // 更新 BestCU 的代价
+        // m_pcEntropyCoder->encodeSplitFlag(rpcBestCU, 0, uiDepth, true);
+        // rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
+        // rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
+        // rpcBestCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion()); // 更新 BestCU 的代价
+        // 针对 L 分块模式, 加上分块标志重新计算总代价. 因为 L 分块视为 split=1, 和传统一样在向上回归时计算 split 代价, 在向下计算时暂时不处理
+        // Bool bCurrSplitFlag = rpcBestCU->getDepth(0) > uiDepth;
+        // if (bCurrSplitFlag == true)
+        // {
+        //     rpcBestCU->getTotalCostnpLpart(0b0111) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        //     rpcBestCU->getTotalCostnpLpart(0b1011) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        //     rpcBestCU->getTotalCostnpLpart(0b1101) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        //     rpcBestCU->getTotalCostnpLpart(0b1110) += m_pcEntropyCoder->getNumberOfWrittenBits();
+        // }
 
         // Early CU determination
         if (m_pcEncCfg->getUseEarlyCU() && rpcBestCU->isSkipped(0))
@@ -707,11 +724,12 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
         bBoundary = true;
     }
 
+    // 项目中不考虑 PCM
     // copy orginal YUV samples to PCM buffer
-    if (rpcBestCU->isLosslessCoded(0) && (rpcBestCU->getIPCMFlag(0) == false))
-    {
-        xFillPCMBuffer(rpcBestCU, m_ppcOrigYuv[uiDepth]);
-    }
+    // if (rpcBestCU->isLosslessCoded(0) && (rpcBestCU->getIPCMFlag(0) == false))
+    // {
+    //     xFillPCMBuffer(rpcBestCU, m_ppcOrigYuv[uiDepth]);
+    // }
     if ((g_uiMaxCUWidth >> uiDepth) == rpcTempCU->getSlice()->getPPS()->getMinCuDQPSize())
     {
         Int idQP = m_pcEncCfg->getMaxDeltaQP();
@@ -763,6 +781,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
             UChar uhNextDepth = uiDepth + 1;
             TComDataCU *pcSubBestPartCU = m_ppcBestCU[uhNextDepth];
             TComDataCU *pcSubTempPartCU = m_ppcTempCU[uhNextDepth];
+            Double dCostPre;
 
             for (UInt uiPartUnitIdx = 0; uiPartUnitIdx < 4; uiPartUnitIdx++)
             {
@@ -794,8 +813,26 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
                     // 递归调用 xCompressCU 实现四叉树分割编码
                     xCompressCU(pcSubBestPartCU, pcSubTempPartCU, uhNextDepth);
 #endif
-                    // 4个划分的最优的信息的累加，以便和为分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
-                    rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth); // Keep best part data to current temporary data.
+                    // 4个划分的最优的信息的累加，以便和分割前的CU的最优的预测模式的RD-cost进行比较也就是m_ppcBestCU进行比较
+                    rpcTempCU->copyPartFrom(pcSubBestPartCU, uiPartUnitIdx, uhNextDepth);
+                    // TODO: 在这里记录/计算 8 16 层的 1/4 块状部分总 Cost, 后面上层的 BestCU L Cost 加上这里对应的 1/4 得到新分块方法的 Cost
+                    switch (uiPartUnitIdx)
+                    {
+                    case 0:
+                        rpcTempCU->dBestCostQuarPartLT = pcSubBestPartCU->getTotalBits();
+                        break;
+                    case 1:
+                        rpcTempCU->dBestCostQuarPartRT = pcSubBestPartCU->getTotalBits();
+                        break;
+                    case 2:
+                        rpcTempCU->dBestCostQuarPartLB = pcSubBestPartCU->getTotalBits();
+                        break;
+                    case 3:
+                        rpcTempCU->dBestCostQuarPartRB = pcSubBestPartCU->getTotalBits();
+                        break;
+                    default:
+                        assert(0);
+                    }
                     xCopyYuv2Tmp(pcSubBestPartCU->getTotalNumPart() * uiPartUnitIdx, uhNextDepth);
                 }
                 else if (bInSlice)
@@ -808,10 +845,11 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
             if (!bBoundary)
             {
                 m_pcEntropyCoder->resetBits();
-                m_pcEntropyCoder->encodeSplitFlag(rpcTempCU, 0, uiDepth, true);
+                // 不处理 split 标志, 丢到 xCheckBestMode 里面模拟计算
+                // m_pcEntropyCoder->encodeSplitFlag(rpcTempCU, 0, uiDepth, true);
 
-                rpcTempCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
-                rpcTempCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
+                // rpcTempCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
+                // rpcTempCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
             }
             rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion());
 
@@ -889,7 +927,7 @@ Void TEncCu::xCompressCU(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt ui
 /** finish encoding a cu and handle end-of-slice conditions
  * \param pcCU
  * \param uiAbsPartIdx
- * \param uiDepth 
+ * \param uiDepth
  * \returns Void
  */
 Void TEncCu::finishCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
@@ -1007,7 +1045,7 @@ Int TEncCu::xComputeQP(TComDataCU *pcCU, UInt uiDepth)
 /** encode a CU block recursively
  * \param pcCU
  * \param uiAbsPartIdx
- * \param uiDepth 
+ * \param uiDepth
  * \returns Void
  */
 Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
@@ -1029,6 +1067,8 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     {
         // （1）调用encodeSplitFlag对分割标志进行编码（最终调用TEncSbac::codeSplitFlag）
         m_pcEntropyCoder->encodeSplitFlag(pcCU, uiAbsPartIdx, uiDepth);
+        // 增加. 一旦编码了一个不分块标志 0, 即表明该分块可能是 不分/1011/1101/1110, 需要额外编码一个标志说明. 另外特别注意要递归完成
+        m_pcEntropyCoder->encodeNpSplitFlagNpType(pcCU, uiAbsPartIdx, uiDepth);
     }
     else
     {
@@ -1060,7 +1100,9 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     {
         setdQPFlag(true);
     }
-    if (pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
+    // 项目不涉及该标志 强制跳过
+    // if (pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
+    if (false && pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
     {
         // （3）调用encodeCUTransquantBypassFlag，对变换量化跳过标志进行编码（最终调用的是TEncSbac::codeCUTransquantBypassFlag）
         m_pcEntropyCoder->encodeCUTransquantBypassFlag(pcCU, uiAbsPartIdx);
@@ -1078,13 +1120,21 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
         finishCU(pcCU, uiAbsPartIdx, uiDepth);
         return;
     }
+    // 项目不涉及该标志 强制跳过
     // （6）调用encodePredMode，对预测的模式(帧间还是帧内)进行编码（最后调用TEncSbac::codePredMode）
-    m_pcEntropyCoder->encodePredMode(pcCU, uiAbsPartIdx);
+    // 实际上不会编码任何东西 直接 return 出来了
+    if (false)
+    {
+        m_pcEntropyCoder->encodePredMode(pcCU, uiAbsPartIdx);
+    }
 
     // （7）调用encodePartSize，对分割的尺寸进行编码（最后调用TEncSbac::codePartSize）
-    m_pcEntropyCoder->encodePartSize(pcCU, uiAbsPartIdx, uiDepth);
-
-    if (pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
+    // m_pcEntropyCoder->encodePartSize(pcCU, uiAbsPartIdx, uiDepth);
+    // 增加. 8x8 层如果不是 4 分 4x4 块, 就要增加编码信息指示 1111 (0111舍弃) 1011 1101 1110
+    // m_pcEntropyCoder->encodeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
+    // 项目不涉及该标志 强制跳过
+    // if (pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
+    if (false && pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
     {
         // （8）如果是帧内预测，并且划分的方式是SIZE_2Nx2N，那么调用encodeIPCMInfo对IPCM的信息进行编码（最后调用TEncSbac::codeIPCMInfo），如果确实使用了IPCM，那么结束编码，返回
         m_pcEntropyCoder->encodeIPCMInfo(pcCU, uiAbsPartIdx);
@@ -1099,7 +1149,9 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
     // prediction Info ( Intra : direction mode, Inter : Mv, reference idx )
     // （9）调用encodePredInfo，对预测的信息(35种模式)进行编码
-    m_pcEntropyCoder->encodePredInfo(pcCU, uiAbsPartIdx);
+    // m_pcEntropyCoder->encodePredInfo(pcCU, uiAbsPartIdx);
+    // 增加. 编码 L 分块中剩下的 1/4 部分的模式信息
+    // m_pcEntropyCoder->encodeNpPredInfo(pcCU, uiAbsPartIdx);
 
     // Encode Coefficients
     Bool bCodeDQP = getdQPFlag();
@@ -1393,50 +1445,90 @@ Void TEncCu::xCheckRDCostIntra(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, P
 
     Bool bSeparateLumaChroma = true; // choose estimation mode
     UInt uiPreCalcDistC = 0;
+    Double dBestLogLuma[4];
+    Double dBestLogChroma;
+    // 不会进入该分支
     if (!bSeparateLumaChroma)
     {
         m_pcPredSearch->preestChromaPredMode(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth]);
     }
     // 亮度部分 帧内编码
-    m_pcPredSearch->estIntraPredQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma);
+    m_pcPredSearch->estIntraPredQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma);
+    m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1111);
+    if (eSize != SIZE_NxN)
+    {
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
+        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1011);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
+        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1101);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
+        m_pcPredSearch->estIntraPredQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, bSeparateLumaChroma, dBestLogLuma, 0b1110);
+    }
+    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
+    // 在 estIntraPredQT 里面就已经对 rpcTempCU 重建过了, 这里有啥必要?
+    // m_ppcRecoYuvTemp[uiDepth]->copyToPicLuma(rpcTempCU->getPic()->getPicYuvRec(), rpcTempCU->getAddr(), rpcTempCU->getZorderIdxInCU());
 
-    m_ppcRecoYuvTemp[uiDepth]->copyToPicLuma(rpcTempCU->getPic()->getPicYuvRec(), rpcTempCU->getAddr(), rpcTempCU->getZorderIdxInCU());
-
-    m_pcPredSearch->estIntraPredChromaQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC);
+    m_pcPredSearch->estIntraPredChromaQT(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma);
+    // 在处理 4x4 时当作 8x8 层来处理 方便一些
+    m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1111);
+    if (eSize != SIZE_NxN)
+    {
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1011, 0, uiDepth);
+        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1011);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1101, 0, uiDepth);
+        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1101);
+        rpcTempCU->setPartSizeSubParts(SIZE_B_1110, 0, uiDepth);
+        m_pcPredSearch->estIntraPredChromaQTLP(rpcTempCU, m_ppcOrigYuv[uiDepth], m_ppcPredYuvTemp[uiDepth], m_ppcResiYuvTemp[uiDepth], m_ppcRecoYuvTemp[uiDepth], uiPreCalcDistC, dBestLogChroma, 0b1110);
+    }
+    rpcTempCU->setPartSizeSubParts(eSize, 0, uiDepth);
 
     m_pcEntropyCoder->resetBits();
     if (rpcTempCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
     {
         m_pcEntropyCoder->encodeCUTransquantBypassFlag(rpcTempCU, 0, true);
     }
-    m_pcEntropyCoder->encodeSkipFlag(rpcTempCU, 0, true);
-    m_pcEntropyCoder->encodePredMode(rpcTempCU, 0, true);
+
+    // 利用 RD 过程中插入的记录数据计算 L 分块 L 部分的总代价
+    // 搜索过程中没有加上 bypass flag, 这里加上
+    if (eSize != SIZE_NxN)
+    {
+        // rpcTempCU->getTotalCostnpLpart(0b0111) = rpcTempCU->dBestCostLpartY0111 + rpcTempCU->dBestCostLpartC0111 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_0111;
+        rpcTempCU->getTotalCostnpLpart(0b1011) = rpcTempCU->dBestCostLpartY1011 + rpcTempCU->dBestCostLpartC1011 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1011;
+        rpcTempCU->getTotalCostnpLpart(0b1101) = rpcTempCU->dBestCostLpartY1101 + rpcTempCU->dBestCostLpartC1101 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1101;
+        rpcTempCU->getTotalCostnpLpart(0b1110) = rpcTempCU->dBestCostLpartY1110 + rpcTempCU->dBestCostLpartC1110 + m_pcEntropyCoder->getNumberOfWrittenBits(); // + PartSizeCost_B_1110;
+    }
+
+    // 项目不会编码的标志
+    // m_pcEntropyCoder->encodeSkipFlag(rpcTempCU, 0, true);
+    // m_pcEntropyCoder->encodePredMode(rpcTempCU, 0, true);
     m_pcEntropyCoder->encodePartSize(rpcTempCU, 0, uiDepth, true);
     m_pcEntropyCoder->encodePredInfo(rpcTempCU, 0, true);
-    m_pcEntropyCoder->encodeIPCMInfo(rpcTempCU, 0, true);
+    // m_pcEntropyCoder->encodeIPCMInfo(rpcTempCU, 0, true);
 
     // Encode Coefficients
     // 编码系数(无损时编码残差)
-    Bool bCodeDQP = getdQPFlag();
+    // 此处重新编码是因为前面编码是为了计算 RD 代价 (不特殊设置的话 RD 代价并不是编码体积, 直接拿体积做 RD 只发生在特殊的无损模式下)
+    // 同时保持熵编码器连续性 因为此时熵编码器的状态是测试完亮度最后一个模式\色差最后一个模式的状态 并不是最佳模式的状态
+    Bool bCodeDQP = getdQPFlag(); // 项目中永远为 false
     m_pcEntropyCoder->encodeCoeff(rpcTempCU, 0, uiDepth, rpcTempCU->getWidth(0), rpcTempCU->getHeight(0), bCodeDQP);
-    setdQPFlag(bCodeDQP);
+    // setdQPFlag(bCodeDQP);
 
     m_pcRDGoOnSbacCoder->store(m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]);
 
     rpcTempCU->getTotalBits() = m_pcEntropyCoder->getNumberOfWrittenBits();
-    rpcTempCU->getTotalBins() = ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
+    // rpcTempCU->getTotalBins() = ((TEncBinCABAC *)((TEncSbac *)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
     rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost(rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion());
 
-    xCheckDQP(rpcTempCU);
+    // xCheckDQP(rpcTempCU);
     // xCheckBestMode 向下划分时, 比较对象是 DOUBLE_MAX, RD 必定更好, 存储上层的结果. 特殊的是 4与8 的比较也在此处实现
     xCheckBestMode(rpcBestCU, rpcTempCU, uiDepth);
 }
 
-/** Check R-D costs for a CU with PCM mode. 
+/** Check R-D costs for a CU with PCM mode.
  * \param rpcBestCU pointer to best mode CU data structure
  * \param rpcTempCU pointer to testing mode CU data structure
  * \returns Void
- * 
+ *
  * \note Current PCM implementation encodes sample values in a lossless way. The distortion of PCM mode CUs are zero. PCM mode is selected if the best mode yields bits greater than that of PCM mode.
  */
 Void TEncCu::xCheckIntraPCM(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU)
@@ -1482,29 +1574,514 @@ Void TEncCu::xCheckIntraPCM(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU)
  */
 Void TEncCu::xCheckBestMode(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt uiDepth)
 {
-    if (rpcTempCU->getTotalCost() < rpcBestCU->getTotalCost())
+    // 区分 保持大块部分/L0111/L1011/L1101/L1110 需要一个新标志, 根据频率分配bits 3 3 2 2 2
+
+    // 向下计算时 Status=0, 向上回归时 Status=1
+    Bool bStatus = rpcBestCU->getTotalCost() != MAX_DOUBLE;
+
+    if (*rpcBestCU->getWidth() != 8)
     {
-        TComYuv *pcYuv;
-        // Change Information data
+        if (bStatus == 0) // 表示在向下搜索的过程中
+        {
+            rpcTempCU->getTotalBits() += (1 + 2); // 模拟编码分块标志 0 和切块方式保持大块
+        }
+        else
+        {
+            rpcTempCU->getTotalBits() += (1); // 模拟编码分块标志 1
+            // rpcBestCU->getTotalCostnpLpart(0b0111) += (1 + 3); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1011) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1101) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
+            rpcBestCU->getTotalCostnpLpart(0b1110) += (1 + 2); // 模拟编码分块标志 0 和切块方式(L)
+        }
+    }
+    else if (*rpcTempCU->getPartitionSize() == SIZE_NxN) // 8x8 往下分的情况
+    {
+        rpcTempCU->getTotalBits() += (1); // 模拟编码搜索过程中没有计算的SIZE_NXN partsize (如果 part size == nxn 肯定是正常四分, 因为我们将 3个4x4的L+1个4x4块 定义为 8x8 层 也就是使用了 partsize == 2nx2n 的编码体积)
+        // rpcBestCU->getTotalCostnpLpart(0b0111) += (3); // 模拟编码切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1011) += (2); // 模拟编码切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1101) += (2); // 模拟编码切块方式(L)
+        rpcBestCU->getTotalCostnpLpart(0b1110) += (2); // 模拟编码切块方式(L)
+    }
+    else // 8x8 块不往下分的情况
+    {
+        rpcTempCU->getTotalBits() += 2; // 模拟编码切块方式保持大块
+    }
+    rpcTempCU->getTotalCost() = rpcTempCU->getTotalBits();
+
+    // 新方法 Cost 计算: Best L + Temp 1/4
+    if (bStatus == 1) // 向上回归时计算新方法的 Cost
+    {
+        // rpcBestCU->m_dTotalCostnp0111 = rpcBestCU->getTotalCostnpLpart(0b0111) + rpcTempCU->dBestCostQuarPartLT;
+        rpcBestCU->m_dTotalCostnp1011 = rpcBestCU->getTotalCostnpLpart(0b1011) + rpcTempCU->dBestCostQuarPartRT;
+        rpcBestCU->m_dTotalCostnp1101 = rpcBestCU->getTotalCostnpLpart(0b1101) + rpcTempCU->dBestCostQuarPartLB;
+        rpcBestCU->m_dTotalCostnp1110 = rpcBestCU->getTotalCostnpLpart(0b1110) + rpcTempCU->dBestCostQuarPartRB;
+    }
+
+    Int iMinPos;
+    // if (bStatus == 1) // 模拟 HEVC 标准状况
+    // {
+    //     Double CostList[2] = {rpcBestCU->getTotalCost(),
+    //                           rpcTempCU->getTotalCost()};
+    //     iMinPos = min_element(CostList, CostList + 2) - CostList;
+    //     dMin = CostList[iMinPos];
+    // }
+    if (bStatus == 1) // 向上回归时从所有 6 种情况里面找最小值
+    {
+        Double CostList[6] = {rpcBestCU->getTotalCost(),
+                              rpcTempCU->getTotalCost(),
+                              //   rpcBestCU->m_dTotalCostnp0111,
+                              MAX_DOUBLE,
+                              rpcBestCU->m_dTotalCostnp1011,
+                              rpcBestCU->m_dTotalCostnp1101,
+                              rpcBestCU->m_dTotalCostnp1110};
+        iMinPos = min_element(CostList, CostList + 6) - CostList;
+    }
+    else
+    {
+        iMinPos = 1;
+    }
+
+    if (iMinPos != 0)
+    {
         TComDataCU *pcCU = rpcBestCU;
-        rpcBestCU = rpcTempCU;
-        rpcTempCU = pcCU;
 
-        // Change Prediction data
-        pcYuv = m_ppcPredYuvBest[uiDepth];
-        m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
-        m_ppcPredYuvTemp[uiDepth] = pcYuv;
+        switch (iMinPos)
+        {
+        case 1:
+            rpcBestCU = rpcTempCU;
+            rpcTempCU = pcCU;
+            // 不知道为什么把上下文模型存储限定在 temp 最好时更新会得到更好的压缩结果 ~0.1%
+            m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
+            break;
+            // case 2:
+            //     MergeLnQuar(rpcBestCU, rpcTempCU, 0b0111);
+            //     break;
+        case 3:
+            MergeLnQuar(rpcBestCU, rpcTempCU, 0b1011);
+            break;
+        case 4:
+            MergeLnQuar(rpcBestCU, rpcTempCU, 0b1101);
+            break;
+        case 5:
+            MergeLnQuar(rpcBestCU, rpcTempCU, 0b1110);
+            break;
+        default:
+            assert(0);
+        }
 
-        // Change Reconstruction data
-        pcYuv = m_ppcRecoYuvBest[uiDepth];
-        m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
-        m_ppcRecoYuvTemp[uiDepth] = pcYuv;
-
-        pcYuv = NULL;
         pcCU = NULL;
+        // 其实没有意义 对于无损来说哪次的重建结果都一样
+        m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
+        m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
+    }
 
-        // store temp best CI for next CU coding
-        m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
+    // {
+    //     // 如果 L 分块更好,要处理coeff dir cbf,还要记得把totalcost(bits)换成对应的totalcostnp
+    //     // switch (iMinPos)
+    //     // {
+    //     // case 1:
+    //     //     break;
+    //     // }
+    //     TComYuv *pcYuv;
+    //     // Change Information data
+    //     TComDataCU *pcCU = rpcBestCU;
+    //     rpcBestCU = rpcTempCU;
+    //     rpcTempCU = pcCU;
+    //     rpcBestCU->getTotalCost() = dMin;
+    //     rpcBestCU->getTotalBits() = dMin;
+    //     // Change Prediction data
+    //     // 此时的预测值地址存放的东西已经名不副实了, 是重建值. 而且已经不会再使用预测值了, 不用把 Temp 换过去也没事
+    //     // pcYuv = m_ppcPredYuvBest[uiDepth];
+    //     m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
+    //     // m_ppcPredYuvTemp[uiDepth] = pcYuv;
+    //     // Change Reconstruction data
+    //     // pcYuv = m_ppcRecoYuvBest[uiDepth];
+    //     m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
+    //     // m_ppcRecoYuvTemp[uiDepth] = pcYuv;
+    //     pcYuv = NULL;
+    //     pcCU = NULL;
+    //     // store temp best CI for next CU coding
+    //     m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
+    // }
+}
+
+// 如果 L 形分块的总 Cost 更小, 把对应的 L 形分块组合后的数据处理好存放到 rpcTempCU
+// rpcBestCU: 上层大块数据
+// rpcTempCU: 下层 4 分小块数据
+// 函数内部修改 Temp 的数据, 函数后应有一步把 Best 指向 Temp
+// 运行此函数时肯定处于向上回归的过程
+Void TEncCu::MergeLnQuar(TComDataCU *&rpcBestCU, TComDataCU *&rpcTempCU, UInt mask)
+{
+    UInt uiWidth = rpcBestCU->getWidth(0);
+
+    // 处理亮度系数部分
+    {
+        UInt uiQuarSize = (uiWidth >> 1) * (uiWidth >> 1);
+        TCoeff *pcCoeffTempY = rpcTempCU->getCoeffY();
+        TCoeff *pcCoeffTempYQuarpart = pcCoeffTempY;
+        TCoeff *pcCoeffBestYLpart;
+        TCoeff *pcCoeffMergeY;
+        switch (mask)
+        {
+            // case 0b0111:
+            //     pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp0111;
+            //     pcCoeffMergeY = pcCoeffBestYLpart;
+            //     break;
+        case 0b1011:
+            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1011;
+            pcCoeffMergeY = pcCoeffBestYLpart + (uiWidth >> 1);
+            pcCoeffTempYQuarpart += uiQuarSize;
+            break;
+        case 0b1101:
+            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1101;
+            pcCoeffMergeY = pcCoeffBestYLpart + 2 * uiQuarSize;
+            pcCoeffTempYQuarpart += 2 * uiQuarSize;
+            break;
+        case 0b1110:
+            pcCoeffBestYLpart = rpcBestCU->m_pcTrCoeffYnp1110;
+            pcCoeffMergeY = pcCoeffBestYLpart + 2 * uiQuarSize + (uiWidth >> 1);
+            pcCoeffTempYQuarpart += 3 * uiQuarSize;
+            break;
+        }
+        // for (Int i4x4Part = 0; i4x4Part < ((uiWidth / 8) * (uiWidth / 8)); i4x4Part++)
+        // {
+        //     Int i4x4R = i4x4Part / (uiWidth / 8);
+        //     Int i4x4C = i4x4Part % (uiWidth / 8);
+        //     for (Int iLine = 0; iLine < 4; iLine++)
+        //     {
+        //         ::memcpy(pcCoeffMergeY + i4x4R * uiWidth + i4x4C * 4 + iLine * uiWidth, pcCoeffTempYQuarpart + i4x4R * (uiWidth / 2) + i4x4C * 4 + iLine * (uiWidth / 2), sizeof(TCoeff) * 4);
+        //     }
+        // }
+        for (Int i = 0; i < (uiWidth >> 1); i++)
+        {
+            ::memcpy(pcCoeffMergeY, pcCoeffTempYQuarpart, sizeof(TCoeff) * (uiWidth >> 1));
+            pcCoeffMergeY += uiWidth;
+            pcCoeffTempYQuarpart += (uiWidth >> 1);
+        }
+        ::memcpy(pcCoeffTempY, pcCoeffBestYLpart, sizeof(TCoeff) * uiWidth * uiWidth);
+        ::memcpy(rpcBestCU->getCoeffY(), pcCoeffBestYLpart, sizeof(TCoeff) * uiWidth * uiWidth);
+        pcCoeffTempY = NULL;
+        pcCoeffTempYQuarpart = NULL;
+        pcCoeffBestYLpart = NULL;
+        pcCoeffMergeY = NULL;
+    }
+    // 处理色差系数部分
+    {
+        Bool b8flag = uiWidth == 8;
+        UInt uiQuarSizeC = (uiWidth >> 2) * (uiWidth >> 2);
+        TCoeff *pcCoeffTempCb = rpcTempCU->getCoeffCb();
+        TCoeff *pcCoeffTempCbQuarpart = pcCoeffTempCb;
+        TCoeff *pcCoeffBestCbLpart;
+        TCoeff *pcCoeffMergeCb;
+        TCoeff *pcCoeffTempCr = rpcTempCU->getCoeffCr();
+        TCoeff *pcCoeffTempCrQuarpart = pcCoeffTempCr;
+        TCoeff *pcCoeffBestCrLpart;
+        TCoeff *pcCoeffMergeCr;
+        switch (mask)
+        {
+        case 0b0111:
+            pcCoeffBestCbLpart = rpcBestCU->m_pcTrCoeffCbnp0111;
+            pcCoeffMergeCb = pcCoeffBestCbLpart;
+            pcCoeffBestCrLpart = rpcBestCU->m_pcTrCoeffCrnp0111;
+            pcCoeffMergeCr = pcCoeffBestCrLpart;
+            break;
+        case 0b1011:
+            pcCoeffBestCbLpart = rpcBestCU->m_pcTrCoeffCbnp1011;
+            pcCoeffMergeCb = pcCoeffBestCbLpart + (b8flag ? 0 : (uiWidth >> 2));
+            pcCoeffTempCbQuarpart += (b8flag ? 0 : uiQuarSizeC);
+            pcCoeffBestCrLpart = rpcBestCU->m_pcTrCoeffCrnp1011;
+            pcCoeffMergeCr = pcCoeffBestCrLpart + (b8flag ? 0 : (uiWidth >> 2));
+            pcCoeffTempCrQuarpart += (b8flag ? 0 : uiQuarSizeC);
+            break;
+        case 0b1101:
+            pcCoeffBestCbLpart = rpcBestCU->m_pcTrCoeffCbnp1101;
+            pcCoeffMergeCb = pcCoeffBestCbLpart + (b8flag ? 0 : 2 * uiQuarSizeC);
+            pcCoeffTempCbQuarpart += (b8flag ? 0 : 2 * uiQuarSizeC);
+            pcCoeffBestCrLpart = rpcBestCU->m_pcTrCoeffCrnp1101;
+            pcCoeffMergeCr = pcCoeffBestCrLpart + (b8flag ? 0 : 2 * uiQuarSizeC);
+            pcCoeffTempCrQuarpart += (b8flag ? 0 : 2 * uiQuarSizeC);
+            break;
+        case 0b1110:
+            pcCoeffBestCbLpart = rpcBestCU->m_pcTrCoeffCbnp1110;
+            pcCoeffMergeCb = pcCoeffBestCbLpart + (b8flag ? 0 : 2 * uiQuarSizeC + (uiWidth >> 2));
+            pcCoeffTempCbQuarpart += (b8flag ? 0 : 3 * uiQuarSizeC);
+            pcCoeffBestCrLpart = rpcBestCU->m_pcTrCoeffCrnp1110;
+            pcCoeffMergeCr = pcCoeffBestCrLpart + (b8flag ? 0 : 2 * uiQuarSizeC + (uiWidth >> 2));
+            pcCoeffTempCrQuarpart += (b8flag ? 0 : 3 * uiQuarSizeC);
+            break;
+        }
+        for (Int i = 0; i < (b8flag ? 4 : (uiWidth >> 2)); i++)
+        {
+            ::memcpy(pcCoeffMergeCb, pcCoeffTempCbQuarpart, sizeof(TCoeff) * (b8flag ? 4 : (uiWidth >> 2)));
+            pcCoeffMergeCb += (uiWidth >> 1);
+            pcCoeffTempCbQuarpart += (b8flag ? 4 : (uiWidth >> 2));
+            ::memcpy(pcCoeffMergeCr, pcCoeffTempCrQuarpart, sizeof(TCoeff) * (b8flag ? 4 : (uiWidth >> 2)));
+            pcCoeffMergeCr += (uiWidth >> 1);
+            pcCoeffTempCrQuarpart += (b8flag ? 4 : (uiWidth >> 2));
+        }
+        // ::memcpy(pcCoeffTempCb, pcCoeffBestCbLpart, sizeof(TCoeff) * (uiWidth >> 1) * (uiWidth >> 1));
+        // ::memcpy(pcCoeffTempCr, pcCoeffBestCrLpart, sizeof(TCoeff) * (uiWidth >> 1) * (uiWidth >> 1));
+        ::memcpy(rpcBestCU->getCoeffCb(), pcCoeffBestCbLpart, sizeof(TCoeff) * (uiWidth >> 1) * (uiWidth >> 1));
+        ::memcpy(rpcBestCU->getCoeffCr(), pcCoeffBestCrLpart, sizeof(TCoeff) * (uiWidth >> 1) * (uiWidth >> 1));
+        pcCoeffTempCb = NULL;
+        pcCoeffTempCb = NULL;
+        pcCoeffTempCbQuarpart = NULL;
+        pcCoeffBestCbLpart = NULL;
+        pcCoeffMergeCb = NULL;
+        pcCoeffTempCr = NULL;
+        pcCoeffTempCrQuarpart = NULL;
+        pcCoeffBestCrLpart = NULL;
+        pcCoeffMergeCr = NULL;
+    }
+    // 处理 Cost 记录部分
+    {
+        switch (mask)
+        {
+        case 0b0111:
+            rpcBestCU->getTotalCost() = rpcBestCU->m_dTotalCostnp0111;
+            rpcBestCU->getTotalBits() = rpcBestCU->m_dTotalCostnp0111;
+            break;
+        case 0b1011:
+            rpcBestCU->getTotalCost() = rpcBestCU->m_dTotalCostnp1011;
+            rpcBestCU->getTotalBits() = rpcBestCU->m_dTotalCostnp1011;
+            break;
+        case 0b1101:
+            rpcBestCU->getTotalCost() = rpcBestCU->m_dTotalCostnp1101;
+            rpcBestCU->getTotalBits() = rpcBestCU->m_dTotalCostnp1101;
+            break;
+        case 0b1110:
+            rpcBestCU->getTotalCost() = rpcBestCU->m_dTotalCostnp1110;
+            rpcBestCU->getTotalBits() = rpcBestCU->m_dTotalCostnp1110;
+            break;
+        }
+    }
+    // 处理预测方向部分
+    {
+        UChar *puhDirTempY = rpcTempCU->getLumaIntraDir();
+        UChar *puhDirTempYQuarpart = puhDirTempY;
+        UChar *puhDirBestYLpart;
+        UChar *puhDirMergeY;
+        UChar *puhDirTempC = rpcTempCU->getChromaIntraDir();
+        UChar *puhDirTempCQuarpart = puhDirTempC;
+        UChar *puhDirBestCLpart;
+        UChar *puhDirMergeC;
+        UInt uiQuarSizeDir = (uiWidth * uiWidth) >> 4;
+        switch (mask)
+        {
+        // case 0b0111:
+        //     puhDirBestYLpart = rpcBestCU->m_puhLumaIntraDirnp0111;
+        //     puhDirMergeY = puhDirBestYLpart;
+        //     puhDirBestCLpart = rpcBestCU->m_puhChromaIntraDirnp0111;
+        //     puhDirMergeC = puhDirBestCLpart;
+        //     break;
+        case 0b1011:
+            puhDirBestYLpart = rpcBestCU->m_puhLumaIntraDirnp1011;
+            puhDirMergeY = puhDirBestYLpart + 1 * uiQuarSizeDir;
+            puhDirTempYQuarpart += 1 * uiQuarSizeDir;
+            puhDirBestCLpart = rpcBestCU->m_puhChromaIntraDirnp1011;
+            puhDirMergeC = puhDirBestCLpart + 1 * uiQuarSizeDir;
+            puhDirTempCQuarpart += 1 * uiQuarSizeDir;
+            break;
+        case 0b1101:
+            puhDirBestYLpart = rpcBestCU->m_puhLumaIntraDirnp1101;
+            puhDirMergeY = puhDirBestYLpart + 2 * uiQuarSizeDir;
+            puhDirTempYQuarpart += 2 * uiQuarSizeDir;
+            puhDirBestCLpart = rpcBestCU->m_puhChromaIntraDirnp1101;
+            puhDirMergeC = puhDirBestCLpart + 2 * uiQuarSizeDir;
+            puhDirTempCQuarpart += 2 * uiQuarSizeDir;
+            break;
+        case 0b1110:
+            puhDirBestYLpart = rpcBestCU->m_puhLumaIntraDirnp1110;
+            puhDirMergeY = puhDirBestYLpart + 3 * uiQuarSizeDir;
+            puhDirTempYQuarpart += 3 * uiQuarSizeDir;
+            puhDirBestCLpart = rpcBestCU->m_puhChromaIntraDirnp1110;
+            puhDirMergeC = puhDirBestCLpart + 3 * uiQuarSizeDir;
+            puhDirTempCQuarpart += 3 * uiQuarSizeDir;
+            break;
+        }
+        ::memcpy(puhDirMergeY, puhDirTempYQuarpart, sizeof(UChar) * uiQuarSizeDir);
+        // ::memcpy(puhDirTempY, puhDirBestYLpart, sizeof(UChar) * uiQuarSizeDir * 4);
+        ::memcpy(rpcBestCU->getLumaIntraDir(), puhDirBestYLpart, sizeof(UChar) * uiQuarSizeDir * 4);
+        ::memcpy(puhDirMergeC, puhDirTempCQuarpart, sizeof(UChar) * uiQuarSizeDir);
+        // ::memcpy(puhDirTempC, puhDirBestCLpart, sizeof(UChar) * uiQuarSizeDir * 4);
+        ::memcpy(rpcBestCU->getChromaIntraDir(), puhDirBestCLpart, sizeof(UChar) * uiQuarSizeDir * 4);
+        puhDirTempY = NULL;
+        puhDirTempYQuarpart = NULL;
+        puhDirBestYLpart = NULL;
+        puhDirMergeY = NULL;
+        puhDirTempC = NULL;
+        puhDirTempCQuarpart = NULL;
+        puhDirBestCLpart = NULL;
+        puhDirMergeC = NULL;
+    }
+    // 处理 Cbf 部分
+    // 注意新方法的 CBF 其实是不准确的, RD过程中 CBF 还是看整个块是否为0 并没有区分出 L 部分来看
+    // 需要同步处理完 L 编码逻辑才能启用
+    {
+        // 重新算. cbf 是针对整个块来说的, 不需要考虑存储顺序只要算好像素点数量遍历看是否全零, 就能给 cbf 赋值了
+        UInt uiPelNum = uiWidth * uiWidth;
+        UInt uiCbfY = 0;
+        UInt uiCbfU = 0;
+        UInt uiCbfV = 0;
+        TCoeff *pcCoeffBestY = rpcBestCU->getCoeffY();
+        TCoeff *pcCoeffBestU = rpcBestCU->getCoeffCb();
+        TCoeff *pcCoeffBestV = rpcBestCU->getCoeffCr();
+        UInt uiSizeCbf = ((uiWidth >> 2) * (uiWidth >> 2));
+
+        for (UInt i = 0; i < uiPelNum; i++, pcCoeffBestY++)
+        {
+            if (*pcCoeffBestY != 0)
+            {
+                uiCbfY = 1;
+                break;
+            }
+        }
+        for (UInt i = 0; i < (uiPelNum >> 2); i++, pcCoeffBestU++)
+        {
+            if (*pcCoeffBestU != 0)
+            {
+                uiCbfU = 1;
+                break;
+            }
+        }
+        for (UInt i = 0; i < (uiPelNum >> 2); i++, pcCoeffBestV++)
+        {
+            if (*pcCoeffBestV != 0)
+            {
+                uiCbfV = 1;
+                break;
+            }
+        }
+
+        memset(rpcBestCU->getCbf(TEXT_LUMA), uiCbfY, uiSizeCbf * sizeof(UChar));
+        memset(rpcBestCU->getCbf(TEXT_CHROMA_U), uiCbfU, uiSizeCbf * sizeof(UChar));
+        memset(rpcBestCU->getCbf(TEXT_CHROMA_V), uiCbfV, uiSizeCbf * sizeof(UChar));
+
+        pcCoeffBestY = NULL;
+        pcCoeffBestU = NULL;
+        pcCoeffBestV = NULL;
+    }
+
+    // 处理 PartSize 部分
+    {
+        Char *pePartSizeBest = rpcBestCU->getPartitionSize();
+        UInt uiQuarSizePartSize = (uiWidth * uiWidth) >> 6;
+        // if (uiWidth != 8)
+        // {
+        ::memcpy(rpcBestCU->getPartitionSize(), rpcTempCU->getPartitionSize(), uiQuarSizePartSize * 4 * sizeof(Char));
+        // }
+        switch (mask)
+        {
+        case 0b0111:
+            assert(0);
+            // memset(pePartSizeBest + (uiQuarSizePartSize * 1), SIZE_B_0111, uiQuarSizePartSize * 3 * sizeof(Char));
+            break;
+        case 0b1011:
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1011, uiQuarSizePartSize * 1 * sizeof(Char));
+            memset(pePartSizeBest + (uiQuarSizePartSize * 2), SIZE_B_1011, uiQuarSizePartSize * 2 * sizeof(Char));
+            break;
+        case 0b1101:
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1101, uiQuarSizePartSize * 2 * sizeof(Char));
+            memset(pePartSizeBest + (uiQuarSizePartSize * 3), SIZE_B_1101, uiQuarSizePartSize * 1 * sizeof(Char));
+            break;
+        case 0b1110:
+            memset(pePartSizeBest + (uiQuarSizePartSize * 0), SIZE_B_1110, uiQuarSizePartSize * 3 * sizeof(Char));
+            break;
+        }
+        pePartSizeBest = NULL;
+    }
+
+    // 处理 depth 部分
+    {
+        UChar *puhDepth = rpcBestCU->getDepth();
+        UInt uiQuarSizeDepth = (uiWidth * uiWidth) >> 6;
+
+        switch (mask)
+        {
+        case 0b1011:
+            ::memcpy(puhDepth + uiQuarSizeDepth * 1, rpcTempCU->getDepth() + uiQuarSizeDepth * 1, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        case 0b1101:
+            ::memcpy(puhDepth + uiQuarSizeDepth * 2, rpcTempCU->getDepth() + uiQuarSizeDepth * 2, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        case 0b1110:
+            ::memcpy(puhDepth + uiQuarSizeDepth * 3, rpcTempCU->getDepth() + uiQuarSizeDepth * 3, uiQuarSizeDepth * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+    }
+    // 处理 Width 部分
+    {
+        UChar *puhWidth = rpcBestCU->getWidth();
+        UInt uiQuarSizeWidth = (uiWidth * uiWidth) >> 6;
+
+        switch (mask)
+        {
+        case 0b1011:
+            ::memcpy(puhWidth + uiQuarSizeWidth * 1, rpcTempCU->getWidth() + uiQuarSizeWidth * 1, uiQuarSizeWidth * sizeof(UChar));
+            break;
+        case 0b1101:
+            ::memcpy(puhWidth + uiQuarSizeWidth * 2, rpcTempCU->getWidth() + uiQuarSizeWidth * 2, uiQuarSizeWidth * sizeof(UChar));
+            break;
+        case 0b1110:
+            ::memcpy(puhWidth + uiQuarSizeWidth * 3, rpcTempCU->getWidth() + uiQuarSizeWidth * 3, uiQuarSizeWidth * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+    }
+    // 处理 Height 部分
+    {
+        UChar *puhHeight = rpcBestCU->getHeight();
+        UInt uiQuarSizeHeight = (uiWidth * uiWidth) >> 6;
+
+        switch (mask)
+        {
+        case 0b1011:
+            ::memcpy(puhHeight + uiQuarSizeHeight * 1, rpcTempCU->getHeight() + uiQuarSizeHeight * 1, uiQuarSizeHeight * sizeof(UChar));
+            break;
+        case 0b1101:
+            ::memcpy(puhHeight + uiQuarSizeHeight * 2, rpcTempCU->getHeight() + uiQuarSizeHeight * 2, uiQuarSizeHeight * sizeof(UChar));
+            break;
+        case 0b1110:
+            ::memcpy(puhHeight + uiQuarSizeHeight * 3, rpcTempCU->getHeight() + uiQuarSizeHeight * 3, uiQuarSizeHeight * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+    }
+    // 处理 loopflag 部分 未验证
+    {
+        UInt uiQuarSizeLF = (uiWidth * uiWidth) >> 6;
+        UChar *puhLumaLoopFlag;
+        UChar *puhChromaLoopFlag;
+
+        switch (mask)
+        {
+        case 0b1011:
+            puhLumaLoopFlag = rpcBestCU->m_puhLumaLoopFlagnp1011;
+            puhChromaLoopFlag = rpcBestCU->m_puhChromaLoopFlagnp1011;
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeLF * 1, rpcTempCU->getLumaLoopFlag() + uiQuarSizeLF * 1, uiQuarSizeLF * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeLF * 1, rpcTempCU->getChromaLoopFlag() + uiQuarSizeLF * 1, uiQuarSizeLF * sizeof(UChar));
+            break;
+        case 0b1101:
+            puhLumaLoopFlag = rpcBestCU->m_puhLumaLoopFlagnp1101;
+            puhChromaLoopFlag = rpcBestCU->m_puhChromaLoopFlagnp1101;
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeLF * 2, rpcTempCU->getLumaLoopFlag() + uiQuarSizeLF * 2, uiQuarSizeLF * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeLF * 2, rpcTempCU->getChromaLoopFlag() + uiQuarSizeLF * 2, uiQuarSizeLF * sizeof(UChar));
+            break;
+        case 0b1110:
+            puhLumaLoopFlag = rpcBestCU->m_puhLumaLoopFlagnp1110;
+            puhChromaLoopFlag = rpcBestCU->m_puhChromaLoopFlagnp1110;
+            ::memcpy(puhLumaLoopFlag + uiQuarSizeLF * 3, rpcTempCU->getLumaLoopFlag() + uiQuarSizeLF * 3, uiQuarSizeLF * sizeof(UChar));
+            ::memcpy(puhChromaLoopFlag + uiQuarSizeLF * 3, rpcTempCU->getChromaLoopFlag() + uiQuarSizeLF * 3, uiQuarSizeLF * sizeof(UChar));
+            break;
+        default:
+            assert(0);
+        }
+        ::memcpy(rpcBestCU->getLumaLoopFlag(), puhLumaLoopFlag, uiQuarSizeLF * 4);
+        ::memcpy(rpcBestCU->getChromaLoopFlag(), puhChromaLoopFlag, uiQuarSizeLF * 4);
     }
 }
 
@@ -1583,7 +2160,7 @@ Void TEncCu::xCopyYuv2Tmp(UInt uiPartUnitIdx, UInt uiNextDepth)
     m_ppcRecoYuvBest[uiNextDepth]->copyToPartYuv(m_ppcRecoYuvTemp[uiCurrDepth], uiPartUnitIdx);
 }
 
-/** Function for filling the PCM buffer of a CU using its original sample array 
+/** Function for filling the PCM buffer of a CU using its original sample array
  * \param pcCU pointer to current CU
  * \param pcOrgYuv pointer to original sample array
  * \returns Void

@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -66,6 +66,9 @@ private:
     TCoeff **m_ppcQTTempCoeffCb;
     TCoeff **m_ppcQTTempCoeffCr;
     TCoeff *m_pcQTTempCoeffY;
+    TCoeff *m_pcQTTempCoeffYnp1011;
+    TCoeff *m_pcQTTempCoeffYnp1101;
+    TCoeff *m_pcQTTempCoeffYnp1110;
     TCoeff *m_pcQTTempCoeffCb;
     TCoeff *m_pcQTTempCoeffCr;
 #if ADAPTIVE_QP_SELECTION
@@ -76,10 +79,15 @@ private:
     Int *m_pcQTTempArlCoeffCb;
     Int *m_pcQTTempArlCoeffCr;
 #endif
-    // 变换层数的暂存
+    // 变换层数的暂存 在处理 8x8 细分到 4x4 时为 1, 其他时候为 0
     UChar *m_puhQTTempTrIdx;
     // RDO 时 cbf 的暂存
     UChar *m_puhQTTempCbf[3];
+    // 增加
+    UChar *m_puhQTTempCbfnp0111[3];
+    UChar *m_puhQTTempCbfnp1011[3];
+    UChar *m_puhQTTempCbfnp1101[3];
+    UChar *m_puhQTTempCbfnp1110[3];
 
     // RDO 时重建视频的暂存缓冲区
     TComYuv *m_pcQTTempTComYuv;
@@ -114,6 +122,7 @@ protected:
     TComMv m_acMvPredictors[3];
 
     // RD computation
+    // 在 RDO 过程中用到的熵编码器
     TEncSbac ***m_pppcRDSbacCoder;
     TEncSbac *m_pcRDGoOnSbacCoder;
     DistParam m_cDistParam;
@@ -141,6 +150,11 @@ public:
               TComRdCost *pcRdCost,
               TEncSbac ***pppcRDSbacCoder,
               TEncSbac *pcRDGoOnSbacCoder);
+    //   在 RDO 过程中预测角度的暂存
+    UChar *m_puhTempLumaIntraDir;   ///< array of intra directions (luma)
+    UChar *m_puhTempChromaIntraDir; ///< array of intra directions (chroma)
+    UChar *m_puhTempLumaLoopFlag;   ///< array of intra directions (luma)
+    UChar *m_puhTempChromaLoopFlag; ///< array of intra directions (luma)
 
 protected:
     /// sub-function for motion vector refinement used in fractional-pel accuracy
@@ -178,13 +192,32 @@ public:
                         TComYuv *pcResiYuv,
                         TComYuv *pcRecoYuv,
                         UInt &ruiDistC,
-                        Bool bLumaOnly);
+                        Bool bLumaOnly,
+                        Double *dBestPUCostLog);
+    Void estIntraPredQTLP(TComDataCU *pcCU,
+                          TComYuv *pcOrgYuv,
+                          TComYuv *pcPredYuv,
+                          TComYuv *pcResiYuv,
+                          TComYuv *pcRecoYuv,
+                          UInt &ruiDistC,
+                          Bool bLumaOnly,
+                          Double *dBestPUCostLog,
+                          UInt mask);
     Void estIntraPredChromaQT(TComDataCU *pcCU,
                               TComYuv *pcOrgYuv,
                               TComYuv *pcPredYuv,
                               TComYuv *pcResiYuv,
                               TComYuv *pcRecoYuv,
-                              UInt uiPreCalcDistC);
+                              UInt uiPreCalcDistC,
+                              Double &dBestCost);
+    Void estIntraPredChromaQTLP(TComDataCU *pcCU,
+                                TComYuv *pcOrgYuv,
+                                TComYuv *pcPredYuv,
+                                TComYuv *pcResiYuv,
+                                TComYuv *pcRecoYuv,
+                                UInt uiPreCalcDistC,
+                                Double &dBestCost,
+                                UInt mask);
 
     /// encoder estimation - inter prediction (non-skip)
     Void predInterSearch(TComDataCU *pcCU,
@@ -255,6 +288,16 @@ protected:
                              TComYuv *pcResiYuv,
                              UInt &ruiDist,
                              Int default0Save1Load2 = 0);
+    Void xIntraCodingLumaBlkLP(TComDataCU *pcCU,
+                               UInt uiTrDepth,
+                               UInt uiAbsPartIdx,
+                               TComYuv *pcOrgYuv,
+                               TComYuv *pcPredYuv,
+                               TComYuv *pcResiYuv,
+                               UInt &ruiDist,
+                               UInt mask,
+                               UChar *puhModeAll,
+                               Int default0Save1Load2 = 0);
     Void xIntraCodingChromaBlk(TComDataCU *pcCU,
                                UInt uiTrDepth,
                                UInt uiAbsPartIdx,
@@ -264,7 +307,17 @@ protected:
                                UInt &ruiDist,
                                UInt uiChromaId,
                                Int default0Save1Load2 = 0);
-
+    Void xIntraCodingChromaBlkLP(TComDataCU *pcCU,
+                                 UInt uiTrDepth,
+                                 UInt uiAbsPartIdx,
+                                 TComYuv *pcOrgYuv,
+                                 TComYuv *pcPredYuv,
+                                 TComYuv *pcResiYuv,
+                                 UInt &ruiDist,
+                                 UInt uiChromaId,
+                                 UInt mask,
+                                 UChar *puhModeAll,
+                                 Int default0Save1Load2 = 0);
     Void xRecurIntraCodingQT(TComDataCU *pcCU,
                              UInt uiTrDepth,
                              UInt uiAbsPartIdx,
@@ -278,12 +331,35 @@ protected:
                              Bool bCheckFirst,
 #endif
                              Double &dRDCost);
+    Void xRecurIntraCodingQTLP(TComDataCU *pcCU,
+                               UInt uiTrDepth,
+                               UInt uiAbsPartIdx,
+                               Bool bLumaOnly,
+                               TComYuv *pcOrgYuv,
+                               TComYuv *pcPredYuv,
+                               TComYuv *pcResiYuv,
+                               UInt &ruiDistY,
+                               UInt &ruiDistC,
+                               Double &dRDCost,
+                               UInt mask);
+    Void xRecurIntraCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
+    Void xRecurIntraCodingQTnpLP(TComDataCU *pcCU, UInt uiWidth, Double &dPUCostnp0111, Double &dPUCostnp1011, Double &dPUCostnp1101, Double &dPUCostnp1110);
+    Void xRecurIntraChromaCodingQTnp(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
+    Void xRecurIntraChromaCodingQTnpLP(TComDataCU *pcCU, UInt uiWidth, Double &dCostnp0111, Double &dCostnp1011, Double &dCostnp1101, Double &dCostnp1110);
 
     Void xSetIntraResultQT(TComDataCU *pcCU,
                            UInt uiTrDepth,
                            UInt uiAbsPartIdx,
                            Bool bLumaOnly,
                            TComYuv *pcRecoYuv);
+    Void xSetIntraResultQTnp(TComDataCU *pcCU,
+                             UInt uiTrDepth,
+                             UInt uiAbsPartIdx,
+                             UInt mask);
+    //  TComYuv *pcRecoYuv0111,
+    //  TComYuv *pcRecoYuv1011,
+    //  TComYuv *pcRecoYuv1101,
+    //  TComYuv *pcRecoYuv1110);
 
     Void xRecurIntraChromaCodingQT(TComDataCU *pcCU,
                                    UInt uiTrDepth,
@@ -292,10 +368,20 @@ protected:
                                    TComYuv *pcPredYuv,
                                    TComYuv *pcResiYuv,
                                    UInt &ruiDist);
+    Void xRecurIntraChromaCodingQTLP(TComDataCU *pcCU,
+                                     UInt uiTrDepth,
+                                     UInt uiAbsPartIdx,
+                                     TComYuv *pcOrgYuv,
+                                     TComYuv *pcPredYuv,
+                                     TComYuv *pcResiYuv,
+                                     UInt &ruiDist,
+                                     UInt mask);
     Void xSetIntraResultChromaQT(TComDataCU *pcCU,
                                  UInt uiTrDepth,
                                  UInt uiAbsPartIdx,
                                  TComYuv *pcRecoYuv);
+    Void xSetIntraResultChromaQTnp(TComDataCU *pcCU,
+                                   UInt mask);
 
     Void xStoreIntraResultQT(TComDataCU *pcCU,
                              UInt uiTrDepth,

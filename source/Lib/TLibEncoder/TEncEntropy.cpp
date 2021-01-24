@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -98,6 +98,7 @@ Void TEncEntropy::encodeVPS(TComVPS *pcVPS)
     return;
 }
 
+// 项目中实际上不会编码任何东西 直接 return 出来了
 Void TEncEntropy::encodeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD)
 {
     if (pcCU->getSlice()->isIntra())
@@ -146,6 +147,7 @@ Void TEncEntropy::encodeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD
  * \returns Void
  */
 // 编码所采用的编码模式 (帧内还是帧间)
+// 项目中实际不会编码任何东西 直接 return 出来了
 Void TEncEntropy::encodePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD)
 {
     if (bRD)
@@ -170,6 +172,15 @@ Void TEncEntropy::encodeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDe
     m_pcEntropyCoderIf->codeSplitFlag(pcCU, uiAbsPartIdx, uiDepth);
 }
 
+Void TEncEntropy::encodeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    UInt uiCurrSplitFlag = (pcCU->getDepth(uiAbsPartIdx) > uiDepth) ? 1 : 0;
+    // SF 是 1 也不用另作处理
+    if (uiCurrSplitFlag)
+        return;
+    m_pcEntropyCoderIf->codeNpSplitFlagNpType(pcCU, uiAbsPartIdx, uiDepth);
+}
+
 /** encode partition size
  * \param pcCU
  * \param uiAbsPartIdx
@@ -177,7 +188,7 @@ Void TEncEntropy::encodeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDe
  * \param bRD
  * \returns Void
  */
-// 编码 CU 中 PU 的类型 (当前 CU 是 2Nx2N 还是 NxN)
+// 编码 CU 中 PU 的类型 (当前 CU 是 2Nx2N 还是 NxN) (不是向下分割的标志, 是指 8x8 PU 有没有细分到 4 个 4x4)
 Void TEncEntropy::encodePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, Bool bRD)
 {
     if (bRD)
@@ -187,12 +198,19 @@ Void TEncEntropy::encodePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDep
     m_pcEntropyCoderIf->codePartSize(pcCU, uiAbsPartIdx, uiDepth);
 }
 
+// 增加. 8x8 层如果不是 4 分 4x4 块, 就要增加编码信息指示 1111 (0111舍弃) 1011 1101 1110
+Void TEncEntropy::encodeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    m_pcEntropyCoderIf->codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
+}
+
 /** Encode I_PCM information. 
  * \param pcCU pointer to CU 
  * \param uiAbsPartIdx CU index
  * \param bRD flag indicating estimation or encoding
  * \returns Void
  */
+// 实际上肯定不会编码 IPCM Info 都是直接 return
 Void TEncEntropy::encodeIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool bRD)
 {
     if (!pcCU->getSlice()->getSPS()->getUsePCM() || pcCU->getWidth(uiAbsPartIdx) > (1 << pcCU->getSlice()->getSPS()->getPCMLog2MaxSize()) || pcCU->getWidth(uiAbsPartIdx) < (1 << pcCU->getSlice()->getSPS()->getPCMLog2MinSize()))
@@ -235,9 +253,20 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
         }
     }
 
+    // 修改过 Partsize 判断是 subdiv 的条件更严格
+    // 但还是必须让他进来 否则会跳到 else 编码一个 flag
     if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
+    // if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTRA && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_NxN && pcCU->getPartitionSize(uiAbsPartIdx + width / 4) == SIZE_NxN && uiDepth == pcCU->getDepth(uiAbsPartIdx))
     {
-        assert(uiSubdiv);
+        // 舍弃了 0111 其实可以不考虑这里的问题了
+        if (pcCU->getPartitionSize(uiAbsPartIdx + (width / 8) * (width / 8)) == SIZE_B_0111)
+        {
+            assert(!uiSubdiv);
+        }
+        else
+        {
+            assert(uiSubdiv);
+        }
     }
     else if (pcCU->getPredictionMode(uiAbsPartIdx) == MODE_INTER && (pcCU->getPartitionSize(uiAbsPartIdx) != SIZE_2Nx2N) && uiDepth == pcCU->getDepth(uiAbsPartIdx) && (pcCU->getSlice()->getSPS()->getQuadtreeTUMaxDepthInter() == 1))
     {
@@ -309,6 +338,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
         offsetChroma += (size >> 2);
         xEncodeTransform(pcCU, offsetLuma, offsetChroma, uiAbsPartIdx, uiDepth, width, height, uiTrIdx, bCodeDQP);
 
+        // 8x8 块在这里同时编码了亮度和色差的系数
         uiAbsPartIdx += partNum;
         offsetLuma += size;
         offsetChroma += (size >> 2);
@@ -317,14 +347,14 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
     else
     {
         {
-            DTRACE_CABAC_VL(g_nSymbolCounter++);
-            DTRACE_CABAC_T("\tTrIdx: abspart=");
-            DTRACE_CABAC_V(uiAbsPartIdx);
-            DTRACE_CABAC_T("\tdepth=");
-            DTRACE_CABAC_V(uiDepth);
-            DTRACE_CABAC_T("\ttrdepth=");
-            DTRACE_CABAC_V(pcCU->getTransformIdx(uiAbsPartIdx));
-            DTRACE_CABAC_T("\n");
+            //DTRACE_CABAC_VL(g_nSymbolCounter++);
+            //DTRACE_CABAC_T("\tTrIdx: abspart=");
+            //DTRACE_CABAC_V(uiAbsPartIdx);
+            //DTRACE_CABAC_T("\tdepth=");
+            //DTRACE_CABAC_V(uiDepth);
+            //DTRACE_CABAC_T("\ttrdepth=");
+            //DTRACE_CABAC_V(pcCU->getTransformIdx(uiAbsPartIdx));
+            //DTRACE_CABAC_T("\n");
         }
 
         if (pcCU->getPredictionMode(uiAbsPartIdx) != MODE_INTRA && uiDepth == pcCU->getDepth(uiAbsPartIdx) && !pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_U, 0) && !pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, 0))
@@ -391,7 +421,14 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
 // Intra direction for Luma
 Void TEncEntropy::encodeIntraDirModeLuma(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiplePU)
 {
-    m_pcEntropyCoderIf->codeIntraDirLumaAng(pcCU, absPartIdx, isMultiplePU);
+    // if (*(pcCU->getLumaLoopFlag() + absPartIdx) == 0)
+    // {
+    //     m_pcEntropyCoderIf->codeIntraDirLumaAng(pcCU, absPartIdx, isMultiplePU);
+    // }
+    // else
+    {
+        m_pcEntropyCoderIf->codeIntraDirLumaAngLP(pcCU, absPartIdx, isMultiplePU);
+    }
 }
 
 // Intra direction for Chroma
@@ -402,7 +439,8 @@ Void TEncEntropy::encodeIntraDirModeChroma(TComDataCU *pcCU, UInt uiAbsPartIdx, 
         uiAbsPartIdx = 0;
     }
 
-    m_pcEntropyCoderIf->codeIntraDirChroma(pcCU, uiAbsPartIdx);
+    // m_pcEntropyCoderIf->codeIntraDirChroma(pcCU, uiAbsPartIdx);
+    m_pcEntropyCoderIf->codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
 }
 
 // 帧内的话, 编码预测模式
@@ -584,11 +622,12 @@ Void TEncEntropy::encodeCoeff(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth,
 
     if (pcCU->isIntra(uiAbsPartIdx))
     {
-        DTRACE_CABAC_VL(g_nSymbolCounter++)
-        DTRACE_CABAC_T("\tdecodeTransformIdx()\tCUDepth=")
-        DTRACE_CABAC_V(uiDepth)
-        DTRACE_CABAC_T("\n")
+        //DTRACE_CABAC_VL(g_nSymbolCounter++)
+        //DTRACE_CABAC_T("\tdecodeTransformIdx()\tCUDepth=")
+        //DTRACE_CABAC_V(uiDepth)
+        //DTRACE_CABAC_T("\n")
     }
+    // 不会进入
     else
     {
         if (!(pcCU->getMergeFlag(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N))

@@ -6,6 +6,7 @@
             "label": "编码器调试 build for debug",
             "command": "make",
             "args": [
+                "-j8",
                 "debug_enc_only"
             ],
             "options": {
@@ -21,6 +22,7 @@
             "label": "清理 clean",
             "command": "make",
             "args": [
+                "-j8",
                 "clean"
             ],
             "options": {
@@ -36,7 +38,24 @@
             "label": "构建所有 debug",
             "command": "make",
             "args": [
+                "-j8",
                 "debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/linux"
+            },
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "构建所有 release",
+            "command": "make",
+            "args": [
+                "-j8",
+                "release"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build/linux"

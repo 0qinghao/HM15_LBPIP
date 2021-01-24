@@ -84,8 +84,10 @@ public:
     virtual Void codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
+    virtual Void codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
 
     virtual Void codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
+    virtual Void codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth) = 0;
     virtual Void codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
 
     virtual Void codeIPCMInfo(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
@@ -96,13 +98,16 @@ public:
     virtual Void codeQtCbfZero(TComDataCU *pcCU, TextType eType, UInt uiTrDepth) = 0;
     virtual Void codeQtRootCbfZero(TComDataCU *pcCU) = 0;
     virtual Void codeIntraDirLumaAng(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiplePU) = 0;
+    virtual Void codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiplePU) = 0;
 
     virtual Void codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
+    virtual Void codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeRefFrmIdx(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList) = 0;
     virtual Void codeMvd(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList) = 0;
     virtual Void codeDeltaQP(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType) = 0;
+    virtual Void codeModeRes(Int *iModeAllDiff, Int iCnt) = 0;
     virtual Void codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt width, UInt height, TextType eTType) = 0;
     virtual Void codeSAOBlkParam(SAOBlkParam &saoBlkParam, Bool *sliceEnabled, Bool leftMergeAvail, Bool aboveMergeAvail, Bool onlyEstMergeInfo = false) = 0;
     virtual Void estBit(estBitsSbacStruct *pcEstBitsSbac, Int width, Int height, TextType eTType) = 0;
@@ -173,6 +178,9 @@ public:
     Void updateContextTables(SliceType eSliceType, Int iQp) { m_pcEntropyCoderIf->updateContextTables(eSliceType, iQp, true); }
 
     Void encodeScalingList(TComScalingList *scalingList);
+    // 增加
+    Void encodeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
+    Void encodeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth);
 
 private:
     Void xEncodeTransform(TComDataCU *pcCU, UInt offsetLumaOffset, UInt offsetChroma, UInt uiAbsPartIdx, UInt uiDepth, UInt width, UInt height, UInt uiTrIdx, Bool &bCodeDQP);

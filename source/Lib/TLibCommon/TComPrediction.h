@@ -72,8 +72,14 @@ protected:
     Pel *m_pLumaRecBuffer; ///< array for downsampled reconstructed luma sample
     Int m_iLumaRecStride;  ///< stride of #m_pLumaRecBuffer array
 
-    Void xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *&rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter);
+    Void xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter);
+    Void xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize);
+    Void xPredIntraAng3x3(Int bitDepth, Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter, UInt uiPredDstSize);
     Void xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height);
+    Void xPredIntraPlanarnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height);
+    Void xPredIntraPlanarLP(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
+    Void xPredIntraPlanarLPnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
+    Void xPredIntraPlanar3x3(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiPredDstSize);
 
     // motion compensation functions
     Void xPredInterUni(TComDataCU *pcCU, UInt uiPartAddr, Int iWidth, Int iHeight, RefPicList eRefPicList, TComYuv *&rpcYuvPred, Bool bi = false);
@@ -84,7 +90,7 @@ protected:
 
     Void xGetLLSPrediction(TComPattern *pcPattern, Int *pSrc0, Int iSrcStride, Pel *pDst0, Int iDstStride, UInt uiWidth, UInt uiHeight, UInt uiExt0);
 
-    Void xDCPredFiltering(Int *pSrc, Int iSrcStride, Pel *&rpDst, Int iDstStride, Int iWidth, Int iHeight);
+    Void xDCPredFiltering(Int *pSrc, Int iSrcStride, Pel *rpDst, Int iDstStride, Int iWidth, Int iHeight);
     Bool xCheckIdenticalMotion(TComDataCU *pcCU, UInt PartAddr);
 
 public:
@@ -101,9 +107,16 @@ public:
 
     // Angular Intra
     Void predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft);
+    UInt predIntraLumaAngLP(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize);
+    UInt predIntraLumaAng3x3(TComPattern *pcTComPattern, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize);
+    Void FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask);
+    Void FillRefChromaLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask);
     Void predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft);
+    UInt predIntraChromaAngLP(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize);
+    UInt predIntraChromaAng3x3(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft, UInt mask, UInt uiPredDstSize);
 
     Pel predIntraGetPredValDC(Int *pSrc, Int iSrcStride, UInt iWidth, UInt iHeight, Bool bAbove, Bool bLeft);
+    Pel predIntraGetPredValDCLP(Int *pSrc, Int iSrcStride, UInt iWidth, UInt iHeight, Bool bAbove, Bool bLeft, UInt uiPredDstSize);
 
     Int *getPredicBuf() { return m_piYuvExt; }
     Int getPredicBufWidth() { return m_iYuvExtStride; }

@@ -38,7 +38,6 @@
 #ifndef __TENC_BIN_CODER_CABAC_COUNTER__
 #define __TENC_BIN_CODER_CABAC_COUNTER__
 
-
 #include "TEncBinCoderCABAC.h"
 
 #if FAST_BIT_EST
@@ -46,21 +45,20 @@
 //! \ingroup TLibEncoder
 //! \{
 
-
 class TEncBinCABACCounter : public TEncBinCABAC
 {
 public:
-  TEncBinCABACCounter ();
-  virtual ~TEncBinCABACCounter();
-  
-  Void  finish            ();
-  UInt  getNumWrittenBits ();
+    TEncBinCABACCounter();
+    virtual ~TEncBinCABACCounter();
 
-  Void  encodeBin         ( UInt  binValue,  ContextModel& rcCtxModel );
-  Void  encodeBinEP       ( UInt  binValue                            );
-  Void  encodeBinsEP      ( UInt  binValues, Int numBins              );
-  Void  encodeBinTrm      ( UInt  binValue                            );
-  
+    Void finish();
+    UInt getNumWrittenBits();
+
+    Void encodeBin(UInt binValue, ContextModel &rcCtxModel);
+    Void encodeBinEP(UInt binValue);
+    Void encodeBinsEP(UInt binValues, Int numBins);
+    Void encodeBinTrm(UInt binValue);
+
 private:
 };
 
@@ -69,4 +67,3 @@ private:
 #endif
 
 #endif
-

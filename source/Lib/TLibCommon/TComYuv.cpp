@@ -62,7 +62,9 @@ TComYuv::~TComYuv()
 Void TComYuv::create(UInt iWidth, UInt iHeight)
 {
     // memory allocation
-    m_apiBufY = (Pel *)xMalloc(Pel, iWidth * iHeight);
+    // WTF?? 居然是因为空间不够的问题
+    // m_apiBufY = (Pel *)xMalloc(Pel, iWidth * iHeight);
+    m_apiBufY = (Pel *)xMalloc(Pel, g_uiMaxCUWidth * g_uiMaxCUHeight);
     m_apiBufU = (Pel *)xMalloc(Pel, iWidth * iHeight >> 2);
     m_apiBufV = (Pel *)xMalloc(Pel, iWidth * iHeight >> 2);
 
@@ -305,6 +307,9 @@ Void TComYuv::copyPartToPartLuma(TComYuv *pcYuvDst, UInt uiPartIdx, UInt iWidth,
     UInt iDstStride = pcYuvDst->getStride();
     for (UInt y = iHeight; y != 0; y--)
     {
+        // 无损情况下重建值应该和真实值完全一样, 上个保险
+        // assert(*pDst == *pSrc);
+
         ::memcpy(pDst, pSrc, iWidth * sizeof(Pel));
         pSrc += iSrcStride;
         pDst += iDstStride;

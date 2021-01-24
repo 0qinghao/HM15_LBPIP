@@ -1,7 +1,7 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
- * granted under this license.  
+ * granted under this license.
  *
  * Copyright (c) 2010-2014, ITU/ISO/IEC
  * All rights reserved.
@@ -32,8 +32,8 @@
  */
 
 /** \file     TEncSbac.cpp
-    \brief    SBAC encoder class
-*/
+     \brief    SBAC encoder class
+ */
 
 #include "TEncTop.h"
 #include "TEncSbac.h"
@@ -50,6 +50,7 @@
 
 TEncSbac::TEncSbac()
     // new structure here
+    // TEncSbac的构造函数调用的都是ContextModel3DBuffer的构造函数
     : m_pcBitIf(NULL), m_pcSlice(NULL), m_pcBinIf(NULL), m_uiCoeffCost(0), m_numContextModels(0), m_cCUSplitFlagSCModel(1, 1, NUM_SPLIT_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSkipFlagSCModel(1, 1, NUM_SKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeFlagExtSCModel(1, 1, NUM_MERGE_FLAG_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeIdxExtSCModel(1, 1, NUM_MERGE_IDX_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPartSizeSCModel(1, 1, NUM_PART_SIZE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPredModeSCModel(1, 1, NUM_PRED_MODE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUIntraPredSCModel(1, 1, NUM_ADI_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUChromaPredSCModel(1, 1, NUM_CHROMA_PRED_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUDeltaQpSCModel(1, 1, NUM_DELTA_QP_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUInterDirSCModel(1, 1, NUM_INTER_DIR_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCURefPicSCModel(1, 1, NUM_REF_NO_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMvdSCModel(1, 1, NUM_MV_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtCbfSCModel(1, 2, NUM_QT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUTransSubdivFlagSCModel(1, 1, NUM_TRANS_SUBDIV_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtRootCbfSCModel(1, 1, NUM_QT_ROOT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigCoeffGroupSCModel(1, 2, NUM_SIG_CG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigSCModel(1, 1, NUM_SIG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastX(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastY(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCUOneSCModel(1, 1, NUM_ONE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUAbsSCModel(1, 1, NUM_ABS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cMVPIdxSCModel(1, 1, NUM_MVP_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoMergeSCModel(1, 1, NUM_SAO_MERGE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoTypeIdxSCModel(1, 1, NUM_SAO_TYPE_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cTransformSkipSCModel(1, 2, NUM_TRANSFORMSKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_CUTransquantBypassFlagSCModel(1, 1, NUM_CU_TRANSQUANT_BYPASS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels)
 {
     assert(m_numContextModels <= MAX_NUM_CTX_MOD);
@@ -73,44 +74,63 @@ Void TEncSbac::resetEntropy()
     {
         eSliceType = (SliceType)encCABACTableIdx;
     }
+    // 初始化各个模型的缓存
 
+    // split 标志的上下文
     m_cCUSplitFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SPLIT_FLAG);
-
+    // skip 标志
     m_cCUSkipFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SKIP_FLAG);
+    // merge 标志
     m_cCUMergeFlagExtSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MERGE_FLAG_EXT);
+    // merge 索引
     m_cCUMergeIdxExtSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MERGE_IDX_EXT);
+    // partsize
     m_cCUPartSizeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PART_SIZE);
+    // 模式(帧内还是帧间)
     m_cCUPredModeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_MODE);
+    // 帧内预测角度
     m_cCUIntraPredSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_INTRA_PRED_MODE);
+    // 帧内色差预测角度
     m_cCUChromaPredSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_CHROMA_PRED_MODE);
     m_cCUInterDirSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_INTER_DIR);
     m_cCUMvdSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MVD);
     m_cCURefPicSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_REF_PIC);
+    // 量化步长
     m_cCUDeltaQpSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_DQP);
+    // cbf
     m_cCUQtCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_CBF);
+    // 四叉树根的 cbf
     m_cCUQtRootCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_ROOT_CBF);
+    // 系数符号
     m_cCUSigCoeffGroupSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_CG_FLAG);
+    // 符号
     m_cCUSigSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_FLAG);
+    // 最后一个X
     m_cCuCtxLastX.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
+    // 最后一个Y
     m_cCuCtxLastY.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
     m_cCUOneSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_ONE_FLAG);
     m_cCUAbsSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_ABS_FLAG);
     m_cMVPIdxSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MVP_IDX);
+    // TU 划分标志
     m_cCUTransSubdivFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_TRANS_SUBDIV_FLAG);
     m_cSaoMergeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SAO_MERGE_FLAG);
     m_cSaoTypeIdxSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SAO_TYPE_IDX);
+    // 变换skip
     m_cTransformSkipSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_TRANSFORMSKIP_FLAG);
+    // 变换量化bypass
     m_CUTransquantBypassFlagSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_CU_TRANSQUANT_BYPASS_FLAG);
     // new structure
     m_uiLastQp = iQp;
 
+    // 二值化的一些操作
     m_pcBinIf->start();
 
     return;
 }
 
-/** The function does the following: 
- * If current slice type is P/B then it determines the distance of initialisation type 1 and 2 from the current CABAC states and 
+/** The function does the following:
+ * If current slice type is P/B then it determines the distance of initialisation type 1 and 2 from the current CABAC states and
  * stores the index of the closest table.  This index is used for the next P/B slice when cabac_init_present_flag is true.
  */
 Void TEncSbac::determineCabacInitIdx()
@@ -317,6 +337,7 @@ Void TEncSbac::xWriteEpExGolomb(UInt uiSymbol, UInt uiCount)
  * \param ruiGoRiceParam reference to Rice parameter
  * \returns Void
  */
+// 真正编码系数的地方
 Void TEncSbac::xWriteCoefRemainExGolomb(UInt symbol, UInt &rParam)
 {
     Int codeNumber = (Int)symbol;
@@ -377,6 +398,7 @@ Void TEncSbac::codeMVPIdx(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefLi
     xWriteUnaryMaxSymbol(iSymbol, m_cMVPIdxSCModel.get(0), 1, iNum - 1);
 }
 
+// 在 encodeSplitFlag 里面处理新分块方法的区分 这里保持原样就好
 Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 {
     PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);
@@ -384,11 +406,14 @@ Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     {
         if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth)
         {
-            m_pcBinIf->encodeBin(eSize == SIZE_2Nx2N ? 1 : 0, m_cCUPartSizeSCModel.get(0, 0, 0));
+            // 新分块L视作大块 因此编码partsize时修改逻辑 仅当==NXN时才编码0
+            // m_pcBinIf->encodeBin(eSize == SIZE_2Nx2N ? 1 : 0, m_cCUPartSizeSCModel.get(0, 0, 0));
+            m_pcBinIf->encodeBin(eSize == SIZE_NxN ? 0 : 1, m_cCUPartSizeSCModel.get(0, 0, 0));
         }
         return;
     }
 
+    // 不可能进入
     switch (eSize)
     {
     case SIZE_2Nx2N:
@@ -457,11 +482,39 @@ Void TEncSbac::codePartSize(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     }
 }
 
+// 增加. 8x8 层如果不是 4 分 4x4 块, 就要增加编码信息指示 1111 (0111舍弃) 1011 1101 1110
+Void TEncSbac::codeNpType8x8(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);
+    if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth && eSize != SIZE_NxN)
+    {
+        switch (eSize)
+        {
+        case SIZE_2Nx2N:
+            m_pcBinIf->encodeBinsEP(0b00, 2);
+            break;
+        case SIZE_B_1011:
+            m_pcBinIf->encodeBinsEP(0b01, 2);
+            break;
+        case SIZE_B_1101:
+            m_pcBinIf->encodeBinsEP(0b10, 2);
+            break;
+        case SIZE_B_1110:
+            m_pcBinIf->encodeBinsEP(0b11, 2);
+            break;
+        default:
+            assert(0);
+        }
+    }
+    return;
+}
+
 /** code prediction mode
  * \param pcCU
- * \param uiAbsPartIdx  
+ * \param uiAbsPartIdx
  * \returns Void
  */
+// 编码预测模式(帧内还是帧间)
 Void TEncSbac::codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     // get context function is here
@@ -472,12 +525,12 @@ Void TEncSbac::codePredMode(TComDataCU *pcCU, UInt uiAbsPartIdx)
 Void TEncSbac::codeCUTransquantBypassFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     UInt uiSymbol = pcCU->getCUTransquantBypass(uiAbsPartIdx);
-    m_pcBinIf->encodeBin(uiSymbol, m_CUTransquantBypassFlagSCModel.get(0, 0, 0));
+    // m_pcBinIf->encodeBin(uiSymbol, m_CUTransquantBypassFlagSCModel.get(0, 0, 0));
 }
 
 /** code skip flag
  * \param pcCU
- * \param uiAbsPartIdx 
+ * \param uiAbsPartIdx
  * \returns Void
  */
 Void TEncSbac::codeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
@@ -486,18 +539,18 @@ Void TEncSbac::codeSkipFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
     UInt uiSymbol = pcCU->isSkipped(uiAbsPartIdx) ? 1 : 0;
     UInt uiCtxSkip = pcCU->getCtxSkipFlag(uiAbsPartIdx);
     m_pcBinIf->encodeBin(uiSymbol, m_cCUSkipFlagSCModel.get(0, 0, uiCtxSkip));
-    DTRACE_CABAC_VL(g_nSymbolCounter++);
-    DTRACE_CABAC_T("\tSkipFlag");
-    DTRACE_CABAC_T("\tuiCtxSkip: ");
-    DTRACE_CABAC_V(uiCtxSkip);
-    DTRACE_CABAC_T("\tuiSymbol: ");
-    DTRACE_CABAC_V(uiSymbol);
-    DTRACE_CABAC_T("\n");
+    //DTRACE_CABAC_VL(g_nSymbolCounter++);
+    //DTRACE_CABAC_T("\tSkipFlag");
+    //DTRACE_CABAC_T("\tuiCtxSkip: ");
+    //DTRACE_CABAC_V(uiCtxSkip);
+    //DTRACE_CABAC_T("\tuiSymbol: ");
+    //DTRACE_CABAC_V(uiSymbol);
+    //DTRACE_CABAC_T("\n");
 }
 
 /** code merge flag
  * \param pcCU
- * \param uiAbsPartIdx 
+ * \param uiAbsPartIdx
  * \returns Void
  */
 Void TEncSbac::codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
@@ -505,19 +558,19 @@ Void TEncSbac::codeMergeFlag(TComDataCU *pcCU, UInt uiAbsPartIdx)
     const UInt uiSymbol = pcCU->getMergeFlag(uiAbsPartIdx) ? 1 : 0;
     m_pcBinIf->encodeBin(uiSymbol, *m_cCUMergeFlagExtSCModel.get(0));
 
-    DTRACE_CABAC_VL(g_nSymbolCounter++);
-    DTRACE_CABAC_T("\tMergeFlag: ");
-    DTRACE_CABAC_V(uiSymbol);
-    DTRACE_CABAC_T("\tAddress: ");
-    DTRACE_CABAC_V(pcCU->getAddr());
-    DTRACE_CABAC_T("\tuiAbsPartIdx: ");
-    DTRACE_CABAC_V(uiAbsPartIdx);
-    DTRACE_CABAC_T("\n");
+    //DTRACE_CABAC_VL(g_nSymbolCounter++);
+    //DTRACE_CABAC_T("\tMergeFlag: ");
+    //DTRACE_CABAC_V(uiSymbol);
+    //DTRACE_CABAC_T("\tAddress: ");
+    //DTRACE_CABAC_V(pcCU->getAddr());
+    //DTRACE_CABAC_T("\tuiAbsPartIdx: ");
+    //DTRACE_CABAC_V(uiAbsPartIdx);
+    //DTRACE_CABAC_T("\n");
 }
 
 /** code merge index
  * \param pcCU
- * \param uiAbsPartIdx 
+ * \param uiAbsPartIdx
  * \returns Void
  */
 Void TEncSbac::codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx)
@@ -543,11 +596,11 @@ Void TEncSbac::codeMergeIndex(TComDataCU *pcCU, UInt uiAbsPartIdx)
             }
         }
     }
-    DTRACE_CABAC_VL(g_nSymbolCounter++);
-    DTRACE_CABAC_T("\tparseMergeIndex()");
-    DTRACE_CABAC_T("\tuiMRGIdx= ");
-    DTRACE_CABAC_V(pcCU->getMergeIndex(uiAbsPartIdx));
-    DTRACE_CABAC_T("\n");
+    //DTRACE_CABAC_VL(g_nSymbolCounter++);
+    //DTRACE_CABAC_T("\tparseMergeIndex()");
+    //DTRACE_CABAC_T("\tuiMRGIdx= ");
+    //DTRACE_CABAC_V(pcCU->getMergeIndex(uiAbsPartIdx));
+    //DTRACE_CABAC_T("\n");
 }
 
 Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
@@ -561,23 +614,110 @@ Void TEncSbac::codeSplitFlag(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
 
     assert(uiCtx < 3);
     m_pcBinIf->encodeBin(uiCurrSplitFlag, m_cCUSplitFlagSCModel.get(0, 0, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tSplitFlag\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tSplitFlag\n")
     return;
+}
+
+Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    // 递归到 8x8 层了
+    if (uiDepth == g_uiMaxCUDepth - g_uiAddCUDepth)
+    {
+        codePartSize(pcCU, uiAbsPartIdx, uiDepth);
+        codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
+
+        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
+        codeIntraDirChromaLP(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
+        PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
+        switch (eSize8x8)
+        {
+        case SIZE_B_1011:
+            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
+            break;
+        case SIZE_B_1101:
+            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
+            break;
+        case SIZE_B_1110:
+            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    UInt uiCurrSplitFlag = (pcCU->getDepth(uiAbsPartIdx) > uiDepth) ? 1 : 0;
+    UInt uiQNumParts = (16 >> (uiDepth << 1));
+
+    // 如果前面编码过一个 SF=0, 这里要编码额外信息
+
+    // 写死 16 不是一个好主意, 最大 CU 是 32 的时候才是 16
+    PartSize eSize = pcCU->getPartitionSize(uiAbsPartIdx);
+    switch (eSize)
+    {
+    case SIZE_2Nx2N:
+        m_pcBinIf->encodeBinsEP(0b00, 2);
+        break;
+    case SIZE_B_1011:
+        m_pcBinIf->encodeBinsEP(0b01, 2);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        break;
+    case SIZE_B_1101:
+        m_pcBinIf->encodeBinsEP(0b10, 2);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        break;
+    case SIZE_B_1110:
+        m_pcBinIf->encodeBinsEP(0b11, 2);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        break;
+        // case SIZE_NxN:
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1); // 第一部分不用编方向了
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        //     codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        //     codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        //     break;
+    default:
+        break;
+    }
+
+    if (uiCurrSplitFlag)
+    {
+        codeSplitFlag(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 0 * uiQNumParts, uiDepth + 1);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 1 * uiQNumParts, uiDepth + 1);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 2 * uiQNumParts, uiDepth + 1);
+        codeSplitFlag(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+        codeNpSplitFlagNpType(pcCU, uiAbsPartIdx + 3 * uiQNumParts, uiDepth + 1);
+    }
+    else
+    {
+        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
+        codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
+    }
 }
 
 Void TEncSbac::codeTransformSubdivFlag(UInt uiSymbol, UInt uiCtx)
 {
     m_pcBinIf->encodeBin(uiSymbol, m_cCUTransSubdivFlagSCModel.get(0, 0, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseTransformSubdivFlag()")
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(uiSymbol)
-    DTRACE_CABAC_T("\tctx=")
-    DTRACE_CABAC_V(uiCtx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseTransformSubdivFlag()")
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(uiSymbol)
+    //DTRACE_CABAC_T("\tctx=")
+    //DTRACE_CABAC_V(uiCtx)
+    //DTRACE_CABAC_T("\n")
 }
 
+// 编码亮度预测模式(角度)
 Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple)
 {
     UInt dir[4], j;
@@ -586,81 +726,252 @@ Void TEncSbac::codeIntraDirLumaAng(TComDataCU *pcCU, UInt absPartIdx, Bool isMul
     PartSize mode = pcCU->getPartitionSize(absPartIdx);
     UInt partNum = isMultiple ? (mode == SIZE_NxN ? 4 : 1) : 1;
     UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+    //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+    //     // 判断待编码模式信息是否在 MPM 里
+    //     for (UInt i = 0; i < predNum[j]; i++)
+    //     {
+    //         if (dir[j] == preds[j][i])
+    //         {
+    //             predIdx[j] = i;
+    //         }
+    //     }
+    //     // 编码 flag, 1 表示模式在 MPM 里
+    //     m_pcBinIf->encodeBin((predIdx[j] != -1) ? 1 : 0, m_cCUIntraPredSCModel.get(0, 0, 0));
+    // }
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     if (predIdx[j] != -1)
+    //     {
+    //         m_pcBinIf->encodeBinEP(predIdx[j] ? 1 : 0);
+    //         if (predIdx[j])
+    //         {
+    //             m_pcBinIf->encodeBinEP(predIdx[j] - 1);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if (preds[j][0] > preds[j][1])
+    //         {
+    //             std::swap(preds[j][0], preds[j][1]);
+    //         }
+    //         if (preds[j][0] > preds[j][2])
+    //         {
+    //             std::swap(preds[j][0], preds[j][2]);
+    //         }
+    //         if (preds[j][1] > preds[j][2])
+    //         {
+    //             std::swap(preds[j][1], preds[j][2]);
+    //         }
+    //         for (Int i = (predNum[j] - 1); i >= 0; i--)
+    //         {
+    //             dir[j] = dir[j] > preds[j][i] ? dir[j] - 1 : dir[j];
+    //         }
+    //         m_pcBinIf->encodeBinsEP(dir[j], 5);
+    //     }
+    // }
     for (j = 0; j < partNum; j++)
     {
         dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
-        predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
-        for (UInt i = 0; i < predNum[j]; i++)
-        {
-            if (dir[j] == preds[j][i])
-            {
-                predIdx[j] = i;
-            }
-        }
-        m_pcBinIf->encodeBin((predIdx[j] != -1) ? 1 : 0, m_cCUIntraPredSCModel.get(0, 0, 0));
-    }
-    for (j = 0; j < partNum; j++)
-    {
-        if (predIdx[j] != -1)
-        {
-            m_pcBinIf->encodeBinEP(predIdx[j] ? 1 : 0);
-            if (predIdx[j])
-            {
-                m_pcBinIf->encodeBinEP(predIdx[j] - 1);
-            }
-        }
-        else
-        {
-            if (preds[j][0] > preds[j][1])
-            {
-                std::swap(preds[j][0], preds[j][1]);
-            }
-            if (preds[j][0] > preds[j][2])
-            {
-                std::swap(preds[j][0], preds[j][2]);
-            }
-            if (preds[j][1] > preds[j][2])
-            {
-                std::swap(preds[j][1], preds[j][2]);
-            }
-            for (Int i = (predNum[j] - 1); i >= 0; i--)
-            {
-                dir[j] = dir[j] > preds[j][i] ? dir[j] - 1 : dir[j];
-            }
-            m_pcBinIf->encodeBinsEP(dir[j], 5);
-        }
+        m_pcBinIf->encodeBinsEP(dir[j], DIR_BITS);
     }
     return;
 }
+Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple)
+{
+    UInt dir[4], i, j, k;
+    Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+    Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+    PartSize mode = pcCU->getPartitionSize(absPartIdx);
+    UInt partNum = isMultiple ? (mode == SIZE_NxN ? 4 : 1) : 1;
+    UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    UInt uiWidth = pcCU->getWidth(absPartIdx);
+    if (mode == SIZE_NxN)
+    {
+        uiWidth = 4;
+    }
+    UChar puhModeAll[uiWidth - LOOP_MIN_SIZE + 1];
+    for (k = 0; k < partNum; k++)
+    {
+        if (*(pcCU->getLumaLoopFlag() + absPartIdx + k) == 0)
+        {
+            // 环状还是块状
+            m_pcBinIf->encodeBinEP(0);
 
+            dir[k] = pcCU->getLumaIntraDir(absPartIdx + partOffset * k);
+            m_pcBinIf->encodeBinsEP(dir[k], DIR_BITS);
+            // if (dir[k] == 0)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b00, 2);
+            // }
+            // else if (dir[k] == 1)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b01, 2);
+            // }
+            // else
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b11, 2);
+            //     m_pcBinIf->encodeBinsEP(dir[k] - 2, DIR_BITS - 1);
+            // }
+        }
+        else
+        {
+            // Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+            // Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+            // UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+            // for (j = 0; j < partNum; j++)
+            // {
+            //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+            //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+            // }
+            // 环状还是块状
+            m_pcBinIf->encodeBinEP(1);
+
+            // for (i = 0; i < uiWidth - 3 + 1; i++)
+            // {
+            //     puhModeAll[i] = *(pcCU->getLumaIntraDir() + absPartIdx * 4 + partOffset * k + i);
+            // };
+            // FIXIT: 不是正确的角度信息 模拟出来编码
+            // 2021年1月14日 FIXED
+            // Int iModeAllDiff[uiWidth - 3 + 1];
+            pcCU->getLumaIntraDirLP(absPartIdx + partOffset * k, uiWidth, puhModeAll);
+            // for (j = 0; j < uiWidth - 3 + 1; j++)
+            // {
+            //     iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+            // }
+            // iModeAllDiff[0] = puhModeAll[0] - 0;
+            Bool bIs1110 = pcCU->getPartitionSize(absPartIdx) == SIZE_B_1110;
+            Int iLoopCnt = uiWidth - LOOP_MIN_SIZE + 1;
+            if (bIs1110)
+            {
+                assert(uiWidth >= 8);
+                iLoopCnt -= (uiWidth / 2 - LOOP_MIN_SIZE + 1);
+                // 只在重新编码的过程里会进入这个操作
+            }
+
+            // this->codeModeRes(iModeAllDiff, iLoopCnt);
+            // 干脆直接编码得了
+            for (j = 0; j < iLoopCnt; j++)
+            {
+                assert(puhModeAll[j] < LOOP_DIR_NUM);
+                m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
+                // if (puhModeAll[j] == 0) iLoopCnt);
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b00, 2);
+                // }
+                // else if (puhModeAll[j] == 1)
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b01, 2);
+                // }
+                // else
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b11, 2);
+                //     m_pcBinIf->encodeBinsEP(puhModeAll[j] - 2, DIR_BITS - 1);
+                // }
+            }
+        }
+    }
+    // Int iModeAllDiff[uiWidth - 3 + 1];
+    // Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+    // Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+    // UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+    //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+    // }
+    // for (j = 0; j < uiWidth - 3 + 1; j++)
+    // {
+    //     iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+    // }
+    // iModeAllDiff[0] = puhModeAll[0] - 0;
+
+    return;
+}
+// 编码色差预测模式(角度)
+Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
+{
+    UInt uiWidth = pcCU->getWidth(uiAbsPartIdx) >> 1;
+    UChar puhModeAll[uiWidth - LOOP_MIN_SIZE + 1];
+    if (*(pcCU->getChromaLoopFlag() + uiAbsPartIdx) == 0)
+    {
+        // 环状还是块状
+        m_pcBinIf->encodeBinEP(0);
+
+        UInt uiIntraDirChroma = pcCU->getChromaIntraDir(uiAbsPartIdx);
+        m_pcBinIf->encodeBinsEP(uiIntraDirChroma, DIR_BITS);
+    }
+    else
+    {
+        // 环状还是块状
+        m_pcBinIf->encodeBinEP(1);
+
+        // for (Int i = 0; i < uiWidth - 3 + 1; i++)
+        // {
+        // FIXIT: 不是正确的角度信息 模拟出来编码
+        // 2021年1月14日 FIXED
+        pcCU->getChromaIntraDirLP(uiAbsPartIdx, uiWidth, puhModeAll);
+        Bool bIs1110 = pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_B_1110;
+        Int iLoopCnt = uiWidth - LOOP_MIN_SIZE + 1;
+        if (bIs1110)
+        {
+            iLoopCnt -= (uiWidth / 2 - LOOP_MIN_SIZE + 1);
+            // 只在重新编码的过程里会进入这个操作
+        }
+
+        // 干脆直接编码得了
+        for (Int j = 0; j < iLoopCnt; j++)
+        // }
+        // 干脆直接编码得了
+        // for (Int j = 0; j < uiWidth - 3 + 1; j++)
+        {
+            assert(puhModeAll[j] < LOOP_DIR_NUM);
+            m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
+            // if (puhModeAll[j] == 0)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b00, 2);
+            // }
+            // else if (puhModeAll[j] == 1)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b01, 2);
+            // }
+            // else
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b11, 2);
+            //     m_pcBinIf->encodeBinsEP(puhModeAll[j] - 2, DIR_BITS - 1);
+            // }
+        }
+    }
+}
 Void TEncSbac::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     UInt uiIntraDirChroma = pcCU->getChromaIntraDir(uiAbsPartIdx);
 
-    if (uiIntraDirChroma == DM_CHROMA_IDX)
-    {
-        m_pcBinIf->encodeBin(0, m_cCUChromaPredSCModel.get(0, 0, 0));
-    }
-    else
-    {
-        UInt uiAllowedChromaDir[NUM_CHROMA_MODE];
-        pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
+    // if (uiIntraDirChroma == DM_CHROMA_IDX)
+    // {
+    //     m_pcBinIf->encodeBin(0, m_cCUChromaPredSCModel.get(0, 0, 0));
+    // }
+    // else
+    // {
+    //     UInt uiAllowedChromaDir[BLK_NUM_CHROMA_MODE];
+    //     pcCU->getAllowedChromaDir(uiAbsPartIdx, uiAllowedChromaDir);
 
-        for (Int i = 0; i < NUM_CHROMA_MODE - 1; i++)
-        {
-            if (uiIntraDirChroma == uiAllowedChromaDir[i])
-            {
-                uiIntraDirChroma = i;
-                break;
-            }
-        }
-        m_pcBinIf->encodeBin(1, m_cCUChromaPredSCModel.get(0, 0, 0));
+    //     for (Int i = 0; i < BLK_NUM_CHROMA_MODE - 1; i++)
+    //     {
+    //         if (uiIntraDirChroma == uiAllowedChromaDir[i])
+    //         {
+    //             uiIntraDirChroma = i;
+    //             break;
+    //         }
+    //     }
+    //     m_pcBinIf->encodeBin(1, m_cCUChromaPredSCModel.get(0, 0, 0));
 
-        m_pcBinIf->encodeBinsEP(uiIntraDirChroma, 2);
-    }
-    return;
+    m_pcBinIf->encodeBinsEP(uiIntraDirChroma, DIR_BITS);
+    // }
+    // return;
 }
-
 Void TEncSbac::codeInterDir(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     const UInt uiInterDir = pcCU->getInterDir(uiAbsPartIdx) - 1;
@@ -793,17 +1104,17 @@ Void TEncSbac::codeQtCbf(TComDataCU *pcCU, UInt uiAbsPartIdx, TextType eType, UI
     UInt uiCbf = pcCU->getCbf(uiAbsPartIdx, eType, uiTrDepth);
     UInt uiCtx = pcCU->getCtxQtCbf(eType, uiTrDepth);
     m_pcBinIf->encodeBin(uiCbf, m_cCUQtCbfSCModel.get(0, eType ? TEXT_CHROMA : eType, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseQtCbf()")
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(uiCbf)
-    DTRACE_CABAC_T("\tctx=")
-    DTRACE_CABAC_V(uiCtx)
-    DTRACE_CABAC_T("\tetype=")
-    DTRACE_CABAC_V(eType)
-    DTRACE_CABAC_T("\tuiAbsPartIdx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseQtCbf()")
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(uiCbf)
+    //DTRACE_CABAC_T("\tctx=")
+    //DTRACE_CABAC_V(uiCtx)
+    //DTRACE_CABAC_T("\tetype=")
+    //DTRACE_CABAC_V(eType)
+    //DTRACE_CABAC_T("\tuiAbsPartIdx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\n")
 }
 
 void TEncSbac::codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt width, UInt height, TextType eTType)
@@ -819,17 +1130,17 @@ void TEncSbac::codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt 
 
     UInt useTransformSkip = pcCU->getTransformSkip(uiAbsPartIdx, eTType);
     m_pcBinIf->encodeBin(useTransformSkip, m_cTransformSkipSCModel.get(0, eTType ? TEXT_CHROMA : TEXT_LUMA, 0));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseTransformSkip()");
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(useTransformSkip)
-    DTRACE_CABAC_T("\tAddr=")
-    DTRACE_CABAC_V(pcCU->getAddr())
-    DTRACE_CABAC_T("\tetype=")
-    DTRACE_CABAC_V(eTType)
-    DTRACE_CABAC_T("\tuiAbsPartIdx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseTransformSkip()");
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(useTransformSkip)
+    //DTRACE_CABAC_T("\tAddr=")
+    //DTRACE_CABAC_V(pcCU->getAddr())
+    //DTRACE_CABAC_T("\tetype=")
+    //DTRACE_CABAC_V(eTType)
+    //DTRACE_CABAC_T("\tuiAbsPartIdx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\n")
 }
 
 /** Code I_PCM information.
@@ -914,15 +1225,15 @@ Void TEncSbac::codeQtRootCbf(TComDataCU *pcCU, UInt uiAbsPartIdx)
     UInt uiCbf = pcCU->getQtRootCbf(uiAbsPartIdx);
     UInt uiCtx = 0;
     m_pcBinIf->encodeBin(uiCbf, m_cCUQtRootCbfSCModel.get(0, 0, uiCtx));
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseQtRootCbf()")
-    DTRACE_CABAC_T("\tsymbol=")
-    DTRACE_CABAC_V(uiCbf)
-    DTRACE_CABAC_T("\tctx=")
-    DTRACE_CABAC_V(uiCtx)
-    DTRACE_CABAC_T("\tuiAbsPartIdx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseQtRootCbf()")
+    //DTRACE_CABAC_T("\tsymbol=")
+    //DTRACE_CABAC_V(uiCbf)
+    //DTRACE_CABAC_T("\tctx=")
+    //DTRACE_CABAC_V(uiCtx)
+    //DTRACE_CABAC_T("\tuiAbsPartIdx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\n")
 }
 
 Void TEncSbac::codeQtCbfZero(TComDataCU *pcCU, TextType eType, UInt uiTrDepth)
@@ -1013,30 +1324,33 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
 // 真正编码系数(残差)的过程
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
-    DTRACE_CABAC_VL(g_nSymbolCounter++)
-    DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
-    DTRACE_CABAC_V(eTType)
-    DTRACE_CABAC_T("\twidth=")
-    DTRACE_CABAC_V(uiWidth)
-    DTRACE_CABAC_T("\theight=")
-    DTRACE_CABAC_V(uiHeight)
-    DTRACE_CABAC_T("\tdepth=")
-    DTRACE_CABAC_V(uiDepth)
-    DTRACE_CABAC_T("\tabspartidx=")
-    DTRACE_CABAC_V(uiAbsPartIdx)
-    DTRACE_CABAC_T("\ttoCU-X=")
-    DTRACE_CABAC_V(pcCU->getCUPelX())
-    DTRACE_CABAC_T("\ttoCU-Y=")
-    DTRACE_CABAC_V(pcCU->getCUPelY())
-    DTRACE_CABAC_T("\tCU-addr=")
-    DTRACE_CABAC_V(pcCU->getAddr())
-    DTRACE_CABAC_T("\tinCU-X=")
-    DTRACE_CABAC_V(g_auiRasterToPelX[g_auiZscanToRaster[uiAbsPartIdx]])
-    DTRACE_CABAC_T("\tinCU-Y=")
-    DTRACE_CABAC_V(g_auiRasterToPelY[g_auiZscanToRaster[uiAbsPartIdx]])
-    DTRACE_CABAC_T("\tpredmode=")
-    DTRACE_CABAC_V(pcCU->getPredictionMode(uiAbsPartIdx))
-    DTRACE_CABAC_T("\n")
+    //DTRACE_CABAC_VL(g_nSymbolCounter++)
+    //DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
+    //DTRACE_CABAC_V(eTType)
+    //DTRACE_CABAC_T("\twidth=")
+    //DTRACE_CABAC_V(uiWidth)
+    //DTRACE_CABAC_T("\theight=")
+    //DTRACE_CABAC_V(uiHeight)
+    //DTRACE_CABAC_T("\tdepth=")
+    //DTRACE_CABAC_V(uiDepth)
+    //DTRACE_CABAC_T("\tabspartidx=")
+    //DTRACE_CABAC_V(uiAbsPartIdx)
+    //DTRACE_CABAC_T("\ttoCU-X=")
+    //DTRACE_CABAC_V(pcCU->getCUPelX())
+    //DTRACE_CABAC_T("\ttoCU-Y=")
+    //DTRACE_CABAC_V(pcCU->getCUPelY())
+    //DTRACE_CABAC_T("\tCU-addr=")
+    //DTRACE_CABAC_V(pcCU->getAddr())
+    //DTRACE_CABAC_T("\tinCU-X=")
+    //DTRACE_CABAC_V(g_auiRasterToPelX[g_auiZscanToRaster[uiAbsPartIdx]])
+    //DTRACE_CABAC_T("\tinCU-Y=")
+    //DTRACE_CABAC_V(g_auiRasterToPelY[g_auiZscanToRaster[uiAbsPartIdx]])
+    //DTRACE_CABAC_T("\tpredmode=")
+    //DTRACE_CABAC_V(pcCU->getPredictionMode(uiAbsPartIdx))
+    //DTRACE_CABAC_T("\n")
+
+    TextType eTTypeSrc = eTType;
+    UInt uiBitsCodedHeadCbfXYUCoeffU = this->getNumberOfWrittenBits();
 
     if (uiWidth > m_pcSlice->getSPS()->getMaxTrSize())
     {
@@ -1047,8 +1361,10 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     UInt uiNumSig = 0;
 
     // compute number of significant coefficients
+    // 非零系数的个数
     uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
 
+    // 如果全都是 0, 返回
     if (uiNumSig == 0)
         return;
     if (pcCU->getSlice()->getPPS()->getUseTransformSkip())
@@ -1060,6 +1376,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     //----- encode significance map -----
     const UInt uiLog2BlockSize = g_aucConvertToBit[uiWidth] + 2;
     UInt uiScanIdx = pcCU->getCoefScanIdx(uiAbsPartIdx, uiWidth, eTType == TEXT_LUMA, pcCU->isIntra(uiAbsPartIdx));
+    // 4x4 块内的扫描顺序
     const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
 
     Bool beValid;
@@ -1076,13 +1393,16 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     Int scanPosLast = -1;
     Int posLast;
 
+    // 4x4 块间的扫描顺序
     const UInt *scanCG;
     {
         scanCG = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize > 3 ? uiLog2BlockSize - 2 - 1 : 0];
+        // 特别 对于尺寸为 8 的
         if (uiLog2BlockSize == 3)
         {
             scanCG = g_sigLastScan8x8[uiScanIdx];
         }
+        // 特别 对于尺寸为 32 的
         else if (uiLog2BlockSize == 5)
         {
             scanCG = g_sigLastScanCG32x32;
@@ -1094,7 +1414,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
     ::memset(uiSigCoeffGroupFlag, 0, sizeof(UInt) * MLS_GRP_NUM);
 
-    // 找到最后一个非零系数
+    // 找到最后一个非零系数, 同时提取出每个残差的正负性
     do
     {
         posLast = scan[++scanPosLast];
@@ -1114,6 +1434,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     // Code position of last coefficient
     Int posLastY = posLast >> uiLog2BlockSize;
     Int posLastX = posLast - (posLastY << uiLog2BlockSize);
+    // 对最后一个非零系数的位置进行编码
     codeLastSignificantXY(posLastX, posLastY, uiWidth, uiHeight, eTType, uiScanIdx);
 
     //===== code significance flag =====
@@ -1125,8 +1446,37 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     UInt uiGoRiceParam = 0;
     Int iScanPosSig = scanPosLast;
 
+    // 记录编码具体的 4x4 系数块之前所用的 bits
+    if (eTTypeSrc == TEXT_LUMA)
+    {
+        pcCU->uiBitsComm = this->getNumberOfWrittenBits();
+    }
+    else if (eTTypeSrc == TEXT_CHROMA_U)
+    {
+        pcCU->uiBitsCommChroma = this->getNumberOfWrittenBits();
+    }
+    else if (eTTypeSrc == TEXT_CHROMA_V)
+    {
+        pcCU->uiBitsCommChroma += this->getNumberOfWrittenBits() - uiBitsCodedHeadCbfXYUCoeffU;
+    }
+    else
+    {
+        assert(0);
+    }
+
+    // 挨个 4x4 块编码
+    // 编码内容包括
+    // (熵编码)
+    // significant coeff group flag
+    // significant coeff flag
+    // greater than 1 flag
+    // greater than 2 flag
+    // (等概率旁路编码)
+    // coeff sign
+    // coeff remain
     for (Int iSubSet = iLastScanSet; iSubSet >= 0; iSubSet--)
     {
+        UInt uiBitsPre = this->getNumberOfWrittenBits();
         Int numNonZero = 0;
         Int iSubPos = iSubSet << LOG2_SCAN_SET_SIZE;
         uiGoRiceParam = 0;
@@ -1145,6 +1495,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             iScanPosSig--;
         }
 
+        // 如果这个标志为 0, 表示这个 4x4 块里面全是 0
         // encode significant_coeffgroup_flag
         Int iCGBlkPos = scanCG[iSubSet];
         Int iCGPosY = iCGBlkPos / uiNumBlkSide;
@@ -1160,6 +1511,8 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             m_pcBinIf->encodeBin(uiSigCoeffGroup, baseCoeffGroupCtx[uiCtxSig]);
         }
 
+        // Int absCoeffGE2[16];
+        // Int numGE2 = 0;
         // encode significant_coeff_flag
         if (uiSigCoeffGroupFlag[iCGBlkPos])
         {
@@ -1186,6 +1539,11 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                         lastNZPosInCG = iScanPosSig;
                     }
                     firstNZPosInCG = iScanPosSig;
+
+                    // if (absCoeff[numNonZero - 1] >= 2)
+                    // {
+                    //     absCoeffGE2[numGE2++] = absCoeff[numNonZero - 1];
+                    // }
                 }
             }
         }
@@ -1194,6 +1552,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             iScanPosSig = iSubPos - 1;
         }
 
+        // 注意 numNonZero, absCoeff 虽然固定有 16 个数, 但里面只有前 numNonZero 个在这轮赋值了, 是需要编码的
         if (numNonZero > 0)
         {
             Bool signHidden = (lastNZPosInCG - firstNZPosInCG >= SBH_THRESHOLD);
@@ -1208,6 +1567,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
             Int numC1Flag = min(numNonZero, C1FLAG_NUMBER);
             Int firstC2FlagIdx = -1;
+            // 对一个 4x4 里面的前 8(C1FLAG_NUMBER) 个非零系数编码 coeff_abs_level_greater1_flag
             for (Int idx = 0; idx < numC1Flag; idx++)
             {
                 UInt uiSymbol = absCoeff[idx] > 1;
@@ -1215,7 +1575,6 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 if (uiSymbol)
                 {
                     c1 = 0;
-
                     if (firstC2FlagIdx == -1)
                     {
                         firstC2FlagIdx = idx;
@@ -1226,18 +1585,25 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                     c1++;
                 }
             }
-
+            // Int numC2Flag;
+            // 编码 4x4 块内第一个幅值大于 1 的系数的 coeff_abs_level_greater2_flag
             if (c1 == 0)
             {
-
                 baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUAbsSCModel.get(0, 0) + uiCtxSet : m_cCUAbsSCModel.get(0, 0) + NUM_ABS_FLAG_CTX_LUMA + uiCtxSet;
                 if (firstC2FlagIdx != -1)
                 {
                     UInt symbol = absCoeff[firstC2FlagIdx] > 2;
                     m_pcBinIf->encodeBin(symbol, baseCtxMod[0]);
+                    // numC2Flag = min(numGE2, C2FLAG_NUMBER);
+                    // for (UInt uiIdx = 0; uiIdx < numC2Flag; uiIdx++)
+                    // {
+                    //     UInt symbol = absCoeffGE2[uiIdx] > 2;
+                    //     m_pcBinIf->encodeBin(symbol, baseCtxMod[0]);
+                    // }
                 }
             }
 
+            // 符号位隐藏技术, 不会进入
             if (beValid && signHidden)
             {
                 m_pcBinIf->encodeBinsEP((coeffSigns >> 1), numNonZero - 1);
@@ -1248,12 +1614,12 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             }
 
             Int iFirstCoeff2 = 1;
+            // Int C2Checked = 0;
             if (c1 == 0 || numNonZero > C1FLAG_NUMBER)
             {
                 for (Int idx = 0; idx < numNonZero; idx++)
                 {
                     UInt baseLevel = (idx < C1FLAG_NUMBER) ? (2 + iFirstCoeff2) : 1;
-
                     if (absCoeff[idx] >= baseLevel)
                     {
                         xWriteCoefRemainExGolomb(absCoeff[idx] - baseLevel, uiGoRiceParam);
@@ -1264,13 +1630,187 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                     }
                     if (absCoeff[idx] >= 2)
                     {
+                        // C2Checked++;
+                        // if (C2Checked == numC2Flag)
                         iFirstCoeff2 = 0;
                     }
                 }
             }
         }
+        // 记录每个 4x4 块所需的 bits
+        if (eTTypeSrc == TEXT_LUMA)
+        {
+            pcCU->uiBitsPer4x4[iCGPosY][iCGPosX] = this->getNumberOfWrittenBits() - uiBitsPre;
+        }
+        else if (eTTypeSrc == TEXT_CHROMA_U)
+        {
+            pcCU->uiBitsPer4x4Chroma[iCGPosY][iCGPosX] = this->getNumberOfWrittenBits() - uiBitsPre;
+        }
+        else if (eTTypeSrc == TEXT_CHROMA_V)
+        {
+            pcCU->uiBitsPer4x4Chroma[iCGPosY][iCGPosX] += this->getNumberOfWrittenBits() - uiBitsPre;
+        }
     }
+    return;
+}
+Void TEncSbac::codeModeRes(Int *iModeAllDiff, Int iCnt)
+{
+    /* #region   */
+    // 编码内容包括
+    // (熵编码)
+    // significant coeff group flag
+    // significant coeff flag
+    // greater than 1 flag
+    // greater than 2 flag
+    // (等概率旁路编码)
+    // coeff sign
+    // coeff remain
+    // for (Int iSubSet = iLastScanSet; iSubSet >= 0; iSubSet--)
+    // {
+    //     Int numNonZero = 0;
+    //     Int iSubPos = iSubSet << LOG2_SCAN_SET_SIZE;
+    //     uiGoRiceParam = 0;
+    //     Int absCoeff[16];
+    //     UInt coeffSigns = 0;
 
+    //     Int lastNZPosInCG = -1, firstNZPosInCG = SCAN_SET_SIZE;
+
+    //     if (iScanPosSig == scanPosLast)
+    //     {
+    //         absCoeff[0] = abs(pcCoef[posLast]);
+    //         coeffSigns = (pcCoef[posLast] < 0);
+    //         numNonZero = 1;
+    //         lastNZPosInCG = iScanPosSig;
+    //         firstNZPosInCG = iScanPosSig;
+    //         iScanPosSig--;
+    //     }
+
+    //     // 如果这个标志为 0, 表示这个 4x4 块里面全是 0
+    //     // encode significant_coeffgroup_flag
+    //     Int iCGBlkPos = scanCG[iSubSet];
+    //     Int iCGPosY = iCGBlkPos / uiNumBlkSide;
+    //     Int iCGPosX = iCGBlkPos - (iCGPosY * uiNumBlkSide);
+    //     if (iSubSet == iLastScanSet || iSubSet == 0)
+    //     {
+    //         uiSigCoeffGroupFlag[iCGBlkPos] = 1;
+    //     }
+    //     else
+    //     {
+    //         UInt uiSigCoeffGroup = (uiSigCoeffGroupFlag[iCGBlkPos] != 0);
+    //         UInt uiCtxSig = TComTrQuant::getSigCoeffGroupCtxInc(uiSigCoeffGroupFlag, iCGPosX, iCGPosY, uiWidth, uiHeight);
+    //         m_pcBinIf->encodeBin(uiSigCoeffGroup, baseCoeffGroupCtx[uiCtxSig]);
+    //     }
+
+    //     // encode significant_coeff_flag
+    //     if (uiSigCoeffGroupFlag[iCGBlkPos])
+    //     {
+    //         Int patternSigCtx = TComTrQuant::calcPatternSigCtx(uiSigCoeffGroupFlag, iCGPosX, iCGPosY, uiWidth, uiHeight);
+    //         UInt uiBlkPos, uiPosY, uiPosX, uiSig, uiCtxSig;
+    //         for (; iScanPosSig >= iSubPos; iScanPosSig--)
+    //         {
+    //             uiBlkPos = scan[iScanPosSig];
+    //             uiPosY = uiBlkPos >> uiLog2BlockSize;
+    //             uiPosX = uiBlkPos - (uiPosY << uiLog2BlockSize);
+    //             uiSig = (pcCoef[uiBlkPos] != 0);
+    //             if (iScanPosSig > iSubPos || iSubSet == 0 || numNonZero)
+    //             {
+    //                 uiCtxSig = TComTrQuant::getSigCtxInc(patternSigCtx, uiScanIdx, uiPosX, uiPosY, uiLog2BlockSize, eTType);
+    //                 m_pcBinIf->encodeBin(uiSig, baseCtx[uiCtxSig]);
+    //             }
+    //             if (uiSig)
+    //             {
+    //                 absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
+    //                 coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
+    //                 numNonZero++;
+    //                 if (lastNZPosInCG == -1)
+    //                 {
+    //                     lastNZPosInCG = iScanPosSig;
+    //                 }
+    //                 firstNZPosInCG = iScanPosSig;
+    //             }
+    //         }
+    //     }
+    //     else
+    //     {
+    //         iScanPosSig = iSubPos - 1;
+    //     }
+
+    //     if (numNonZero > 0)
+    //     {
+    //         Bool signHidden = (lastNZPosInCG - firstNZPosInCG >= SBH_THRESHOLD);
+    //         UInt uiCtxSet = (iSubSet > 0 && eTType == TEXT_LUMA) ? 2 : 0;
+
+    //         if (c1 == 0)
+    //         {
+    //             uiCtxSet++;
+    //         }
+    //         c1 = 1;
+    //         ContextModel *baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUOneSCModel.get(0, 0) + 4 * uiCtxSet : m_cCUOneSCModel.get(0, 0) + NUM_ONE_FLAG_CTX_LUMA + 4 * uiCtxSet;
+
+    //         Int numC1Flag = min(numNonZero, C1FLAG_NUMBER);
+    //         Int firstC2FlagIdx = -1;
+    //         // 对一个 4x4 里面的前 8(C1FLAG_NUMBER) 个非零系数编码 coeff_abs_level_greater1_flag
+    //         for (Int idx = 0; idx < numC1Flag; idx++)
+    //         {
+    //             UInt uiSymbol = absCoeff[idx] > 1;
+    //             m_pcBinIf->encodeBin(uiSymbol, baseCtxMod[c1]);
+    //             if (uiSymbol)
+    //             {
+    //                 c1 = 0;
+    //                 if (firstC2FlagIdx == -1)
+    //                 {
+    //                     firstC2FlagIdx = idx;
+    //                 }
+    //             }
+    //             else if ((c1 < 3) && (c1 > 0))
+    //             {
+    //                 c1++;
+    //             }
+    //         }
+
+    //         // 编码 4x4 块内第一个幅值大于 1 的系数的 coeff_abs_level_greater2_flag
+    //         if (c1 == 0)
+    //         {
+    //             baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUAbsSCModel.get(0, 0) + uiCtxSet : m_cCUAbsSCModel.get(0, 0) + NUM_ABS_FLAG_CTX_LUMA + uiCtxSet;
+    //             if (firstC2FlagIdx != -1)
+    //             {
+    //                 UInt symbol = absCoeff[firstC2FlagIdx] > 2;
+    //                 m_pcBinIf->encodeBin(symbol, baseCtxMod[0]);
+    //             }
+    //         }
+
+    //         // 符号位隐藏技术, 不会进入
+    //         if (beValid && signHidden)
+    //         {
+    //             m_pcBinIf->encodeBinsEP((coeffSigns >> 1), numNonZero - 1);
+    //         }
+    //         else
+    //         {
+    //             m_pcBinIf->encodeBinsEP(coeffSigns, numNonZero);
+    //         }
+    /* #endregion */
+
+    Int coeffSigns = 0;
+    for (Int idx = 0; idx < iCnt; idx++)
+    {
+        coeffSigns = (coeffSigns << 1) + (iModeAllDiff[idx] < 0);
+    }
+    m_pcBinIf->encodeBinsEP(coeffSigns, iCnt);
+    // Int iFirstCoeff2 = 1;
+    // if (c1 == 0 || numNonZero > C1FLAG_NUMBER)
+    // {
+    UInt uiGoRiceParam = 0;
+    for (Int idx = 0; idx < iCnt; idx++)
+    {
+        xWriteCoefRemainExGolomb(abs(iModeAllDiff[idx]), uiGoRiceParam);
+        if (iModeAllDiff[idx] > 3 * (1 << uiGoRiceParam))
+        {
+            uiGoRiceParam = min<UInt>(uiGoRiceParam + 1, 4);
+        }
+    }
+    // }
+    // }
+    // }
     return;
 }
 
@@ -1310,7 +1850,7 @@ Void TEncSbac::codeSaoMaxUvlc(UInt code, UInt maxSymbol)
     }
 }
 
-/** Code SAO EO class or BO band position 
+/** Code SAO EO class or BO band position
  * \param uiLength
  * \param uiCode
  */
@@ -1333,7 +1873,7 @@ Void TEncSbac::codeSaoMerge(UInt uiCode)
         m_pcBinIf->encodeBin(1, m_cSaoMergeSCModel.get(0, 0, 0));
     }
 }
-/** Code SAO type index 
+/** Code SAO type index
  * \param uiCode
  */
 Void TEncSbac::codeSaoTypeIdx(UInt uiCode)

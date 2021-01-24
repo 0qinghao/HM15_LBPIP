@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -93,9 +93,21 @@ UInt g_uiAddCUDepth = 0;
 UInt g_auiZscanToRaster[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
     0,
 };
+UInt g_auiZscanToRaster4x4[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
+UInt g_auiZscanToRaster2x2[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0, 1, 2, 3};
+UInt g_auiZscanToRaster1x1[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
 UInt g_auiRasterToZscan[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
     0,
 };
+UInt g_auiRasterToZscan4x4[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
+UInt g_auiRasterToZscan2x2[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0, 1, 2, 3};
+UInt g_auiRasterToZscan1x1[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
+    0};
 UInt g_auiRasterToPelX[MAX_NUM_SPU_W * MAX_NUM_SPU_W] = {
     0,
 };
@@ -135,6 +147,20 @@ Void initRasterToZscan(UInt uiMaxCUWidth, UInt uiMaxCUHeight, UInt uiMaxDepth)
     for (UInt i = 0; i < uiNumPartInWidth * uiNumPartInHeight; i++)
     {
         g_auiRasterToZscan[g_auiZscanToRaster[i]] = i;
+    }
+}
+
+Void initRasterToZscanFor4x4(UInt uiMaxCUWidth, UInt uiMaxCUHeight, UInt uiMaxDepth, UInt *puiCurrIdx, UInt *puiRefIdx)
+{
+    UInt uiMinCUWidth = uiMaxCUWidth >> (uiMaxDepth - 1);
+    UInt uiMinCUHeight = uiMaxCUHeight >> (uiMaxDepth - 1);
+
+    UInt uiNumPartInWidth = (UInt)uiMaxCUWidth / uiMinCUWidth;
+    UInt uiNumPartInHeight = (UInt)uiMaxCUHeight / uiMinCUHeight;
+
+    for (UInt i = 0; i < uiNumPartInWidth * uiNumPartInHeight; i++)
+    {
+        puiCurrIdx[puiRefIdx[i]] = i;
     }
 }
 
@@ -281,15 +307,28 @@ const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
         3  //  64x64
 };
 #else  // FAST_UDI_USE_MPM
+// 强制计算 35 种模式的 RD
+// const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
+//     {
+//         3, //   2x2
+//         9, //   4x4
+//         9, //   8x8
+//         4, //  16x16   33
+//         4, //  32x32   33
+//         5  //  64x64   33
+// };
 const UChar g_aucIntraModeNumFast[MAX_CU_DEPTH] =
     {
-        3, //   2x2
-        9, //   4x4
-        9, //   8x8
-        4, //  16x16   33
-        4, //  32x32   33
-        5  //  64x64   33
+        DIR_NUM, //   2x2
+        DIR_NUM, //   4x4
+        DIR_NUM, //   8x8
+        DIR_NUM, //  16x16   33
+        DIR_NUM, //  32x32   33
+        DIR_NUM  //  64x64   33
 };
+const UChar g_uiMode4[4] = {0, 1, 10, 26};
+// const UChar g_uiMode8[8] = {0, 1, 5, 10, 15, 21, 26, 32};
+// const UChar g_uiMode8[16] = {0, 1, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
 #endif // FAST_UDI_USE_MPM
 
 // chroma
@@ -466,8 +505,10 @@ Void initSigLastScan(UInt *pBuffD, UInt *pBuffH, UInt *pBuffV, Int iWidth, Int i
     }
 
     // 强制使扫描 32x32 块时的 4x4 块顺序也做成水平
-    for (UInt t = 0; t < 64; t++)
-        g_sigLastScanCG32x32[t] = t;
+    for (UInt uiT = 0; uiT < 64; uiT++)
+    {
+        g_sigLastScanCG32x32[uiT] = uiT;
+    }
 }
 
 Int g_quantTSDefault4x4[16] =

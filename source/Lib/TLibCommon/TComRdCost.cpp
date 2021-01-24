@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.  
@@ -60,7 +60,7 @@ Double TComRdCost::calcRdCost(UInt uiBits, UInt uiDistortion, Bool bFlag, DFunc 
 {
     Double dRdCost = 0.0;
     Double dLambda = 0.0;
-
+    // TODO: 无损下可以不算 lambda, 可以跳过加快速度
     switch (eDFunc)
     {
     case DF_SSE:

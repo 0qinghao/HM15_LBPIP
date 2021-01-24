@@ -1127,10 +1127,10 @@ Void TEncSlice::encodeSlice(TComPic *&rpcPic, TComOutputBitstream *pcSubstreams)
 #if ENC_DEC_TRACE
     g_bJustDoIt = g_bEncDecTraceEnable;
 #endif
-    DTRACE_CABAC_VL(g_nSymbolCounter++);
-    DTRACE_CABAC_T("\tPOC: ");
-    DTRACE_CABAC_V(rpcPic->getPOC());
-    DTRACE_CABAC_T("\n");
+    //DTRACE_CABAC_VL(g_nSymbolCounter++);
+    //DTRACE_CABAC_T("\tPOC: ");
+    //DTRACE_CABAC_V(rpcPic->getPOC());
+    //DTRACE_CABAC_T("\n");
 #if ENC_DEC_TRACE
     g_bJustDoIt = g_bEncDecTraceDisable;
 #endif
