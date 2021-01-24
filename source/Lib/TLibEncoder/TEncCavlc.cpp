@@ -1154,11 +1154,19 @@ Void TEncCavlc::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool 
 {
     assert(0);
 }
+Void TEncCavlc::codeIntraDirLumaAngLPwr(TComDataCU *pcCU, UInt uiAbsPartIdx, Bool isMultiple)
+{
+    assert(0);
+}
 Void TEncCavlc::codeIntraDirChroma(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     assert(0);
 }
 Void TEncCavlc::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
+{
+    assert(0);
+}
+Void TEncCavlc::codeIntraDirChromaLPwr(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
     assert(0);
 }

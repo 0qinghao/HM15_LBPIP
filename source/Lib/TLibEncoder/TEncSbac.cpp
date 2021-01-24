@@ -627,19 +627,19 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
         codePartSize(pcCU, uiAbsPartIdx, uiDepth);
         codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
 
-        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
-        codeIntraDirChromaLP(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
+        codeIntraDirLumaAngLPwr(pcCU, uiAbsPartIdx, true);
+        codeIntraDirChromaLPwr(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
         PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
         switch (eSize8x8)
         {
         case SIZE_B_1011:
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
+            codeIntraDirLumaAngLPwr(pcCU, uiAbsPartIdx + 1, false);
             break;
         case SIZE_B_1101:
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
+            codeIntraDirLumaAngLPwr(pcCU, uiAbsPartIdx + 2, false);
             break;
         case SIZE_B_1110:
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
+            codeIntraDirLumaAngLPwr(pcCU, uiAbsPartIdx + 3, false);
             break;
         default:
             break;
@@ -700,8 +700,8 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     }
     else
     {
-        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
-        codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
+        codeIntraDirLumaAngLPwr(pcCU, uiAbsPartIdx, true);
+        codeIntraDirChromaLPwr(pcCU, uiAbsPartIdx);
     }
 }
 
@@ -890,6 +890,118 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
 
     return;
 }
+Void TEncSbac::codeIntraDirLumaAngLPwr(TComDataCU *pcCU, UInt absPartIdx, Bool isMultiple)
+{
+    UInt dir[4], i, j, k;
+    Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+    Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+    PartSize mode = pcCU->getPartitionSize(absPartIdx);
+    UInt partNum = isMultiple ? (mode == SIZE_NxN ? 4 : 1) : 1;
+    UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    UInt uiWidth = pcCU->getWidth(absPartIdx);
+    if (mode == SIZE_NxN)
+    {
+        uiWidth = 4;
+    }
+    UChar puhModeAll[uiWidth - LOOP_MIN_SIZE + 1];
+    for (k = 0; k < partNum; k++)
+    {
+        if (*(pcCU->getLumaLoopFlag() + absPartIdx + k) == 0)
+        {
+            // 环状还是块状
+            m_pcBinIf->encodeBinEP(0);
+
+            dir[k] = pcCU->getLumaIntraDir(absPartIdx + partOffset * k);
+            m_pcBinIf->encodeBinsEP(dir[k], DIR_BITS);
+            // if (dir[k] == 0)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b00, 2);
+            // }
+            // else if (dir[k] == 1)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b01, 2);
+            // }
+            // else
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b11, 2);
+            //     m_pcBinIf->encodeBinsEP(dir[k] - 2, DIR_BITS - 1);
+            // }
+        }
+        else
+        {
+            // Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+            // Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+            // UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+            // for (j = 0; j < partNum; j++)
+            // {
+            //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+            //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+            // }
+            // 环状还是块状
+            m_pcBinIf->encodeBinEP(1);
+
+            // for (i = 0; i < uiWidth - 3 + 1; i++)
+            // {
+            //     puhModeAll[i] = *(pcCU->getLumaIntraDir() + absPartIdx * 4 + partOffset * k + i);
+            // };
+            // FIXIT: 不是正确的角度信息 模拟出来编码
+            // 2021年1月14日 FIXED
+            // Int iModeAllDiff[uiWidth - 3 + 1];
+            pcCU->getLumaIntraDirLP(absPartIdx + partOffset * k, uiWidth, puhModeAll);
+            // for (j = 0; j < uiWidth - 3 + 1; j++)
+            // {
+            //     iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+            // }
+            // iModeAllDiff[0] = puhModeAll[0] - 0;
+            Bool bIs1110 = pcCU->getPartitionSize(absPartIdx) == SIZE_B_1110;
+            Int iLoopCnt = uiWidth - LOOP_MIN_SIZE + 1;
+            if (bIs1110)
+            {
+                assert(uiWidth >= 8);
+                iLoopCnt -= (uiWidth / 2 - LOOP_MIN_SIZE + 1);
+                // 只在重新编码的过程里会进入这个操作
+            }
+
+            // this->codeModeRes(iModeAllDiff, iLoopCnt);
+            // 干脆直接编码得了
+            for (j = 0; j < iLoopCnt; j++)
+            {
+                assert(puhModeAll[j] < LOOP_DIR_NUM);
+                printf("%d", puhModeAll[j]);
+                m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
+                // if (puhModeAll[j] == 0) iLoopCnt);
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b00, 2);
+                // }
+                // else if (puhModeAll[j] == 1)
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b01, 2);
+                // }
+                // else
+                // {
+                //     m_pcBinIf->encodeBinsEP(0b11, 2);
+                //     m_pcBinIf->encodeBinsEP(puhModeAll[j] - 2, DIR_BITS - 1);
+                // }
+            }
+        }
+    }
+    // Int iModeAllDiff[uiWidth - 3 + 1];
+    // Int preds[4][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
+    // Int predNum[4], predIdx[4] = {-1, -1, -1, -1};
+    // UInt partOffset = (pcCU->getPic()->getNumPartInCU() >> (pcCU->getDepth(absPartIdx) << 1)) >> 2;
+    // for (j = 0; j < partNum; j++)
+    // {
+    //     dir[j] = pcCU->getLumaIntraDir(absPartIdx + partOffset * j);
+    //     predNum[j] = pcCU->getIntraDirLumaPredictor(absPartIdx + partOffset * j, preds[j]);
+    // }
+    // for (j = 0; j < uiWidth - 3 + 1; j++)
+    // {
+    //     iModeAllDiff[j + 1] = puhModeAll[j + 1] - puhModeAll[j];
+    // }
+    // iModeAllDiff[0] = puhModeAll[0] - 0;
+
+    return;
+}
 // 编码色差预测模式(角度)
 Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
 {
@@ -928,6 +1040,61 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // for (Int j = 0; j < uiWidth - 3 + 1; j++)
         {
             assert(puhModeAll[j] < LOOP_DIR_NUM);
+            m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
+            // if (puhModeAll[j] == 0)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b00, 2);
+            // }
+            // else if (puhModeAll[j] == 1)
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b01, 2);
+            // }
+            // else
+            // {
+            //     m_pcBinIf->encodeBinsEP(0b11, 2);
+            //     m_pcBinIf->encodeBinsEP(puhModeAll[j] - 2, DIR_BITS - 1);
+            // }
+        }
+    }
+}
+Void TEncSbac::codeIntraDirChromaLPwr(TComDataCU *pcCU, UInt uiAbsPartIdx)
+{
+    UInt uiWidth = pcCU->getWidth(uiAbsPartIdx) >> 1;
+    UChar puhModeAll[uiWidth - LOOP_MIN_SIZE + 1];
+    if (*(pcCU->getChromaLoopFlag() + uiAbsPartIdx) == 0)
+    {
+        // 环状还是块状
+        m_pcBinIf->encodeBinEP(0);
+
+        UInt uiIntraDirChroma = pcCU->getChromaIntraDir(uiAbsPartIdx);
+        m_pcBinIf->encodeBinsEP(uiIntraDirChroma, DIR_BITS);
+    }
+    else
+    {
+        // 环状还是块状
+        m_pcBinIf->encodeBinEP(1);
+
+        // for (Int i = 0; i < uiWidth - 3 + 1; i++)
+        // {
+        // FIXIT: 不是正确的角度信息 模拟出来编码
+        // 2021年1月14日 FIXED
+        pcCU->getChromaIntraDirLP(uiAbsPartIdx, uiWidth, puhModeAll);
+        Bool bIs1110 = pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_B_1110;
+        Int iLoopCnt = uiWidth - LOOP_MIN_SIZE + 1;
+        if (bIs1110)
+        {
+            iLoopCnt -= (uiWidth / 2 - LOOP_MIN_SIZE + 1);
+            // 只在重新编码的过程里会进入这个操作
+        }
+
+        // 干脆直接编码得了
+        for (Int j = 0; j < iLoopCnt; j++)
+        // }
+        // 干脆直接编码得了
+        // for (Int j = 0; j < uiWidth - 3 + 1; j++)
+        {
+            assert(puhModeAll[j] < LOOP_DIR_NUM);
+            printf("%d", puhModeAll[j]);
             m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
             // if (puhModeAll[j] == 0)
             // {
