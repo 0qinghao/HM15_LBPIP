@@ -927,6 +927,7 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // 干脆直接编码得了
         // for (Int j = 0; j < uiWidth - 3 + 1; j++)
         {
+            assert(puhModeAll[j] < LOOP_DIR_NUM);
             m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
             // if (puhModeAll[j] == 0)
             // {
