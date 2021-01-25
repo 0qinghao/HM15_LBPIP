@@ -396,30 +396,30 @@ Void TComPrediction::xPredIntraAngLP(Int bitDepth, Int *pSrc, Int srcStride, Pel
     // Do the DC prediction
     if (modeDC)
     {
-        // Pel dcval = predIntraGetPredValDCLP(pSrc, srcStride, width, height, blkAboveAvailable, blkLeftAvailable, uiPredDstSize);
+        Pel dcval = predIntraGetPredValDCLP(pSrc, srcStride, width, height, blkAboveAvailable, blkLeftAvailable, uiPredDstSize);
 
-        // for (l = 0; l < blkSize; l++)
-        // {
-        //     pDst[l] = dcval;
-        // }
-        // for (k = 0; k < blkSize; k++)
-        // {
-        //     pDst[k * dstStride] = dcval;
-        // }
-        for (l = 0; l < uiPredDstSize; l++)
+        for (l = 0; l < blkSize; l++)
         {
-            Pel far1 = pSrc[l - srcStride - 1];
-            Pel near = pSrc[l - srcStride];
-            Pel far2 = pSrc[l - srcStride + 1];
-            rpDst[l] = (far1 + far2 + near * 2 + 2) / 4;
+            pDst[l] = dcval;
         }
-        for (k = 1; k < uiPredDstSize; k++)
+        for (k = 0; k < blkSize; k++)
         {
-            Pel far1 = pSrc[(k - 1) * srcStride - 1];
-            Pel near = pSrc[k * srcStride - 1];
-            Pel far2 = pSrc[(k + 1) * srcStride - 1];
-            rpDst[k * dstStride] = (far1 + far2 + near * 2 + 2) / 4;
+            pDst[k * dstStride] = dcval;
         }
+        // for (l = 0; l < uiPredDstSize; l++)
+        // {
+        //     Pel far1 = pSrc[l - srcStride - 1];
+        //     Pel near = pSrc[l - srcStride];
+        //     Pel far2 = pSrc[l - srcStride + 1];
+        //     rpDst[l] = (far1 + far2 + near * 2 + 2) / 4;
+        // }
+        // for (k = 1; k < uiPredDstSize; k++)
+        // {
+        //     Pel far1 = pSrc[(k - 1) * srcStride - 1];
+        //     Pel near = pSrc[k * srcStride - 1];
+        //     Pel far2 = pSrc[(k + 1) * srcStride - 1];
+        //     rpDst[k * dstStride] = (far1 + far2 + near * 2 + 2) / 4;
+        // }
     }
 
     // Do angular predictions

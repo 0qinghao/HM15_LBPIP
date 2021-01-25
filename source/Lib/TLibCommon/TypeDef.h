@@ -164,8 +164,8 @@
 // #define BLK_NUM_CHROMA_MODE 5 // total number of chroma modes
 #define DIR_NUM 32      // total number of chroma modes
 #define DIR_BITS 5      // total number of chroma modes
-#define LOOP_DIR_NUM 8  // total number of chroma modes
-#define LOOP_DIR_BITS 3 // total number of chroma modes
+#define LOOP_DIR_NUM 16 // total number of chroma modes
+#define LOOP_DIR_BITS 4 // total number of chroma modes
 #define LOOP_MIN_SIZE 4
 // 注意 这个参数是仅在块状预测里面使用的
 #define BLK_NUM_CHROMA_MODE 32 // total number of chroma modes
