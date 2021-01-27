@@ -627,19 +627,19 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
         codePartSize(pcCU, uiAbsPartIdx, uiDepth);
         codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
 
-        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
+        // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChromaLP(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
         PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
         switch (eSize8x8)
         {
         case SIZE_B_1011:
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
+            // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 1, false);
             break;
         case SIZE_B_1101:
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
+            // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 2, false);
             break;
         case SIZE_B_1110:
-            codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
+            // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx + 3, false);
             break;
         default:
             break;
@@ -700,7 +700,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     }
     else
     {
-        codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
+        // codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
         codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
     }
 }

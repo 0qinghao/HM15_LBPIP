@@ -307,7 +307,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
         }
         if (bFirstCbfOfCU || pcCU->getCbf(uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepthCurr - 1))
         {
-            m_pcEntropyCoderIf->codeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepthCurr);
+            // m_pcEntropyCoderIf->codeQtCbf(pcCU, uiAbsPartIdx, TEXT_CHROMA_V, uiTrDepthCurr);
         }
     }
     else if (uiLog2TrafoSize == 2)
@@ -364,7 +364,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
         }
         else
         {
-            m_pcEntropyCoderIf->codeQtCbf(pcCU, uiAbsPartIdx, TEXT_LUMA, pcCU->getTransformIdx(uiAbsPartIdx));
+            // m_pcEntropyCoderIf->codeQtCbf(pcCU, uiAbsPartIdx, TEXT_LUMA, pcCU->getTransformIdx(uiAbsPartIdx));
         }
 
         if (cbfY || cbfU || cbfV)
@@ -383,7 +383,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
         {
             Int trWidth = width;
             Int trHeight = height;
-            m_pcEntropyCoderIf->codeCoeffNxN(pcCU, (pcCU->getCoeffY() + offsetLuma), uiAbsPartIdx, trWidth, trHeight, uiDepth, TEXT_LUMA);
+            // m_pcEntropyCoderIf->codeCoeffNxN(pcCU, (pcCU->getCoeffY() + offsetLuma), uiAbsPartIdx, trWidth, trHeight, uiDepth, TEXT_LUMA);
         }
         if (uiLog2TrafoSize > 2)
         {
@@ -395,7 +395,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
             }
             if (cbfV)
             {
-                m_pcEntropyCoderIf->codeCoeffNxN(pcCU, (pcCU->getCoeffCr() + offsetChroma), uiAbsPartIdx, trWidth, trHeight, uiDepth, TEXT_CHROMA_V);
+                // m_pcEntropyCoderIf->codeCoeffNxN(pcCU, (pcCU->getCoeffCr() + offsetChroma), uiAbsPartIdx, trWidth, trHeight, uiDepth, TEXT_CHROMA_V);
             }
         }
         else
@@ -411,7 +411,7 @@ Void TEncEntropy::xEncodeTransform(TComDataCU *pcCU, UInt offsetLuma, UInt offse
                 }
                 if (cbfV)
                 {
-                    m_pcEntropyCoderIf->codeCoeffNxN(pcCU, (pcCU->getCoeffCr() + m_uiBakChromaOffset), m_uiBakAbsPartIdx, trWidth, trHeight, uiDepth, TEXT_CHROMA_V);
+                    // m_pcEntropyCoderIf->codeCoeffNxN(pcCU, (pcCU->getCoeffCr() + m_uiBakChromaOffset), m_uiBakAbsPartIdx, trWidth, trHeight, uiDepth, TEXT_CHROMA_V);
                 }
             }
         }
