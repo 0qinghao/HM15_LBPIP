@@ -628,7 +628,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
         codeNpType8x8(pcCU, uiAbsPartIdx, uiDepth);
 
         codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
-        codeIntraDirChromaLP(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
+        // codeIntraDirChromaLP(pcCU, uiAbsPartIdx); // 如果是新方法 要多编码一个信息
         PartSize eSize8x8 = pcCU->getPartitionSize(uiAbsPartIdx);
         switch (eSize8x8)
         {
@@ -701,7 +701,7 @@ Void TEncSbac::codeNpSplitFlagNpType(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt u
     else
     {
         codeIntraDirLumaAngLP(pcCU, uiAbsPartIdx, true);
-        codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
+        // codeIntraDirChromaLP(pcCU, uiAbsPartIdx);
     }
 }
 
