@@ -163,7 +163,7 @@
 #define DC_IDX 1   // index for intra DC mode
 // #define BLK_NUM_CHROMA_MODE 5 // total number of chroma modes
 #define DIR_NUM 32      // total number of chroma modes
-#define DIR_BITS 5      // total number of chroma modes
+#define DIR_BITS 3      // total number of chroma modes
 #define LOOP_DIR_NUM 4  // total number of chroma modes
 #define LOOP_DIR_BITS 2 // total number of chroma modes
 #define LOOP_MIN_SIZE 4
