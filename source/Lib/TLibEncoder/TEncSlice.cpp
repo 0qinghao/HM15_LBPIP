@@ -1326,7 +1326,7 @@ Void TEncSlice::encodeSlice(TComPic *&rpcPic, TComOutputBitstream *pcSubstreams)
         if ((m_pcCfg->getSliceMode() != 0 || m_pcCfg->getSliceSegmentMode() != 0) &&
             uiCUAddr == rpcPic->getPicSym()->getCUOrderMap((uiBoundingCUAddr + rpcPic->getNumPartInCU() - 1) / rpcPic->getNumPartInCU() - 1))
         {
-            m_pcCuEncoder->encodeCU(pcCU);
+            // m_pcCuEncoder->encodeCU(pcCU);
         }
         else
         {
@@ -1334,7 +1334,7 @@ Void TEncSlice::encodeSlice(TComPic *&rpcPic, TComOutputBitstream *pcSubstreams)
             // 因为compressSlice主要是进行最优模式的选择，还有变换、量化等功能, 需要保持熵编码器的连续性
             // 而在这里，由于前面的几个步骤都已经进行完毕，所以，这里是单纯地进行熵编码
             // 根据前方的 setBitCounter(NULL) setBitstream(&pcSubstreams[uiSubStrm]) 可以看出, 熵编码器输出对象是一个 Stream 类, 输出这一动作的结果是写文件
-            m_pcCuEncoder->encodeCU(pcCU);
+            // m_pcCuEncoder->encodeCU(pcCU);
         }
 #if ENC_DEC_TRACE
         g_bJustDoIt = g_bEncDecTraceDisable;

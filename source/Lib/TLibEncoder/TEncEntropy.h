@@ -184,9 +184,11 @@ public:
 
 private:
     Void xEncodeTransform(TComDataCU *pcCU, UInt offsetLumaOffset, UInt offsetChroma, UInt uiAbsPartIdx, UInt uiDepth, UInt width, UInt height, UInt uiTrIdx, Bool &bCodeDQP);
+    Void xEncodeTransformwr(TComDataCU *pcCU, UInt offsetLumaOffset, UInt offsetChroma, UInt uiAbsPartIdx, UInt uiDepth, UInt width, UInt height, UInt uiTrIdx, Bool &bCodeDQP);
 
 public:
     Void encodeCoeff(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, UInt uiWidth, UInt uiHeight, Bool &bCodeDQP);
+    Void encodeCoeffwr(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, UInt uiWidth, UInt uiHeight, Bool &bCodeDQP);
 
     Void encodeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoeff, UInt uiAbsPartIdx, UInt uiTrWidth, UInt uiTrHeight, UInt uiDepth, TextType eType);
 
