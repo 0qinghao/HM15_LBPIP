@@ -841,6 +841,6 @@ MigrationBackup/
 *.pdf
 *.mat
 HEVC_test_sequence/
-!.vscode/bookmarks.json
+.vscode/bookmarks.json
 !.vscode/breakpoints*
 !bin/
