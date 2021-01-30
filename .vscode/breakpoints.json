@@ -1,0 +1,32 @@
+[
+  {
+    "location": "/source/Lib/TLibEncoder/TEncSlice.cpp",
+    "line": [
+      {
+        "line": 1013,
+        "character": 0
+      },
+      {
+        "line": 1013,
+        "character": 0
+      }
+    ],
+    "enabled": true,
+    "logMessage": "RD后cost: ;0;{pcCU->m_dTotalCost}"
+  },
+  {
+    "location": "/source/Lib/TLibEncoder/TEncCu.cpp",
+    "line": [
+      {
+        "line": 1010,
+        "character": 0
+      },
+      {
+        "line": 1010,
+        "character": 0
+      }
+    ],
+    "enabled": true,
+    "logMessage": "编码时cost: ;1;{m_pcEntropyCoder->getNumberOfWrittenBits()}"
+  }
+]
