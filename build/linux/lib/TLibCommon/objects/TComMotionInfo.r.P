@@ -1,11 +1,11 @@
 objects/TComMotionInfo.r.o: \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.cpp \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/CommonDef.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TypeDef.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMv.h
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.cpp :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/CommonDef.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TypeDef.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMv.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.cpp \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TypeDef.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMv.h
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.cpp :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMotionInfo.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TypeDef.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibCommon/../../../../source/Lib/TLibCommon/TComMv.h :

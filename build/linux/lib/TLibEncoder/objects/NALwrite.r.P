@@ -1,15 +1,15 @@
 objects/NALwrite.r.o: \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.cpp \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/NAL.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/CommonDef.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TComBitStream.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.h \
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.cpp :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/NAL.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/CommonDef.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TComBitStream.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.h :
- /mnt/f/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.cpp \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/NAL.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TComBitStream.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.cpp :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/NAL.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TComBitStream.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h :

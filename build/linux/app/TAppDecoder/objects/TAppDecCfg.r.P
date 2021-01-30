@@ -1,11 +1,11 @@
 objects/TAppDecCfg.r.o: \
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.cpp \
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.h \
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/CommonDef.h \
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/TypeDef.h \
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TAppCommon/program_options_lite.h
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.cpp :
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.h :
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/CommonDef.h :
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/TypeDef.h :
- /mnt/f/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TAppCommon/program_options_lite.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.cpp \
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/TypeDef.h \
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TAppCommon/program_options_lite.h
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.cpp :
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/App/TAppDecoder/TAppDecCfg.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TLibCommon/TypeDef.h :
+ /mnt/d/NewCodec_HM15.0/build/linux/app/TAppDecoder/../../../../source/Lib/TAppCommon/program_options_lite.h :
