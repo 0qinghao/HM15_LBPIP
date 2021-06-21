@@ -57,6 +57,7 @@
 
 #define NUM_PART_SIZE_CTX 4 ///< number of context models for partition size
 #define NUM_PRED_MODE_CTX 1 ///< number of context models for prediction mode
+#define NUM_PRED_DIR_RES_CTX 1 ///< number of context models for
 
 #define NUM_ADI_CTX 1 ///< number of context models for intra prediction
 
@@ -186,6 +187,32 @@ static const UChar
 
 static const UChar
     INIT_PRED_MODE[3][NUM_PRED_MODE_CTX] =
+        {
+            {
+                134,
+            },
+            {
+                149,
+            },
+            {
+                CNU,
+            },
+};
+static const UChar
+    INIT_PRED_DIR[3][NUM_PRED_DIR_RES_CTX] =
+        {
+            {
+                134,
+            },
+            {
+                149,
+            },
+            {
+                CNU,
+            },
+};
+static const UChar
+    INIT_PRED_DIR2[3][NUM_PRED_DIR_RES_CTX] =
         {
             {
                 134,

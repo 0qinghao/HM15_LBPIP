@@ -51,7 +51,7 @@
 TEncSbac::TEncSbac()
     // new structure here
     // TEncSbac的构造函数调用的都是ContextModel3DBuffer的构造函数
-    : m_pcBitIf(NULL), m_pcSlice(NULL), m_pcBinIf(NULL), m_uiCoeffCost(0), m_numContextModels(0), m_cCUSplitFlagSCModel(1, 1, NUM_SPLIT_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSkipFlagSCModel(1, 1, NUM_SKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeFlagExtSCModel(1, 1, NUM_MERGE_FLAG_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeIdxExtSCModel(1, 1, NUM_MERGE_IDX_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPartSizeSCModel(1, 1, NUM_PART_SIZE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPredModeSCModel(1, 1, NUM_PRED_MODE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUIntraPredSCModel(1, 1, NUM_ADI_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUChromaPredSCModel(1, 1, NUM_CHROMA_PRED_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUDeltaQpSCModel(1, 1, NUM_DELTA_QP_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUInterDirSCModel(1, 1, NUM_INTER_DIR_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCURefPicSCModel(1, 1, NUM_REF_NO_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMvdSCModel(1, 1, NUM_MV_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtCbfSCModel(1, 2, NUM_QT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUTransSubdivFlagSCModel(1, 1, NUM_TRANS_SUBDIV_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtRootCbfSCModel(1, 1, NUM_QT_ROOT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigCoeffGroupSCModel(1, 2, NUM_SIG_CG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigSCModel(1, 1, NUM_SIG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastX(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastY(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCUOneSCModel(1, 1, NUM_ONE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUAbsSCModel(1, 1, NUM_ABS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cMVPIdxSCModel(1, 1, NUM_MVP_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoMergeSCModel(1, 1, NUM_SAO_MERGE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoTypeIdxSCModel(1, 1, NUM_SAO_TYPE_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cTransformSkipSCModel(1, 2, NUM_TRANSFORMSKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_CUTransquantBypassFlagSCModel(1, 1, NUM_CU_TRANSQUANT_BYPASS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels)
+    : m_pcBitIf(NULL), m_pcSlice(NULL), m_pcBinIf(NULL), m_uiCoeffCost(0), m_numContextModels(0), m_cCUSplitFlagSCModel(1, 1, NUM_SPLIT_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSkipFlagSCModel(1, 1, NUM_SKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeFlagExtSCModel(1, 1, NUM_MERGE_FLAG_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeIdxExtSCModel(1, 1, NUM_MERGE_IDX_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPartSizeSCModel(1, 1, NUM_PART_SIZE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPredModeSCModel(1, 1, NUM_PRED_MODE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cPredDirResSCModel(1, 1, NUM_PRED_DIR_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cPredDirResSCModel2(1, 1, NUM_PRED_DIR_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUIntraPredSCModel(1, 1, NUM_ADI_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUChromaPredSCModel(1, 1, NUM_CHROMA_PRED_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUDeltaQpSCModel(1, 1, NUM_DELTA_QP_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUInterDirSCModel(1, 1, NUM_INTER_DIR_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCURefPicSCModel(1, 1, NUM_REF_NO_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMvdSCModel(1, 1, NUM_MV_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtCbfSCModel(1, 2, NUM_QT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUTransSubdivFlagSCModel(1, 1, NUM_TRANS_SUBDIV_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtRootCbfSCModel(1, 1, NUM_QT_ROOT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigCoeffGroupSCModel(1, 2, NUM_SIG_CG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigSCModel(1, 1, NUM_SIG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastX(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastY(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCUOneSCModel(1, 1, NUM_ONE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUAbsSCModel(1, 1, NUM_ABS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cMVPIdxSCModel(1, 1, NUM_MVP_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoMergeSCModel(1, 1, NUM_SAO_MERGE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoTypeIdxSCModel(1, 1, NUM_SAO_TYPE_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cTransformSkipSCModel(1, 2, NUM_TRANSFORMSKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_CUTransquantBypassFlagSCModel(1, 1, NUM_CU_TRANSQUANT_BYPASS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels)
 {
     assert(m_numContextModels <= MAX_NUM_CTX_MOD);
 }
@@ -88,6 +88,8 @@ Void TEncSbac::resetEntropy()
     m_cCUPartSizeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PART_SIZE);
     // 模式(帧内还是帧间)
     m_cCUPredModeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_MODE);
+    m_cPredDirResSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_DIR);
+    m_cPredDirResSCModel2.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_DIR2);
     // 帧内预测角度
     m_cCUIntraPredSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_INTRA_PRED_MODE);
     // 帧内色差预测角度
@@ -202,6 +204,8 @@ Void TEncSbac::updateContextTables(SliceType eSliceType, Int iQp, Bool bExecuteF
     m_cCUMergeIdxExtSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_MERGE_IDX_EXT);
     m_cCUPartSizeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PART_SIZE);
     m_cCUPredModeSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_MODE);
+    m_cPredDirResSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_DIR);
+    m_cPredDirResSCModel2.initBuffer(eSliceType, iQp, (UChar *)INIT_PRED_DIR2);
     m_cCUIntraPredSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_INTRA_PRED_MODE);
     m_cCUChromaPredSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_CHROMA_PRED_MODE);
     m_cCUInterDirSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_INTER_DIR);
@@ -856,7 +860,21 @@ Void TEncSbac::codeIntraDirLumaAngLP(TComDataCU *pcCU, UInt absPartIdx, Bool isM
             for (j = 0; j < iLoopCnt; j++)
             {
                 assert(puhModeAll[j] < LOOP_DIR_NUM);
-                m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
+                if (puhModeAll[j] == 0)
+                {
+                    m_pcBinIf->encodeBin(0, m_cPredDirResSCModel.get(0, 0, 0));
+                }
+                else if (puhModeAll[j] == 1)
+                {
+                    m_pcBinIf->encodeBin(1, m_cPredDirResSCModel.get(0, 0, 0));
+                    m_pcBinIf->encodeBin(0, m_cPredDirResSCModel2.get(0, 0, 0));
+                }
+                else
+                {
+                    m_pcBinIf->encodeBin(1, m_cPredDirResSCModel.get(0, 0, 0));
+                    m_pcBinIf->encodeBin(1, m_cPredDirResSCModel2.get(0, 0, 0));
+                    m_pcBinIf->encodeBinsEP(puhModeAll[j] - 2, LOOP_DIR_BITS - 1);
+                }
                 // if (puhModeAll[j] == 0) iLoopCnt);
                 // {
                 //     m_pcBinIf->encodeBinsEP(0b00, 2);
