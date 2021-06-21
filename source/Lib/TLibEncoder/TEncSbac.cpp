@@ -946,7 +946,22 @@ Void TEncSbac::codeIntraDirChromaLP(TComDataCU *pcCU, UInt uiAbsPartIdx)
         // for (Int j = 0; j < uiWidth - 3 + 1; j++)
         {
             assert(puhModeAll[j] < LOOP_DIR_NUM);
-            m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
+            // m_pcBinIf->encodeBinsEP(puhModeAll[j], LOOP_DIR_BITS);
+            if (puhModeAll[j] == 0)
+            {
+                m_pcBinIf->encodeBin(0, m_cPredDirResSCModel.get(0, 0, 0));
+            }
+            else if (puhModeAll[j] == 1)
+            {
+                m_pcBinIf->encodeBin(1, m_cPredDirResSCModel.get(0, 0, 0));
+                m_pcBinIf->encodeBin(0, m_cPredDirResSCModel2.get(0, 0, 0));
+            }
+            else
+            {
+                m_pcBinIf->encodeBin(1, m_cPredDirResSCModel.get(0, 0, 0));
+                m_pcBinIf->encodeBin(1, m_cPredDirResSCModel2.get(0, 0, 0));
+                m_pcBinIf->encodeBinsEP(puhModeAll[j] - 2, LOOP_DIR_BITS - 1);
+            }
             // if (puhModeAll[j] == 0)
             // {
             //     m_pcBinIf->encodeBinsEP(0b00, 2);
